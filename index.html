@@ -71,6 +71,7 @@
         <button class="btn secondary" onclick="loadGame(true)">Load</button>
         <button class="btn danger" onclick="resetGame()">Reset</button>
       </div>
+      <button id="soundToggle" class="btn secondary" style="width:100%;margin-top:10px" onclick="toggleSound()" aria-pressed="true">Sound: On</button>
       <p class="footerNote">Local backup plus online sync with a recovery code.</p>
     </section>
     <section class="card">
@@ -939,7 +940,7 @@ function clone(o){return JSON.parse(JSON.stringify(o))}
 function snapshot(){return {money:state.money,respect:state.respect,day:state.day}}
 function deltaText(before){let out=[];let dm=state.money-before.money;if(dm)out.push('Money '+(dm>0?'+':'')+fmt(dm));let dr=state.respect-before.respect;if(dr)out.push('Respect '+(dr>0?'+':'')+Math.round(dr));let dd=state.day-before.day;if(dd)out.push('Day '+(dd>0?'+':'')+dd);return out;}
 function log(msg,kind='event',details=[]){let entry={day:state.day,kind,msg,details:Array.isArray(details)?details:[]};state.log.unshift(entry);state.log=state.log.slice(0,140);render();}
-function logChange(msg,before,kind='event',details=[]){accountChange(msg,before,kind,details);log(msg,kind,[...details,...deltaText(before)]);}
+function logChange(msg,before,kind='event',details=[]){let cashDelta=state.money-before.money;accountChange(msg,before,kind,details);if(cashDelta>0)playSfx('cashIn');else if(cashDelta<0)playSfx('cashOut');log(msg,kind,[...details,...deltaText(before)]);}
 function seasonForDay(day){return Math.max(1,Math.ceil((day||1)/14));}
 function normaliseAccounting(){if(!state.accounting)state.accounting=[];if(!state.eventSummaries)state.eventSummaries=[];if(state.accountingSeason===undefined)state.accountingSeason='all';
   if(!state.marketOffers)state.marketOffers=[];
@@ -961,7 +962,7 @@ function topStats(){document.getElementById('topStats').innerHTML=`<span class="
 function hasEventSession(){return !!(state.lastEvent && !state.lastEvent.dayAdvanced);}
 function nav(){let items=['home','classifieds','garage','event'];if(hasEventSession())items.push('currentEvent');items.push('upgrades','market','watch','social','season','log');let labels={home:'Opening',classifieds:'Classifieds',garage:'Garage',event:'Event Calendar',currentEvent:'Current Event',upgrades:'Upgrades',market:'Car Market',watch:'Watch List',social:'Social Garage',season:'Balance Sheets',log:'Log'};document.getElementById('nav').innerHTML=items.map(s=>`<button class="${state.screen===s?'active':''}" onclick="show('${s}')">${labels[s]}</button>`).join('')}
 function currentPanel(){let el=document.getElementById('currentCarPanel'); if(!state.car){el.innerHTML='No car yet.<br><span class="small">Buy one or attend as a spectator.</span>';return} let c=state.car;calculateBuildEffects(c);let tune=tuneSensitiveCount(c)>0?(c.tuneFresh&&c.tuneSignature===buildSignature(c)?'Dyno tuned':'Needs dyno tune'):'Stock tune ok';el.innerHTML=`<b>${c.name}</b><br><span class="muted">${c.type} / ${c.drive}</span><br>Power: ${Math.round(c.power)} hp<br>Weight: ${Math.round(c.weight)} kg<br>Tyres/grip: ${Math.round(c.grip*100)}%<br>Trans: ${c.trans.toUpperCase()} ${c.trans==='auto'?'/ '+c.shiftMode:''}<br>Reliability: ${Math.round(c.reliability)}%<br><span class="small muted">${tune}</span><br>Gear max: ${(gearMaxes(c)||[]).map(x=>Math.round(x)).join('/')} km/h`;}
-function render(){normaliseState();topStats();nav();currentPanel();let screensMap={home,classifieds,garage,event,currentEvent,travel,arrival,upgrades,market,watch,social,season,log:logScreen};let fn=screensMap[state.screen]||home;document.getElementById('screen').innerHTML=fn();renderSocialPanel();}
+function render(){normaliseState();topStats();nav();currentPanel();let screensMap={home,classifieds,garage,event,currentEvent,travel,arrival,upgrades,market,watch,social,season,log:logScreen};let fn=screensMap[state.screen]||home;document.getElementById('screen').innerHTML=fn();renderSocialPanel();updateSoundToggle();}
 function show(s){if(liveRun&&liveRun.raf){cancelAnimationFrame(liveRun.raf);liveRun=null;}if(travelTimer){clearTimeout(travelTimer);travelTimer=null;}state.screen=s;render()}
 function home(){let carText=state.car?`your current car is a <b>${state.car.name}</b>`:'no car';return `<section class="card"><h2>Opening Choice</h2><p>You have <b>${fmt(state.money)}</b>, ${carText}, and a flyer for legal street drags sitting next to a pile of classifieds.</p><div class="grid"><div class="listing"><h3>Classifieds</h3><p class="muted">Look for a platform. Cheap cars rotate quickly; nicer cars hang around longer.</p><button class="btn" onclick="show('classifieds')">Browse cars</button></div><div class="listing"><h3>Event Calendar</h3><p class="muted">Check upcoming race nights, locked venues, entry costs and what Respect level you are working toward.</p><button class="btn" onclick="show('event')">Open calendar</button></div></div></section>`}
 function classifieds(){if(!state.listings.length)refreshListings();return `<section class="card"><div class="row"><div><h2>Classifieds</h2><p class="muted">Small rotating selection. Honest sellers declare known issues.</p></div><button class="btn secondary" onclick="nextDayListings()">Wait a day / refresh cheap listings</button></div><div class="grid">${state.listings.map(listingCard).join('')}</div></section>`}
@@ -1567,14 +1568,14 @@ let travelTimer=null;
 function runLiveRace(cfg){
   let playerCanShift=cfg.playerCar.trans==='manual'||(cfg.playerCar.trans==='auto'&&cfg.playerCar.shiftMode==='Manual');
   let stageTarget=stageTargetRpm(cfg.playerCar,cfg.launch,cfg.style);
-  liveRun={...cfg,start:null,countStart:performance.now(),gear:1,penalty:0,shiftEvents:[],lastShiftAt:0,playerCanShift,finished:false,gVals:[],note:'Stage up, build your launch rpm and wait for green.',raf:null,stageTargetRpm:stageTarget};
+  liveRun={...cfg,start:null,countStart:performance.now(),gear:1,penalty:0,shiftEvents:[],lastShiftAt:0,playerCanShift,finished:false,gVals:[],note:'Stage up, build your launch rpm and wait for green.',raf:null,stageTargetRpm:stageTarget,lastCountdown:4};
   document.getElementById('screen').innerHTML=`<section class="card"><h2>Quarter Mile Pass</h2><div class="raceStage"><div class="raceLayout"><div class="raceMain"><div id="countdown" class="bigCountdown">3</div><div class="raceHud"><div class="gauge"><div class="muted">Time</div><div class="value" id="raceTime">0.00s</div></div><div class="gauge"><div class="muted">Distance</div><div class="value" id="raceDistance">0 m</div></div><div class="gauge"><div class="muted">Speed</div><div class="value" id="raceSpeed">0 km/h</div></div><div class="gauge"><div class="muted">Gear</div><div class="value" id="raceGear">1</div></div><div class="gauge"><div class="muted">RPM</div><div class="value" id="raceRpm">0</div></div><div class="gauge"><div class="muted">Shift light</div><div class="value shiftLight" id="shiftLight">WAIT</div></div></div><div class="hr"></div><div class="lane"><div class="laneTop"><b>${cfg.playerCar.name}</b><span id="playerLaneText">0 m</span></div><div class="laneBar"><div id="playerLane" class="laneFill"></div><div id="playerDot" class="carDot">🏁</div></div></div><div class="lane"><div class="laneTop"><b>${cfg.rivalCar.name}</b><span id="rivalLaneText">0 m</span></div><div class="laneBar"><div id="rivalLane" class="laneFill rival"></div><div id="rivalDot" class="carDot">🚗</div></div></div><div class="hr"></div>${tachHtml(cfg.playerCar)}<p class="raceNote" id="raceNote">${playerCanShift?'Press SPACE or tap SHIFT when the light comes on.':'Auto D will shift for you.'}</p>${playerCanShift?'<button class="btn touchShiftBtn mobileOnly" id="touchShiftBtn" onclick="handleLiveShift()">TAP TO SHIFT</button>':''}<div class="spark" id="liveSpark"></div></div><div class="raceSide">${treeHtml()}</div></div></div></section>`;
   topStats();currentPanel();
   liveRun.raf=requestAnimationFrame(tickLiveRace);
 }
 function tickLiveRace(now){
   if(!liveRun||liveRun.finished)return;
-  if(!liveRun.start){let stageElapsed=(now-liveRun.countStart)/1000;let left=3-stageElapsed;document.getElementById('countdown').textContent=left>0?Math.ceil(left):'GO';let stageRpm=updateTreeAndStageRpm(left,stageElapsed);document.getElementById('raceNote').textContent=(liveRun.playerCar.trans==='auto'&&liveRun.style==='normal')?`Normal auto launch staged at idle, about ${Math.round(stageRpm)} rpm.`:`Hold the engine on target. Release on green.`;if(left<=0.02){liveRun.start=now;document.getElementById('countdown').textContent='GO';document.getElementById('raceNote').textContent='Launched.';}liveRun.raf=requestAnimationFrame(tickLiveRace);return;}
+  if(!liveRun.start){let stageElapsed=(now-liveRun.countStart)/1000;let left=3-stageElapsed,countStep=left>0?Math.ceil(left):0;if(countStep!==liveRun.lastCountdown){liveRun.lastCountdown=countStep;playSfx(countStep>0?'count':'go')}document.getElementById('countdown').textContent=left>0?Math.ceil(left):'GO';let stageRpm=updateTreeAndStageRpm(left,stageElapsed);document.getElementById('raceNote').textContent=(liveRun.playerCar.trans==='auto'&&liveRun.style==='normal')?`Normal auto launch staged at idle, about ${Math.round(stageRpm)} rpm.`:`Hold the engine on target. Release on green.`;if(left<=0.02){liveRun.start=now;document.getElementById('countdown').textContent='GO';document.getElementById('raceNote').textContent='Launched.';}liveRun.raf=requestAnimationFrame(tickLiveRace);return;}
   let elapsed=(now-liveRun.start)/1000;
   let pEt=liveRun.playerBase.et+liveRun.penalty;
   let rEt=liveRun.rival.et;
@@ -1583,7 +1584,7 @@ function tickLiveRace(now){
   setLamp('treePre',true,'onPre');setLamp('treeStage',true,'onStage');setLamp('treeAmber1',false,'onAmber');setLamp('treeAmber2',false,'onAmber');setLamp('treeAmber3',false,'onAmber');setLamp('treeGreen',true,'onGreen');setLamp('treeRed',false,'onRed');
   let launchLamp=document.getElementById('launchReadyLamp'); if(launchLamp) launchLamp.className='launchLamp on';
   let label=document.getElementById('launchLampLabel'); if(label) label.textContent='Launch complete';
-  if(liveRun.playerCar.trans==='auto'&&liveRun.playerCar.shiftMode==='D'&&rpm>shiftTarget(liveRun.playerCar)&&liveRun.gear<gearMaxes(liveRun.playerCar).length){liveRun.gear++;liveRun.note='Auto shifted near the useful power band.';rpm=currentRpmForRun(liveRun.playerCar,liveRun.gear,elapsed,pEt,liveRun.playerBase.trap,liveRun.playerBase.launchProfile);}
+  if(liveRun.playerCar.trans==='auto'&&liveRun.playerCar.shiftMode==='D'&&rpm>shiftTarget(liveRun.playerCar)&&liveRun.gear<gearMaxes(liveRun.playerCar).length){liveRun.gear++;playSfx('shift');liveRun.note='Auto shifted near the useful power band.';rpm=currentRpmForRun(liveRun.playerCar,liveRun.gear,elapsed,pEt,liveRun.playerBase.trap,liveRun.playerBase.launchProfile);}
   if(liveRun.playerCanShift&&rpm>liveRun.playerCar.red&&liveRun.gear<gearMaxes(liveRun.playerCar).length){liveRun.penalty+=.006;liveRun.note='On the limiter - shift now.';}
   let target=shiftTarget(liveRun.playerCar);
   let shiftOn=liveRun.playerCanShift&&rpm>=target-250&&liveRun.gear<gearMaxes(liveRun.playerCar).length;
@@ -1609,7 +1610,7 @@ function tickLiveRace(now){
 function handleLiveShift(){
   if(!liveRun||!liveRun.start||liveRun.finished||!liveRun.playerCanShift)return;
   let elapsed=(performance.now()-liveRun.start)/1000;
-  if(elapsed-liveRun.lastShiftAt<.25){liveRun.penalty+=.12;liveRun.note='Double-tap shift error. The car hesitated.';return;}
+  if(elapsed-liveRun.lastShiftAt<.25){playSfx('error');liveRun.penalty+=.12;liveRun.note='Double-tap shift error. The car hesitated.';return;}
   if(liveRun.gear>=gearMaxes(liveRun.playerCar).length){liveRun.note='No more gears.';return;}
   let rpm=currentRpmForRun(liveRun.playerCar,liveRun.gear,elapsed,liveRun.playerBase.et+liveRun.penalty,liveRun.playerBase.trap,liveRun.playerBase.launchProfile);
   let target=shiftTarget(liveRun.playerCar), diff=rpm-target;
@@ -1617,7 +1618,7 @@ function handleLiveShift(){
   if(diff<-650){liveRun.penalty+=.22;msg='Shifted too early and dropped out of the power band.';}
   else if(diff>500){liveRun.penalty+=.18;msg='Shifted late; acceleration had already fallen away.';}
   else if(Math.abs(diff)<220){liveRun.penalty-=.03;msg='Sharp shift, right in the useful power band.';}
-  liveRun.gear++;liveRun.lastShiftAt=elapsed;liveRun.shiftEvents.push({gear:liveRun.gear,rpm,diff});liveRun.note=msg;
+  liveRun.gear++;playSfx(Math.abs(diff)<220?'perfectShift':'shift');liveRun.lastShiftAt=elapsed;liveRun.shiftEvents.push({gear:liveRun.gear,rpm,diff});liveRun.note=msg;
 }
 function finishLiveRace(pEt){
   liveRun.finished=true;
@@ -1625,6 +1626,7 @@ function finishLiveRace(pEt){
   player.accel=player.gs.vals[player.gs.vals.length-1];
   let rival=liveRun.rival;
   let win=player.et<rival.et;
+  playSfx(win?'win':'lose');
   let ev=state.lastEvent&&state.lastEvent.eventDef?state.lastEvent.eventDef:EVENT_CALENDAR[0];
   let record=getEventRaceRecord(liveRun.rivalCar);
   let rewards=calculateRaceRewards(win,liveRun.rivalCar,ev,record);
@@ -1693,6 +1695,13 @@ function showTimingBoard(carA,carB,r1,r2,winner,msg){
   topStats();currentPanel();
 }
 function watch(){return `<section class="card"><h2>Watch List</h2><p class="muted">Capacity ${state.watch.length}/${state.watchCap}. Starts at 5.</p><div class="grid">${state.watch.length?state.watch.map(w=>`<div class="listing"><h3>${w.name}</h3><p>${w.type}</p><p class="muted">${w.last}</p></div>`).join(''):'<p>No watched opponents yet.</p>'}</div></section>`}
+const SOUND_STORAGE='qmb_sound_enabled';
+let soundEnabled=localStorage.getItem(SOUND_STORAGE)!=='false',audioContext=null;
+function getAudioContext(){if(!soundEnabled)return null;let AudioCtor=window.AudioContext||window.webkitAudioContext;if(!AudioCtor)return null;if(!audioContext)audioContext=new AudioCtor();if(audioContext.state==='suspended')audioContext.resume();return audioContext}
+function soundTone(freq,duration=.06,type='sine',volume=.025,delay=0,endFreq=freq){let ctx=getAudioContext();if(!ctx)return;let start=ctx.currentTime+delay,osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=type;osc.frequency.setValueAtTime(freq,start);osc.frequency.exponentialRampToValueAtTime(Math.max(30,endFreq),start+duration);gain.gain.setValueAtTime(.0001,start);gain.gain.exponentialRampToValueAtTime(volume,start+.008);gain.gain.exponentialRampToValueAtTime(.0001,start+duration);osc.connect(gain);gain.connect(ctx.destination);osc.start(start);osc.stop(start+duration+.02)}
+function playSfx(name){if(!soundEnabled)return;if(name==='click')soundTone(420,.035,'square',.012,0,360);else if(name==='count')soundTone(520,.08,'sine',.035);else if(name==='go'){soundTone(780,.14,'square',.045);soundTone(1040,.16,'sine',.03,.035)}else if(name==='shift'){soundTone(190,.07,'sawtooth',.028,0,110);soundTone(310,.045,'square',.016,.035)}else if(name==='perfectShift'){soundTone(260,.06,'sawtooth',.028,0,150);soundTone(660,.09,'sine',.025,.045)}else if(name==='cashIn'){soundTone(620,.07,'sine',.025);soundTone(880,.1,'sine',.025,.07)}else if(name==='cashOut')soundTone(330,.1,'triangle',.024,0,220);else if(name==='win'){soundTone(523,.1,'sine',.03);soundTone(659,.1,'sine',.03,.1);soundTone(784,.16,'sine',.035,.2)}else if(name==='lose'){soundTone(260,.12,'triangle',.025,0,210);soundTone(180,.18,'triangle',.025,.1,130)}else if(name==='error')soundTone(120,.13,'square',.025,0,80);else if(name==='toggle')soundTone(720,.08,'sine',.025)}
+function updateSoundToggle(){let button=document.getElementById('soundToggle');if(!button)return;button.textContent='Sound: '+(soundEnabled?'On':'Off');button.setAttribute('aria-pressed',String(soundEnabled))}
+function toggleSound(){soundEnabled=!soundEnabled;localStorage.setItem(SOUND_STORAGE,String(soundEnabled));updateSoundToggle();if(soundEnabled)playSfx('toggle')}
 let socialData=null,socialError='',socialBusy=false,recoveryCodeRevealed=false,onlineCount=null;
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function socialStat(v,fallback='-'){return v===null||v===undefined||v===''?fallback:esc(v)}
@@ -1729,6 +1738,7 @@ function logScreen(){return `<section class="card"><h2>Log</h2><p class="muted">
 function saveGame(){localStorage.setItem('qmb_mvp_save',JSON.stringify(state));log('Local backup saved.');cloudSave(true);}
 function loadGame(manual=false){if(manual&&socialData&&socialData.save)return cloudLoad();let s=localStorage.getItem('qmb_mvp_save');if(s){state=JSON.parse(s);if(manual)log('Local backup loaded.')}else if(manual)alert('No local or cloud save found.');render();}
 function resetGame(){if(confirm('Reset the game?')){localStorage.removeItem('qmb_mvp_save');state={money:15000,respect:0,day:1,car:null,owned:[],listings:[],log:[],screen:'home',watch:[],watchCap:5,lastEvent:null,pendingArrival:null,bettingUnlocked:false,completedEvents:{},bestETs:{},workshopDayUsed:null,accounting:[],eventSummaries:[],accountingSeason:'all',marketOffers:[],pendingSale:null};refreshListings();render();}}
+document.addEventListener('click',e=>{let button=e.target.closest&&e.target.closest('button');if(button&&!button.disabled&&button.id!=='soundToggle')playSfx('click')});
 window.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();handleLiveShift();}});
 refreshListings();loadGame(false);render();initSocial();refreshPresence();setInterval(refreshPresence,60000);
 </script>
