@@ -1,0 +1,1731 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quarter Mile Builder - MVP</title>
+  <style>
+    :root{
+      --bg:#111317;
+      --panel:#1b1f26;
+      --panel2:#242a33;
+      --text:#e8edf2;
+      --muted:#9aa7b4;
+      --line:#343d49;
+      --accent:#ffb02e;
+      --good:#6ee7a5;
+      --bad:#ff6b6b;
+      --warn:#ffd166;
+      --blue:#8ecae6;
+      --shadow: 0 18px 40px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#0e1014 0%,#161a20 60%,#0f1115 100%);color:var(--text);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;min-height:100vh}
+    header{position:sticky;top:0;z-index:4;background:rgba(17,19,23,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:14px 20px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    h1{font-size:22px;margin:0;letter-spacing:.3px}.tagline{font-size:12px;color:var(--muted);margin-top:3px}.stats{display:flex;gap:10px;flex-wrap:wrap}.pill{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:8px 11px;color:var(--text);font-size:13px}.pill b{color:var(--accent)}
+    main{max-width:1240px;margin:0 auto;padding:22px;display:grid;grid-template-columns:280px 1fr;gap:18px}.sidebar{display:flex;flex-direction:column;gap:12px}.nav button,.action{width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:14px;color:var(--text);padding:13px 14px;font-size:14px;cursor:pointer;transition:.16s}.nav button:hover,.action:hover{border-color:var(--accent);transform:translateY(-1px)}.nav button.active{background:#2b2415;border-color:var(--accent)}
+    .card{background:rgba(27,31,38,.96);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.card h2,.card h3{margin:0 0 12px}.muted{color:var(--muted)}.small{font-size:12px}.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.btns{display:flex;gap:8px;flex-wrap:wrap}.btn{background:var(--accent);color:#15120a;border:0;border-radius:12px;padding:10px 12px;font-weight:700;cursor:pointer}.btn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}.btn.danger{background:var(--bad);color:white}.btn.good{background:var(--good);color:#05130b}.btn:disabled{opacity:.45;cursor:not-allowed}.select,input[type="number"]{background:#11151b;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 10px;min-width:120px}.listing{border:1px solid var(--line);border-radius:16px;padding:14px;background:linear-gradient(180deg,#202630,#171b22)}.listing h3{margin:0 0 4px}.price{color:var(--good);font-weight:800}.expensive{color:var(--warn)}.issue{display:inline-block;background:#332820;color:#ffd9a6;border:1px solid #56432f;border-radius:999px;padding:4px 7px;margin:2px;font-size:11px}.owned{border-color:var(--good)}
+    .log{max-height:360px;overflow:auto;background:#0e1116;border:1px solid var(--line);border-radius:14px;padding:12px;font-family:ui-monospace,Consolas,monospace;font-size:12px;line-height:1.45}.logEntry{border-left:3px solid var(--line);padding:8px 10px;margin-bottom:8px;background:#12161d;border-radius:8px}.logEntry.event{border-left-color:var(--blue)}.logEntry.money{border-left-color:var(--good)}.logEntry.race{border-left-color:var(--accent)}.logEntry.bet{border-left-color:var(--warn)}.logEntry.bad{border-left-color:var(--bad)}.logHead{display:flex;gap:8px;justify-content:space-between;align-items:flex-start}.logTag{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.logMsg{color:var(--text)}.logDetails{margin-top:5px;color:var(--muted)}.logDetails span{display:inline-block;margin-right:10px}.raceHud{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}.gauge{background:#0e1116;border:1px solid var(--line);border-radius:12px;padding:12px}.gauge .value{font-size:22px;font-weight:800;color:var(--accent)}.spark{font-size:28px;letter-spacing:2px;color:var(--good);white-space:nowrap}.track{height:14px;background:#0e1116;border:1px solid var(--line);border-radius:999px;overflow:hidden}.trackFill{height:100%;background:linear-gradient(90deg,var(--accent),var(--good));width:0%}.opponent{border:1px solid var(--line);border-radius:14px;padding:12px;background:#171b22}.clue{color:var(--blue)}.hidden{display:none!important}.warning{color:var(--warn)}.goodText{color:var(--good)}.badText{color:var(--bad)}.hr{height:1px;background:var(--line);margin:14px 0}.footerNote{color:var(--muted);font-size:12px;margin-top:14px}.lockedEvent{opacity:.72}.lockedEvent h3{color:var(--muted)}.rangeWrap{background:#11151b;border:1px solid var(--line);border-radius:14px;padding:12px;margin:8px 0}.rangeWrap input[type=range]{width:100%}.bigStat{font-size:30px;font-weight:900;color:var(--accent)}.choiceCard{cursor:pointer}.choiceCard:hover{border-color:var(--accent)}.toggleGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0}.toggleBtn{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:12px;font-weight:800;cursor:pointer}.toggleBtn.active{background:#2b2415;border-color:var(--accent);color:var(--accent)}.touchShiftBtn{margin-top:12px;width:100%;min-height:64px;font-size:20px;border-radius:16px}.touchShiftBtn.ready{box-shadow:0 0 18px rgba(255,176,46,.45)}.mobileOnly{display:none}
+
+    .raceStage{background:linear-gradient(180deg,#12161d,#090b0f);border:1px solid var(--line);border-radius:18px;padding:16px;overflow:hidden}.raceLayout{display:grid;grid-template-columns:minmax(0,1fr) 132px;gap:16px;align-items:start}.raceSide{display:flex;justify-content:center}.lane{margin:12px 0}.laneTop{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--muted);margin-bottom:6px}.laneBar{height:24px;background:#07090d;border:1px solid var(--line);border-radius:999px;position:relative;overflow:hidden}.laneFill{height:100%;background:linear-gradient(90deg,#3a4553,var(--accent));width:0%;transition:width .08s linear}.laneFill.rival{background:linear-gradient(90deg,#3a4553,var(--blue))}.carDot{position:absolute;top:2px;left:0%;transform:translateX(-50%);font-size:17px;line-height:18px;filter:drop-shadow(0 2px 2px #000)}.tachWrap{margin-top:10px}.tachLabels{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin:0 2px 5px}.tach{height:22px;background:linear-gradient(90deg,#112d1c 0 58%,#463d16 58% 82%,#4b1717 82% 100%);border:1px solid var(--line);border-radius:999px;overflow:hidden;position:relative}.tachFill{height:100%;width:0%;background:rgba(255,255,255,.18);border-right:3px solid var(--text);transition:width .06s linear}.tachMark{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.25)}.tachBandText{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-top:4px}.shiftLight{font-weight:900;letter-spacing:1px;color:var(--muted)}.shiftLight.on{color:var(--accent);text-shadow:0 0 12px rgba(255,176,46,.7)}.bigCountdown{font-size:54px;font-weight:900;color:var(--accent);text-align:center;margin:8px 0}.raceNote{min-height:22px}.timingBoard{background:#05070a;border:1px solid var(--line);border-radius:14px;padding:14px;font-family:ui-monospace,Consolas,monospace}.timingBoard .winner{color:var(--good)}.treeBox{display:flex;flex-direction:column;justify-content:flex-start;align-items:center;gap:12px;margin:0}.tree{width:88px;background:linear-gradient(180deg,#2a2f38,#12161d);border:1px solid var(--line);border-radius:22px;padding:10px 8px;box-shadow:var(--shadow)}.treeBulb{width:24px;height:24px;border-radius:50%;margin:7px auto;background:#1f232b;border:1px solid #3d4654;box-shadow:inset 0 0 8px rgba(0,0,0,.55)}.treeBulb.small{width:18px;height:18px;margin:4px auto}.treeBulb.onPre{background:#79b8ff;box-shadow:0 0 12px rgba(121,184,255,.75)}.treeBulb.onStage{background:#d7f2ff;box-shadow:0 0 12px rgba(215,242,255,.8)}.treeBulb.onAmber{background:#ffbf47;box-shadow:0 0 16px rgba(255,191,71,.85)}.treeBulb.onGreen{background:#67e08a;box-shadow:0 0 16px rgba(103,224,138,.85)}.treeBulb.onRed{background:#ff6b6b;box-shadow:0 0 16px rgba(255,107,107,.85)}.treeText{font-size:11px;color:var(--muted);text-align:center;line-height:1.3}.launchLampWrap{display:flex;flex-direction:column;align-items:center;gap:8px}.launchLamp{width:44px;height:44px;border-radius:50%;background:#1f232b;border:1px solid #3d4654;box-shadow:inset 0 0 10px rgba(0,0,0,.55)}.launchLamp.on{background:#ff5252;box-shadow:0 0 22px rgba(255,82,82,.95)}.launchLampLabel{text-align:center;font-size:11px;color:var(--muted);max-width:100px}
+
+    .dynoStage{background:linear-gradient(180deg,#111820,#07090d);border:1px solid var(--line);border-radius:18px;padding:16px;overflow:hidden}.dynoLayout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:16px}.dynoGraph{width:100%;height:260px;background:#05070a;border:1px solid var(--line);border-radius:14px}.dynoTach{height:26px;background:linear-gradient(90deg,#112d1c 0 60%,#463d16 60% 84%,#4b1717 84% 100%);border:1px solid var(--line);border-radius:999px;overflow:hidden;position:relative}.dynoTachFill{height:100%;width:0%;background:rgba(255,255,255,.2);border-right:3px solid var(--accent)}.dynoControls{display:flex;flex-direction:column;gap:10px}.dynoSlider{width:100%;accent-color:var(--accent)}.dynoHold{user-select:none;touch-action:none}.dynoStat{background:#0e1116;border:1px solid var(--line);border-radius:12px;padding:10px}.dynoStat .value{font-size:20px;font-weight:800;color:var(--accent)}.dynoResult{border:1px solid var(--line);border-radius:14px;padding:12px;background:#151a22}.dynoResult.best{border-color:var(--good)}
+    .travelScene{position:relative;overflow:hidden;min-height:220px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,#0f1722 0%,#182332 55%,#0d1117 100%);padding:18px}.travelGlow{position:absolute;inset:0;background:radial-gradient(circle at 20% 18%,rgba(142,202,230,.18),transparent 26%),radial-gradient(circle at 80% 24%,rgba(255,176,46,.14),transparent 24%)}.travelRoad{position:absolute;left:0;right:0;bottom:0;height:94px;background:linear-gradient(180deg,#2f343d,#1c2128)}.travelRoad:before{content:'';position:absolute;left:0;right:0;top:12px;height:3px;background:rgba(255,255,255,.08)}.roadStripe{position:absolute;left:-25%;right:-25%;bottom:42px;height:8px;background:repeating-linear-gradient(90deg,transparent 0 36px,#ffd166 36px 76px,transparent 76px 124px);opacity:.92;animation:roadMove .7s linear infinite}.travelCar{position:absolute;left:18%;bottom:46px;font-size:44px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.4));animation:carBounce 1.1s ease-in-out infinite}.travelDust{position:absolute;left:13%;bottom:46px;font-size:18px;color:rgba(255,255,255,.45);letter-spacing:4px;animation:dustPulse .9s ease-in-out infinite}.travelInfo{position:relative;z-index:1;max-width:620px}.travelStatLine{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}.travelBox{background:rgba(15,19,25,.7);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:10px 12px}.arrivalBanner{border:1px solid var(--line);border-radius:16px;padding:14px;background:linear-gradient(180deg,#202630,#171b22)}.sceneGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.storyCard{background:#151a22;border:1px solid var(--line);border-radius:14px;padding:12px}.storyCard h3{margin:0 0 8px}.storyCard p{margin:0 0 8px}.weatherLine{color:var(--blue);font-weight:700}
+    @keyframes roadMove{from{transform:translateX(0)}to{transform:translateX(112px)}}
+    @keyframes carBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+    @keyframes dustPulse{0%,100%{opacity:.2;transform:translateX(0)}50%{opacity:.8;transform:translateX(-5px)}}
+    @media(max-width:760px){
+      .dynoStage{padding:12px;overflow:visible}
+      .dynoLayout{grid-template-columns:1fr;gap:14px}
+      .dynoGraph{height:220px;display:block}
+      .dynoControls{position:static;display:flex;gap:10px}
+      .dynoControls .btn{width:100%;text-align:center}
+      .dynoStat .value{font-size:18px}
+      .dynoTach{height:24px}
+    }
+    @media(max-width:860px){main{grid-template-columns:1fr}.sidebar{position:static}.stats{width:100%}.pill{font-size:12px}.travelCar{left:12%}.raceLayout{grid-template-columns:1fr}.raceSide{order:-1}}
+  
+    .socialCode{font-family:ui-monospace,Consolas,monospace;font-size:22px;font-weight:900;letter-spacing:.13em;color:var(--accent)}.socialTable{width:100%;border-collapse:collapse}.socialTable th,.socialTable td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}.socialTable th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em}.onlineDot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--good);box-shadow:0 0 10px rgba(110,231,165,.65);margin-right:6px}.socialNotice{border:1px solid var(--line);background:#11151b;border-radius:12px;padding:10px}.leaderboardWrap{overflow-x:auto}
+    @media(max-width:640px){.btns{display:grid;grid-template-columns:1fr;gap:10px}.btn{width:100%;min-height:46px;text-align:center}.rangeWrap input[type=range]{height:38px}.arrivalBanner .grid{grid-template-columns:1fr}.raceHud{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}.mobileOnly{display:block}.toggleGrid{grid-template-columns:1fr}.touchShiftBtn{position:sticky;bottom:10px;z-index:5}.socialTable th,.socialTable td{padding:8px 5px;font-size:12px}}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>Quarter Mile Builder</h1><div class="tagline">Independent public beta - build, race and compare</div></div>
+  <div class="stats" id="topStats"></div>
+</header>
+<main>
+  <aside class="sidebar">
+    <section class="card">
+      <h3>Menu</h3>
+      <div class="nav" id="nav"></div>
+    </section>
+    <section class="card">
+      <h3>Current Car</h3>
+      <div id="currentCarPanel" class="muted">No car yet.</div>
+    </section>
+    <section class="card">
+      <h3>Progress</h3>
+      <div class="btns">
+        <button class="btn secondary" onclick="saveGame()">Save</button>
+        <button class="btn secondary" onclick="loadGame(true)">Load</button>
+        <button class="btn danger" onclick="resetGame()">Reset</button>
+      </div>
+      <p class="footerNote">Local backup plus online sync with a recovery code.</p>
+    </section>
+    <section class="card">
+      <h3>Multiplayer</h3>
+      <div id="socialPanel" class="muted small">Connecting to the paddock...</div>
+    </section>
+  </aside>
+  <section id="screen"></section>
+</main>
+<script>
+const QMB_API_URL='https://elebvltrvcqqyyjwwydi.supabase.co/functions/v1/qmb-api';
+const QMB_PUBLISHABLE_KEY='sb_publishable_wgUH3E8Nepy-6QC_dXpVtA_Uyszqkrm';
+const QMB_RECOVERY_STORAGE='qmb_recovery_code';
+const CARS=[
+  {
+    "id": "corolla",
+    "name": "Toyota Corolla",
+    "cat": "Small / Lightweight",
+    "type": "Lightweight Starter",
+    "price": 5200,
+    "weight": 1120,
+    "power": 125,
+    "torque": 170,
+    "drive": "FWD",
+    "aero": 0.32,
+    "manual": true,
+    "auto": true,
+    "gears": 5,
+    "red": 6500,
+    "peak": 6000,
+    "band": [
+      4200,
+      6400
+    ],
+    "asp": "NA",
+    "baseGrip": 0.82,
+    "upgradeMult": 0.85,
+    "reliability": 88,
+    "engine": "1ZZ-FE",
+    "disp": 1.8
+  },
+  {
+    "id": "civic",
+    "name": "Honda Civic",
+    "cat": "Small / Lightweight",
+    "type": "Lightweight Tuner",
+    "price": 6500,
+    "weight": 1080,
+    "power": 160,
+    "torque": 150,
+    "drive": "FWD",
+    "aero": 0.31,
+    "manual": true,
+    "auto": false,
+    "gears": 5,
+    "red": 8200,
+    "peak": 7600,
+    "band": [
+      5800,
+      8100
+    ],
+    "asp": "NA",
+    "baseGrip": 0.84,
+    "upgradeMult": 0.85,
+    "reliability": 88,
+    "engine": "B16A2/B16A",
+    "disp": 1.6
+  },
+  {
+    "id": "mx5",
+    "name": "Mazda MX-5",
+    "cat": "Small / Lightweight",
+    "type": "Lightweight RWD",
+    "price": 8900,
+    "weight": 1060,
+    "power": 140,
+    "torque": 162,
+    "drive": "RWD",
+    "aero": 0.34,
+    "manual": true,
+    "auto": true,
+    "gears": 5,
+    "red": 7000,
+    "peak": 6500,
+    "band": [
+      4700,
+      6900
+    ],
+    "asp": "NA",
+    "baseGrip": 0.86,
+    "upgradeMult": 0.95,
+    "reliability": 90,
+    "engine": "BP-ZE/BP6D",
+    "disp": 1.8
+  },
+  {
+    "id": "golfgti",
+    "name": "Volkswagen Golf GTI",
+    "cat": "Small / Lightweight",
+    "type": "Hot Hatch",
+    "price": 12900,
+    "weight": 1403,
+    "power": 197,
+    "torque": 280,
+    "drive": "FWD",
+    "aero": 0.3,
+    "manual": true,
+    "auto": true,
+    "gears": 6,
+    "red": 6500,
+    "peak": 5100,
+    "band": [
+      1800,
+      5800
+    ],
+    "asp": "turbo",
+    "baseGrip": 0.84,
+    "upgradeMult": 1.05,
+    "reliability": 86,
+    "engine": "EA113",
+    "disp": 2
+  },
+  {
+    "id": "i30n",
+    "name": "Hyundai i30 N",
+    "cat": "Small / Lightweight",
+    "type": "Modern Hot Hatch",
+    "price": 26500,
+    "weight": 1450,
+    "power": 271,
+    "torque": 353,
+    "drive": "FWD",
+    "aero": 0.31,
+    "manual": true,
+    "auto": true,
+    "gears": 6,
+    "red": 6800,
+    "peak": 6000,
+    "band": [
+      1500,
+      6600
+    ],
+    "asp": "turbo",
+    "baseGrip": 0.86,
+    "upgradeMult": 1.15,
+    "reliability": 90,
+    "engine": "G4KH Theta II",
+    "disp": 2
+  },
+  {
+    "id": "focusxr5",
+    "name": "Ford Focus XR5",
+    "cat": "Small / Lightweight",
+    "type": "Turbo Five Hot Hatch",
+    "price": 12500,
+    "weight": 1390,
+    "power": 222,
+    "torque": 320,
+    "drive": "FWD",
+    "aero": 0.32,
+    "manual": true,
+    "auto": false,
+    "gears": 6,
+    "red": 6500,
+    "peak": 6000,
+    "band": [
+      1600,
+      6300
+    ],
+    "asp": "turbo",
+    "baseGrip": 0.83,
+    "upgradeMult": 1,
+    "reliability": 84,
+    "engine": "B5254T3",
+    "disp": 2.5
+  },
+  {
+    "id": "wrx",
+    "name": "Subaru WRX",
+    "cat": "Japanese Performance",
+    "type": "AWD Launcher",
+    "price": 14500,
+    "weight": 1450,
+    "power": 225,
+    "torque": 300,
+    "drive": "AWD",
+    "aero": 0.33,
+    "manual": true,
+    "auto": true,
+    "gears": 5,
+    "red": 6500,
+    "peak": 5600,
+    "band": [
+      4000,
+      6300
+    ],
+    "asp": "turbo",
+    "baseGrip": 0.93,
+    "upgradeMult": 1.1,
+    "reliability": 84,
+    "engine": "EJ205",
+    "disp": 2
+  },
+  {
+    "id": "lancer",
+    "name": "Mitsubishi Lancer",
+    "cat": "Japanese Performance",
+    "type": "Budget Platform",
+    "price": 7200,
+    "weight": 1290,
+    "power": 120,
+    "torque": 176,
+    "drive": "FWD",
+    "aero": 0.32,
+    "manual": true,
+    "auto": true,
+    "gears": 5,
+    "red": 6500,
+    "peak": 5500,
+    "band": [
+      3700,
+      6000
+    ],
+    "asp": "NA",
+    "baseGrip": 0.82,
+    "upgradeMult": 0.9,
+    "reliability": 88,
+    "engine": "4G94/4G93 proxy",
+    "disp": 2
+  },
+  {
+    "id": "silvia",
+    "name": "Nissan Silvia",
+    "cat": "Japanese Performance",
+    "type": "RWD Turbo Tuner",
+    "price": 18500,
+    "weight": 1260,
+    "power": 247,
+    "torque": 275,
+    "drive": "RWD",
+    "aero": 0.32,
+    "manual": true,
+    "auto": true,
+    "gears": 6,
+    "red": 7200,
+    "peak": 6400,
+    "band": [
+      4800,
+      7000
+    ],
+    "asp": "turbo",
+    "baseGrip": 0.86,
+    "upgradeMult": 1.15,
+    "reliability": 82,
+    "engine": "SR20DET",
+    "disp": 2
+  },
+  {
+    "id": "suprana",
+    "name": "Toyota Supra NA",
+    "cat": "Japanese Performance",
+    "type": "Aspirational Tuner",
+    "price": 23500,
+    "weight": 1490,
+    "power": 224,
+    "torque": 284,
+    "drive": "RWD",
+    "aero": 0.31,
+    "manual": true,
+    "auto": true,
+    "gears": 5,
+    "red": 6800,
+    "peak": 5800,
+    "band": [
+      4000,
+      6300
+    ],
+    "asp": "NA",
+    "baseGrip": 0.86,
+    "upgradeMult": 1.35,
+    "reliability": 90,
+    "engine": "2JZ-GE",
+    "disp": 3
+  },
+  {
+    "id": "soarer",
+    "name": "Toyota Soarer",
+    "cat": "Japanese Performance",
+    "type": "GT Sleeper",
+    "price": 15500,
+    "weight": 1570,
+    "power": 276,
+    "torque": 378,
+    "drive": "RWD",
+    "aero": 0.32,
+    "manual": false,
+    "auto": true,
+    "gears": 4,
+    "red": 7000,
+    "peak": 6200,
+    "band": [
+      2400,
+      6800
+    ],
+    "asp": "turbo",
+    "baseGrip": 0.84,
+    "upgradeMult": 1.15,
+    "reliability": 84,
+    "engine": "1JZ-GTE",
+    "disp": 2.5
+  },
+  {
+    "id": "is200",
+    "name": "Lexus IS200",
+    "cat": "Japanese Performance",
+    "type": "Underdog Platform",
+    "price": 8200,
+    "weight": 1380,
+    "power": 153,
+    "torque": 195,
+    "drive": "RWD",
+    "aero": 0.31,
+    "manual": true,
+    "auto": true,
+    "gears": 6,
+    "red": 6500,
+    "peak": 6200,
+    "band": [
+      4400,
+      6400
+    ],
+    "asp": "NA",
+    "baseGrip": 0.84,
+    "upgradeMult": 1,
+    "reliability": 90,
+    "engine": "1G-FE",
+    "disp": 2
+  },
+  {
+    "id": "falconxr6",
+    "name": "Ford Falcon XR6",
+    "cat": "Australian Cars",
+    "type": "Heavy Six",
+    "price": 8500,
+    "weight": 1690,
+    "power": 244,
+    "torque": 380,
+    "drive": "RWD",
+    "aero": 0.35,
+    "manual": true,
+    "auto": true,
+    "gears": 5,
+    "red": 6000,
+    "peak": 5000,
+    "band": [
+      3200,
+      5500
+    ],
+    "asp": "NA",
+    "baseGrip": 0.82,
+    "upgradeMult": 1,
+    "reliability": 88,
+    "engine": "Barra 182",
+    "disp": 4
+  },
+  {
+    "id": "falconxr6t",
+    "name": "Ford Falcon XR6 Turbo",
+    "cat": "Australian Cars",
+    "type": "Turbo Aussie Muscle",
+    "price": 22500,
+    "weight": 1725,
+    "power": 326,
+    "torque": 450,
+    "drive": "RWD",
+    "aero": 0.35,
+    "manual": true,
+    "auto": true,
+    "gears": 5,
+    "red": 6000,
+    "peak": 5250,
+    "band": [
+      2000,
+      5800
+    ],
+    "asp": "turbo",
+    "baseGrip": 0.82,
+    "upgradeMult": 1.1,
+    "reliability": 82,
+    "engine": "Barra 240T",
+    "disp": 4
+  },
+  {
+    "id": "falconv8",
+    "name": "Ford Falcon V8",
+    "cat": "Australian Cars",
+    "type": "V8 Aussie Muscle",
+    "price": 15000,
+    "weight": 1740,
+    "power": 350,
+    "torque": 500,
+    "drive": "RWD",
+    "aero": 0.35,
+    "manual": true,
+    "auto": true,
+    "gears": 5,
+    "red": 6200,
+    "peak": 5250,
+    "band": [
+      3450,
+      5750
+    ],
+    "asp": "NA",
+    "baseGrip": 0.81,
+    "upgradeMult": 1.05,
+    "reliability": 84,
+    "engine": "Boss 260",
+    "disp": 5.4
+  },
+  {
+    "id": "commodorev6",
+    "name": "Holden Commodore V6",
+    "cat": "Australian Cars",
+    "type": "Budget RWD",
+    "price": 7200,
+    "weight": 1522,
+    "power": 204,
+    "torque": 305,
+    "drive": "RWD",
+    "aero": 0.34,
+    "manual": true,
+    "auto": true,
+    "gears": 5,
+    "red": 6000,
+    "peak": 5200,
+    "band": [
+      3400,
+      5700
+    ],
+    "asp": "NA",
+    "baseGrip": 0.82,
+    "upgradeMult": 0.95,
+    "reliability": 88,
+    "engine": "Ecotec L36",
+    "disp": 3.8
+  },
+  {
+    "id": "commodoresho",
+    "name": "Holden Commodore SS",
+    "cat": "Australian Cars",
+    "type": "V8 Traction Challenge",
+    "price": 16900,
+    "weight": 1590,
+    "power": 320,
+    "torque": 465,
+    "drive": "RWD",
+    "aero": 0.34,
+    "manual": true,
+    "auto": true,
+    "gears": 6,
+    "red": 6200,
+    "peak": 5200,
+    "band": [
+      3400,
+      5700
+    ],
+    "asp": "NA",
+    "baseGrip": 0.81,
+    "upgradeMult": 1.05,
+    "reliability": 84,
+    "engine": "LS1",
+    "disp": 5.7
+  },
+  {
+    "id": "monaro",
+    "name": "Holden Monaro",
+    "cat": "Australian Cars",
+    "type": "Aussie V8 Coupe",
+    "price": 24500,
+    "weight": 1692,
+    "power": 348,
+    "torque": 500,
+    "drive": "RWD",
+    "aero": 0.33,
+    "manual": true,
+    "auto": true,
+    "gears": 6,
+    "red": 6200,
+    "peak": 5600,
+    "band": [
+      3800,
+      6100
+    ],
+    "asp": "NA",
+    "baseGrip": 0.82,
+    "upgradeMult": 1.15,
+    "reliability": 86,
+    "engine": "LS1",
+    "disp": 5.7
+  },
+  {
+    "id": "gqpatrol",
+    "name": "Nissan GQ Patrol",
+    "cat": "4WD / Heavy",
+    "type": "Heavy 4WD Oddball",
+    "price": 11500,
+    "weight": 2100,
+    "power": 173,
+    "torque": 320,
+    "drive": "4WD",
+    "aero": 0.48,
+    "manual": true,
+    "auto": true,
+    "gears": 5,
+    "red": 5000,
+    "peak": 4200,
+    "band": [
+      2400,
+      4700
+    ],
+    "asp": "NA",
+    "baseGrip": 0.9,
+    "upgradeMult": 1.45,
+    "reliability": 90,
+    "engine": "TB42E",
+    "disp": 4.2
+  },
+  {
+    "id": "lc80",
+    "name": "Toyota LandCruiser 80 Series",
+    "cat": "4WD / Heavy",
+    "type": "Heavy Toyota 4WD",
+    "price": 14500,
+    "weight": 2220,
+    "power": 215,
+    "torque": 373,
+    "drive": "4WD",
+    "aero": 0.48,
+    "manual": true,
+    "auto": true,
+    "gears": 5,
+    "red": 5000,
+    "peak": 4600,
+    "band": [
+      2800,
+      4900
+    ],
+    "asp": "NA",
+    "baseGrip": 0.9,
+    "upgradeMult": 1.5,
+    "reliability": 92,
+    "engine": "1FZ-FE",
+    "disp": 4.5
+  },
+  {
+    "id": "lc100",
+    "name": "Toyota LandCruiser 100 Series",
+    "cat": "4WD / Heavy",
+    "type": "Heavy Comfort 4WD",
+    "price": 24500,
+    "weight": 2260,
+    "power": 238,
+    "torque": 434,
+    "drive": "4WD",
+    "aero": 0.5,
+    "manual": false,
+    "auto": true,
+    "gears": 5,
+    "red": 5400,
+    "peak": 4800,
+    "band": [
+      3000,
+      5300
+    ],
+    "asp": "NA",
+    "baseGrip": 0.9,
+    "upgradeMult": 1.55,
+    "reliability": 92,
+    "engine": "2UZ-FE",
+    "disp": 4.7
+  },
+  {
+    "id": "gu",
+    "name": "Nissan Patrol GU/Y61",
+    "cat": "4WD / Heavy",
+    "type": "Later Heavy 4WD",
+    "price": 18500,
+    "weight": 2350,
+    "power": 245,
+    "torque": 400,
+    "drive": "4WD",
+    "aero": 0.5,
+    "manual": true,
+    "auto": true,
+    "gears": 5,
+    "red": 5200,
+    "peak": 4800,
+    "band": [
+      3000,
+      5100
+    ],
+    "asp": "NA",
+    "baseGrip": 0.9,
+    "upgradeMult": 1.5,
+    "reliability": 90,
+    "engine": "TB48DE",
+    "disp": 4.8
+  },
+  {
+    "id": "m3",
+    "name": "BMW M3",
+    "cat": "European / Luxury",
+    "type": "High Rev Benchmark",
+    "price": 28500,
+    "weight": 1570,
+    "power": 333,
+    "torque": 365,
+    "drive": "RWD",
+    "aero": 0.31,
+    "manual": true,
+    "auto": true,
+    "gears": 6,
+    "red": 8000,
+    "peak": 7900,
+    "band": [
+      5200,
+      7900
+    ],
+    "asp": "NA",
+    "baseGrip": 0.86,
+    "upgradeMult": 1.45,
+    "reliability": 86,
+    "engine": "S54B32",
+    "disp": 3.2
+  },
+  {
+    "id": "m5",
+    "name": "BMW M5",
+    "cat": "European / Luxury",
+    "type": "Luxury Bruiser",
+    "price": 34000,
+    "weight": 1830,
+    "power": 500,
+    "torque": 520,
+    "drive": "RWD",
+    "aero": 0.3,
+    "manual": false,
+    "auto": true,
+    "gears": 7,
+    "red": 8250,
+    "peak": 7750,
+    "band": [
+      5950,
+      8150
+    ],
+    "asp": "NA",
+    "baseGrip": 0.85,
+    "upgradeMult": 1.65,
+    "reliability": 80,
+    "engine": "S85B50",
+    "disp": 5
+  },
+  {
+    "id": "c63",
+    "name": "Mercedes-AMG C63",
+    "cat": "European / Luxury",
+    "type": "Big V8 Luxury Bruiser",
+    "price": 33000,
+    "weight": 1730,
+    "power": 451,
+    "torque": 600,
+    "drive": "RWD",
+    "aero": 0.31,
+    "manual": false,
+    "auto": true,
+    "gears": 7,
+    "red": 7200,
+    "peak": 6800,
+    "band": [
+      5000,
+      7100
+    ],
+    "asp": "NA",
+    "baseGrip": 0.83,
+    "upgradeMult": 1.6,
+    "reliability": 82,
+    "engine": "M156",
+    "disp": 6.2
+  },
+  {
+    "id": "300csrt",
+    "name": "Chrysler 300C SRT8",
+    "cat": "European / Luxury",
+    "type": "Heavy V8 Sedan",
+    "price": 22000,
+    "weight": 1995,
+    "power": 425,
+    "torque": 569,
+    "drive": "RWD",
+    "aero": 0.36,
+    "manual": false,
+    "auto": true,
+    "gears": 5,
+    "red": 6200,
+    "peak": 6000,
+    "band": [
+      4200,
+      6100
+    ],
+    "asp": "NA",
+    "baseGrip": 0.81,
+    "upgradeMult": 1.25,
+    "reliability": 82,
+    "engine": "6.1 HEMI",
+    "disp": 6.1
+  }
+];
+const TECH_DATA={
+  corolla:{tyreDia:24.2,manualMax:[50,88,132,178,225],autoMax:[58,105,160,220],shiftBuffer:250},
+  civic:{tyreDia:23.4,manualMax:[55,95,140,188,235],autoMax:[60,108,165,225],shiftBuffer:180},
+  mx5:{tyreDia:22.7,manualMax:[52,88,130,175,220],autoMax:[56,102,158,215],shiftBuffer:220},
+  golfgti:{tyreDia:25,manualMax:[55,95,140,190,245,300],autoMax:[58,105,160,220,285,340],shiftBuffer:250},
+  i30n:{tyreDia:25.5,manualMax:[58,98,145,195,250,310],autoMax:[58,100,150,205,270,330],shiftBuffer:250},
+  focusxr5:{tyreDia:25.1,manualMax:[55,98,148,200,255,315],shiftBuffer:250},
+  wrx:{tyreDia:24.9,manualMax:[52,88,128,172,220],autoMax:[58,104,158,220],shiftBuffer:250},
+  lancer:{tyreDia:24.2,manualMax:[52,90,135,180,230],autoMax:[58,105,160,220],shiftBuffer:250},
+  silvia:{tyreDia:24.9,manualMax:[55,92,137,185,235],autoMax:[60,108,165,225],shiftBuffer:250},
+  suprana:{tyreDia:25,manualMax:[62,105,155,210,270],autoMax:[65,115,175,240],shiftBuffer:250},
+  soarer:{tyreDia:25.7,autoMax:[68,118,180,250],shiftBuffer:300},
+  is200:{tyreDia:24.9,manualMax:[47,84,122,150,182,209],autoMax:[62,112,170,225],shiftBuffer:220},
+  falconxr6:{tyreDia:25.3,manualMax:[60,105,155,215,285],autoMax:[68,122,190,260],shiftBuffer:300},
+  falconxr6t:{tyreDia:25.3,manualMax:[62,108,160,220,285,340],autoMax:[68,122,190,260,330,390],shiftBuffer:350},
+  falconv8:{tyreDia:25.3,manualMax:[60,105,155,215,285],autoMax:[68,122,190,260],shiftBuffer:300},
+  commodorev6:{tyreDia:25.5,manualMax:[60,105,155,215,285],autoMax:[68,122,190,260],shiftBuffer:300},
+  commodoresho:{tyreDia:25.4,manualMax:[65,112,165,225,290,350],autoMax:[70,125,195,270],shiftBuffer:300},
+  monaro:{tyreDia:25.4,manualMax:[65,112,165,225,290,350],autoMax:[70,125,195,270],shiftBuffer:300},
+  gqpatrol:{tyreDia:30.7,manualMax:[42,75,115,160,215],autoMax:[48,88,135,190],shiftBuffer:300},
+  lc80:{tyreDia:31.2,manualMax:[42,76,116,162,215],autoMax:[50,90,138,195],shiftBuffer:300},
+  lc100:{tyreDia:31,autoMax:[55,100,150,215,275],shiftBuffer:350},
+  gu:{tyreDia:30.6,manualMax:[42,76,116,162,215],autoMax:[50,90,138,195],shiftBuffer:300},
+  m3:{tyreDia:25,manualMax:[65,110,160,215,275,335],autoMax:[62,108,158,215,275,335],shiftBuffer:180},
+  m5:{tyreDia:27,autoMax:[70,118,172,228,288,350,410],shiftBuffer:220},
+  c63:{tyreDia:25.4,autoMax:[72,120,175,235,300,365,430],shiftBuffer:250},
+  '300csrt':{tyreDia:28.8,autoMax:[70,125,190,270,340],shiftBuffer:300}
+};
+const STALL_RPM={
+  "corolla":1900,
+  "mx5":2100,
+  "golfgti":2400,
+  "i30n":2500,
+  "wrx":2600,
+  "lancer":2000,
+  "silvia":2500,
+  "suprana":2300,
+  "soarer":2500,
+  "is200":2100,
+  "falconxr6":2200,
+  "falconxr6t":2600,
+  "falconv8":2300,
+  "commodorev6":2200,
+  "commodoresho":2400,
+  "monaro":2400,
+  "gqpatrol":1900,
+  "lc80":1900,
+  "lc100":2100,
+  "gu":1900,
+  "m5":2800,
+  "c63":2600,
+  "300csrt":2500,
+  "m3":2200
+};
+CARS.forEach(c=>Object.assign(c,TECH_DATA[c.id]||{},{stallRpm:STALL_RPM[c.id]||2200}));
+const ISSUES=[
+{name:'Worn tyres',discount:450,effect:{grip:-.08},note:'Immediate traction penalty.'},
+{name:'Tired clutch',discount:850,effect:{shift:-.03,launch:-.05},manualOnly:true,note:'Manual launches are less consistent.'},
+{name:'Poor service history',discount:650,effect:{reliability:-6},note:'Reliability uncertainty.'},
+{name:'Rough idle',discount:500,effect:{power:-.02},note:'Slight power consistency issue.'},
+{name:'Old auto fluid',discount:450,effect:{shift:-.02},autoOnly:true,note:'Auto shifts feel a little lazy.'},
+{name:'Minor body damage',discount:350,effect:{},note:'Mostly cosmetic.'},
+{name:'Cheap previous mods',discount:500,effect:{power:.02,reliability:-4},note:'A tiny gain with a reliability question.'}
+];
+const UPGRADE_PATHS={
+  intake:{label:'Intake',stages:[
+    {name:'Stock Intake'},
+    {name:'K&N Filter',cost:300,day:0,desc:'Drop-in filter. Small, safe airflow improvement with decent resale appeal.',hpMult:1.008,scene:0.2,resale:.45},
+    {name:'Cold Air Intake',cost:700,day:0,desc:'Better intake path. Tune-sensitive: can help, or run slightly unevenly until dyno tuned.',hpMult:1.018,tuneSensitive:true,variance:.018,scene:0.35,resale:.45},
+    {name:'EGR Delete',cost:850,day:1,desc:'Deletes EGR hardware. Tune-sensitive and a little unpredictable until dyno tuned.',hpMult:1.012,tuneSensitive:true,unstable:true,variance:.035,scene:0.25,resale:.25,tag:'EGR delete'}
+  ]},
+  exhaust:{label:'Exhaust',stages:[
+    {name:'Stock Exhaust'},
+    {name:'Cat-back Exhaust',cost:750,day:0,desc:'Better sound and a small flow gain.',hpMult:1.025,scene:0.4,resale:.5,tag:'Cat-back'},
+    {name:'High-flow Exhaust',cost:1200,day:1,desc:'More flow. Tune-sensitive on many cars, especially with intake or ECU work.',hpMult:1.035,tuneSensitive:true,variance:.018,scene:0.55,resale:.55,tag:'High-flow exhaust'},
+    {name:'Full Exhaust System',cost:2100,day:1,desc:'Full system with stronger gains. Needs a dyno tune to get the best from it.',hpMult:1.05,tuneSensitive:true,variance:.025,scene:0.75,resale:.5,tag:'Full exhaust'}
+  ]},
+  tyres:{label:'Tyres',stages:[
+    {name:'Basic Street Tyres'},
+    {name:'Good Street Tyres',cost:900,day:0,desc:'Better street tyre. Improves launches without becoming too specialised.',grip:.06,scene:0.25,resale:.2,tag:'Good street tyres'},
+    {name:'Performance Street Tyres',cost:1300,day:0,desc:'More grip and better repeatability on a street-style setup.',grip:.085,scene:0.4,resale:.25,tag:'Performance street tyres'},
+    {name:'Semi Slicks',cost:2100,day:0,desc:'Strong dry grip. More serious buyers notice them.',grip:.12,launchBonus:.015,scene:0.7,resale:.3,tag:'Semi slicks'},
+    {name:'Drag Radials',cost:2900,day:0,desc:'Drag-focused tyre. Big launch gain, higher driveline stress.',grip:.16,launchBonus:.035,reliability:-1.5,scene:1.0,resale:.35,tag:'Drag radials'}
+  ]},
+  diff:{label:'Diff',stages:[
+    {name:'Open Diff'},
+    {name:'LSD',cost:1450,day:1,desc:'Balanced traction upgrade. Big improvement over an open diff.',grip:.045,launchBonus:.025,scene:0.65,resale:.7,tag:'LSD'},
+    {name:'Mini Spool',cost:950,day:1,desc:'Cheap, drag-focused lock-up. Stronger launches, harsher driveline behaviour.',grip:.07,launchBonus:.05,reliability:-2.5,scene:0.75,resale:.35,tag:'Mini spool'},
+    {name:'Full Spool',cost:1850,day:2,desc:'Maximum consistency for launches. Great at the strip, rough on street manners.',grip:.09,launchBonus:.075,reliability:-4,scene:1.05,resale:.45,tag:'Spool'}
+  ]},
+  ecu:{label:'ECU / Control',stages:[
+    {name:'Stock ECU'},
+    {name:'Piggyback ECU',cost:950,day:1,desc:'Adds control without replacing the factory ECU. Tune-sensitive until dyno tuned.',hpMult:1.025,tuneSensitive:true,variance:.025,scene:0.45,resale:.45,tag:'Piggyback ECU'},
+    {name:'Flash Tune',cost:1300,day:1,desc:'Factory ECU reflash. Not available for Toyota/Lexus platforms in this build.',hpMult:1.045,tuneSensitive:true,variance:.018,scene:0.6,resale:.55,tag:'Flash tune',blockedBrands:['Toyota','Lexus']},
+    {name:'Haltech Standalone ECU',cost:3200,day:2,desc:'Serious standalone ECU. Powerful, but very tune-sensitive until dyno tuned.',hpMult:1.065,tuneSensitive:true,unstable:true,variance:.045,scene:1.15,resale:.6,tag:'Haltech standalone'}
+  ]},
+  transmission:{label:'Transmission',stages:[
+    {name:'Stock Transmission'},
+    {name:'HD Clutch / Shift Kit',cost:1200,day:1,desc:'Manual cars get an HD clutch; autos get a shift kit. Improves consistency.',launchBonus:.025,shiftBenefit:.01,scene:0.35,resale:.45,tag:'Transmission support'},
+    {name:'Performance Clutch / Mild Stall',cost:1800,day:1,desc:'Manuals get a stronger clutch; autos get a mild stall converter.',launchBonus:.055,stallBonus:350,scene:0.65,resale:.5,tag:'Launch transmission'},
+    {name:'Twin Plate / High Stall',cost:2800,day:2,desc:'Serious launch setup. Strong results, more driveline harshness.',launchBonus:.085,stallBonus:700,reliability:-2.5,scene:0.95,resale:.45,tag:'Serious transmission'}
+  ]},
+  weight:{label:'Weight Reduction',stages:[
+    {name:'Full Interior'},
+    {name:'Stage 1 Weight Reduction',cost:600,day:0,desc:'Remove easy weight. Cheap ET improvement with low resale value.',weight:-45,scene:0.25,resale:.15,tag:'Light interior strip'},
+    {name:'Rear Seat Delete',cost:900,day:0,desc:'More weight removed. More obvious to buyers and other racers.',weight:-85,scene:0.45,resale:.1,tag:'Rear seat delete'},
+    {name:'Full Interior Strip',cost:1600,day:1,desc:'Drag-minded weight reduction. Faster, louder, and less daily-friendly.',weight:-145,scene:0.8,resale:.08,tag:'Stripped interior'}
+  ]}
+};
+const DYNO_TUNE={id:'dyno',name:'Dyno Tune',cost:1200,day:1,desc:'A full-day dynomometer tune. It resolves tune-sensitive randomness, activates build synergy, and makes the car more consistent.'};
+const TOYOTA_LEXUS_IDS=['corolla','suprana','soarer','is200','lc80','lc100'];
+function platformBrand(c){return TOYOTA_LEXUS_IDS.includes(c.id)?(c.id==='is200'?'Lexus':'Toyota'):'Other'}
+function upgradeStageDef(path,stage){let p=UPGRADE_PATHS[path];return p&&p.stages[stage]?p.stages[stage]:null}
+function upgradeStageName(path,stage){let d=upgradeStageDef(path,stage);return d?d.name:'Stock'}
+function upgradeStageId(path,stage){return path+':'+stage}
+function totalUpgradeStageCount(c){return Object.values(c.upgradeStages||{}).reduce((s,v)=>s+(Number(v)||0),0)}
+function buildSignature(c){return Object.entries(c.upgradeStages||{}).sort().map(([k,v])=>k+':'+v).join('|')}
+function tuneSensitiveCount(c){let count=0;for(const [path,stage] of Object.entries(c.upgradeStages||{})){for(let i=1;i<=stage;i++){let d=upgradeStageDef(path,i);if(d&&d.tuneSensitive)count++;}}return count}
+function normaliseBuild(c){if(!c)return;c.basePower=c.basePower||c.power||carById(c.id)?.power||100;c.baseWeight=c.baseWeight||c.weight||carById(c.id)?.weight||1200;c.baseGrip=c.baseGrip||c.grip||c.baseGrip||carById(c.id)?.baseGrip||.82;c.basePeak=c.basePeak||c.peak||carById(c.id)?.peak||5500;c.baseReliability=c.baseReliability||c.reliability||88;if(!c.upgradeStages)c.upgradeStages={intake:0,exhaust:0,tyres:0,diff:0,ecu:0,transmission:0,weight:0};for(const k of Object.keys(UPGRADE_PATHS)){if(c.upgradeStages[k]===undefined)c.upgradeStages[k]=0;}if(c.tuneFresh===undefined)c.tuneFresh=false;if(c.tuneVariance===undefined)c.tuneVariance=0;if(c.tuneSignature===undefined)c.tuneSignature='';if(c.dynoQuality===undefined)c.dynoQuality=0;if(!c.dynoCurve)c.dynoCurve=null;if(!c.buildTags)c.buildTags=[];if(!c.installed)c.installed=[];if(!c.mods)c.mods=[];}
+function rollTuneVariance(c){let sens=tuneSensitiveCount(c);if(!sens){c.tuneVariance=0;return;}let unstable=0;for(const [path,stage] of Object.entries(c.upgradeStages||{})){for(let i=1;i<=stage;i++){let d=upgradeStageDef(path,i);if(d&&d.unstable)unstable++;}}
+  let spread=.012+(sens*.008)+(unstable*.012);c.tuneVariance=rand(-spread,spread*.55);
+}
+function calculateBuildEffects(c){normaliseBuild(c);let base=carById(c.id)||c;let hpMult=1,gripAdd=0,weightAdd=0,launchAdd=0,stallBonus=0,reliabilityAdd=0,scene=0,modValue=0,spent=0,tuneSensitive=false,tags=[];for(const [path,stage] of Object.entries(c.upgradeStages||{})){for(let i=1;i<=stage;i++){let d=upgradeStageDef(path,i);if(!d)continue;if(d.hpMult)hpMult*=d.hpMult;if(d.grip)gripAdd+=d.grip;if(d.weight)weightAdd+=d.weight;if(d.launchBonus)launchAdd+=d.launchBonus;if(d.stallBonus)stallBonus+=d.stallBonus;if(d.reliability)reliabilityAdd+=d.reliability;if(d.scene)scene+=d.scene;if(d.cost){spent+=d.cost;modValue+=d.cost*(d.resale===undefined?.35:d.resale);}if(d.tuneSensitive)tuneSensitive=true;if(d.tag)tags.push(d.tag);}}
+  let sig=buildSignature(c);let freshDyno=c.tuneFresh&&c.tuneSignature===sig;if(tuneSensitive&&!freshDyno){hpMult*=1+(c.tuneVariance||0);reliabilityAdd-=1.2;tags.push((c.tuneVariance||0)<-.012?'Needs tune':'Untuned combo');}
+  if(freshDyno&&tuneSensitive){let quality=Math.max(.75,Math.min(1.18,c.dynoQuality||1));let synergy=Math.min(.065,.012*tuneSensitiveCount(c))*quality;hpMult*=1+synergy;launchAdd+=.008*quality;scene+=.55+(.35*quality);tags.push(quality>=1.08?'Dyno tuned - strong curve':'Dyno tuned');}
+  if((c.upgradeStages.tyres||0)>=3&&(c.upgradeStages.diff||0)>=1)tags.push('Grip build');
+  if((c.upgradeStages.tyres||0)>=4&&(c.upgradeStages.diff||0)>=2)tags.push('Drag build');
+  if((c.upgradeStages.ecu||0)>=3)tags.push('Standalone ECU');
+  if((c.upgradeStages.weight||0)>=2)tags.push('Stripped build');
+  if(tuneSensitive&&!freshDyno&&((c.upgradeStages.ecu||0)>=3||(c.upgradeStages.intake||0)>=3))tags.push('Rough build');
+  c.power=(c.basePower||base.power)*hpMult;c.weight=Math.max(700,(c.baseWeight||base.weight)+weightAdd);c.grip=Math.max(.55,Math.min(1.12,(c.baseGrip||base.baseGrip||.82)+gripAdd));c.launchBonus=launchAdd;c.stallBonus=stallBonus;c.reliability=Math.max(25,Math.min(100,(c.baseReliability||88)+reliabilityAdd));c.peak=(c.basePeak||base.peak||c.peak||5500);c.buildTags=[...new Set(tags)];c.modSpend=spent;c.modMarketValue=modValue;c.sceneValue=(c.sceneValueBase||0)+scene+(c.wins||0)*.18;return {hpMult,gripAdd,weightAdd,launchAdd,stallBonus,modValue,spent,tuneSensitive,freshDyno,tags:c.buildTags};}
+function currentUpgradeOptions(c){normaliseBuild(c);let out=[];for(const [path,p] of Object.entries(UPGRADE_PATHS)){let stage=c.upgradeStages[path]||0;let next=stage+1;if(next>=p.stages.length)continue;let d=p.stages[next];if(d.blockedBrands&&d.blockedBrands.includes(platformBrand(c)))continue;out.push({...d,id:upgradeStageId(path,next),path,stage:next,pathLabel:p.label});}
+  let sens=tuneSensitiveCount(c);let sig=buildSignature(c);let dynoNeeded=sens>0&&(!c.tuneFresh||c.tuneSignature!==sig);if(dynoNeeded)out.push({...DYNO_TUNE,path:'dyno',stage:0,pathLabel:'Tuning Service',tuneService:true});return out;}
+function applyUpgradeToCar(c,u,dynoResult=null){normaliseBuild(c);if(u.tuneService){c.tuneFresh=true;c.tuneSignature=buildSignature(c);c.tuneVariance=0;c.dynoQuality=dynoResult&&dynoResult.quality?dynoResult.quality:1;c.dynoCurve=dynoResult&&dynoResult.curve?dynoResult.curve:null;c.mods.push('Dyno tune');calculateBuildEffects(c);return;}c.upgradeStages[u.path]=u.stage;c.installed.push(u.id);c.mods.push(u.name);if(u.tuneSensitive){c.tuneFresh=false;rollTuneVariance(c);}else if(tuneSensitiveCount(c)>0){c.tuneFresh=false;}calculateBuildEffects(c);}
+function installedUpgradeSummary(c){normaliseBuild(c);let rows=[];for(const [path,p] of Object.entries(UPGRADE_PATHS)){let stage=c.upgradeStages[path]||0;if(stage>0)rows.push(p.label+': '+upgradeStageName(path,stage));}let tune=tuneSensitiveCount(c)>0?(c.tuneFresh&&c.tuneSignature===buildSignature(c)?'Dyno tune: fresh':'Dyno tune: needed'):'Dyno tune: not needed yet';rows.push(tune);return rows;}
+let state={money:15000,respect:0,day:1,car:null,owned:[],listings:[],log:[],screen:'home',watch:[],watchCap:5,lastEvent:null,pendingArrival:null,bettingUnlocked:false,completedEvents:{},bestETs:{},workshopDayUsed:null,accounting:[],eventSummaries:[],accountingSeason:'all',marketOffers:[],pendingSale:null};
+const EVENT_CALENDAR=[
+{id:'heathcote_legal',name:'Heathcote Friday Street Drags',venue:'Heathcote Park Raceway',tier:'Local',reqRespect:0,interval:2,offset:1,entryFee:75,spectatorFee:25,travelCost:0,winPayout:150,respectMult:1.0,fieldMult:1.0,opponentBoost:0,desc:'Low-risk legal street drags. Good for testing, learning launches and earning early Respect.'},
+{id:'calder_test',name:'Calder Test & Tune Night',venue:'Calder Park Raceway',tier:'Local',reqRespect:3,interval:3,offset:2,entryFee:100,spectatorFee:30,travelCost:20,winPayout:225,respectMult:1.15,fieldMult:1.1,opponentBoost:.03,desc:'A slightly stronger local field with better timing data and more modified street cars.'},
+{id:'mildura_regional',name:'Mildura Regional Street Meet',venue:'Mildura Sunset Strip',tier:'Regional',reqRespect:8,interval:5,offset:4,entryFee:150,spectatorFee:40,travelCost:180,winPayout:350,respectMult:1.35,fieldMult:1.0,opponentBoost:.06,desc:'A bigger trip and a tougher mixed regional field. Better rewards, higher commitment.'},
+{id:'state_grudge',name:'Victorian Grudge Night',venue:'Rotating Victorian venue',tier:'State',reqRespect:15,interval:7,offset:6,entryFee:250,spectatorFee:60,travelCost:120,winPayout:650,respectMult:1.65,fieldMult:1.25,opponentBoost:.1,desc:'Serious local reputations. Stronger cars, riskier matchups and more Respect on offer.'},
+{id:'bend_open',name:'The Bend Interstate Open',venue:'Dragway at The Bend',tier:'Interstate',reqRespect:25,interval:10,offset:8,entryFee:450,spectatorFee:90,travelCost:650,winPayout:1100,respectMult:2.0,fieldMult:1.35,opponentBoost:.16,desc:'Interstate travel and a much tougher field. You need money, reliability and a proper setup.'},
+{id:'sydney_challenge',name:'Sydney Dragway Challenge',venue:'Sydney Dragway',tier:'National',reqRespect:40,interval:14,offset:12,entryFee:650,spectatorFee:120,travelCost:950,winPayout:1700,respectMult:2.4,fieldMult:1.5,opponentBoost:.22,desc:'A national-level target for later builds. Fast cars, high costs and serious reputation gains.'}
+];
+function fmt(n){return '$'+Math.round(n).toLocaleString('en-AU')}
+function rand(a,b){return Math.random()*(b-a)+a}
+function choice(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function snapshot(){return {money:state.money,respect:state.respect,day:state.day}}
+function deltaText(before){let out=[];let dm=state.money-before.money;if(dm)out.push('Money '+(dm>0?'+':'')+fmt(dm));let dr=state.respect-before.respect;if(dr)out.push('Respect '+(dr>0?'+':'')+Math.round(dr));let dd=state.day-before.day;if(dd)out.push('Day '+(dd>0?'+':'')+dd);return out;}
+function log(msg,kind='event',details=[]){let entry={day:state.day,kind,msg,details:Array.isArray(details)?details:[]};state.log.unshift(entry);state.log=state.log.slice(0,140);render();}
+function logChange(msg,before,kind='event',details=[]){accountChange(msg,before,kind,details);log(msg,kind,[...details,...deltaText(before)]);}
+function seasonForDay(day){return Math.max(1,Math.ceil((day||1)/14));}
+function normaliseAccounting(){if(!state.accounting)state.accounting=[];if(!state.eventSummaries)state.eventSummaries=[];if(state.accountingSeason===undefined)state.accountingSeason='all';
+  if(!state.marketOffers)state.marketOffers=[];
+  if(state.pendingSale===undefined)state.pendingSale=null;
+  if(state.car){if(state.car.listedForSale===undefined)state.car.listedForSale=false;if(state.car.sceneValue===undefined)state.car.sceneValue=0;if(state.car.wins===undefined)state.car.wins=0;if(state.car.bestET===undefined)state.car.bestET=null;if(state.car.notableEvents===undefined)state.car.notableEvents=[];}}
+function accountChange(label,before,kind='event',details=[]){normaliseAccounting();if(!before)return;let cashDelta=state.money-before.money;let respectDelta=state.respect-before.respect;if(!cashDelta&&!respectDelta)return;let entry={day:before.day,season:seasonForDay(before.day),kind,label,cashDelta,respectDelta,moneyAfter:state.money,respectAfter:state.respect,details:Array.isArray(details)?details:[]};state.accounting.push(entry);let e=state.lastEvent;if(e&&!e.dayAdvanced){if(!e.eventAccounting)e.eventAccounting=[];e.eventAccounting.push(entry);}}
+function signedMoney(n){return (n>=0?'+':'-')+fmt(Math.abs(n));}
+function signedNumber(n,digits=1){return (n>=0?'+':'')+Number(n||0).toFixed(digits);}
+function sumAccounting(entries,key,filter){return entries.filter(filter||(()=>true)).reduce((s,x)=>s+(Number(x[key])||0),0);}
+
+function renderLogEntry(x){if(typeof x==='string')return `<div class="logEntry"><div class="logMsg">${x}</div></div>`;let details=x.details&&x.details.length?`<div class="logDetails">${x.details.map(d=>`<span>${d}</span>`).join('')}</div>`:'';return `<div class="logEntry ${x.kind||'event'}"><div class="logHead"><span class="logTag">Day ${x.day} / ${x.kind||'event'}</span></div><div class="logMsg">${x.msg}</div>${details}</div>`;}
+function makeOwned(base,trans='auto',mode='D',listing=null){let c={...clone(base),uid:base.id+'_'+Date.now(),trans,shiftMode:mode,power:base.power,weight:base.weight,grip:base.baseGrip,reliability:base.reliability||88,mods:[],installed:[],issueNames:[],launchBonus:0,sceneValueBase:0}; if(listing){c.issueNames=listing.issues.map(i=>i.name); for(const is of listing.issues){ if(is.effect.grip)c.grip+=is.effect.grip; if(is.effect.power)c.power*=1+is.effect.power; if(is.effect.reliability)c.reliability+=is.effect.reliability; }} c.basePower=c.power;c.baseWeight=c.weight;c.baseGrip=c.grip;c.basePeak=c.peak;c.baseReliability=c.reliability;normaliseBuild(c);calculateBuildEffects(c);return c;}
+function listingPrice(car,issues){return Math.max(900,car.price-issues.reduce((s,i)=>s+i.discount,0)+Math.round(rand(-450,450)))}
+function rollIssues(car){let out=[]; if(Math.random()<.45){let candidates=ISSUES.filter(i=>(!i.manualOnly||car.manual)&&(!i.autoOnly||car.auto)); out.push(choice(candidates)); if(Math.random()<.22)out.push(choice(candidates.filter(x=>!out.includes(x))));} return out;}
+function rollListingTrans(car){if(car.manual&&car.auto)return Math.random()<.52?'manual':'auto';return car.manual?'manual':'auto'}
+function refreshListings(){let cheap=CARS.filter(c=>c.price<16000).sort(()=>Math.random()-.5).slice(0,4);let dear=CARS.filter(c=>c.price>=16000).sort(()=>Math.random()-.5).slice(0,2);state.listings=[...cheap,...dear].map(car=>{let issues=rollIssues(car);return {id:car.id+'_'+Math.random().toString(16).slice(2),carId:car.id,trans:rollListingTrans(car),issues,price:listingPrice(car,issues),inspected:false}});}
+function carById(id){return CARS.find(c=>c.id===id)}
+function topStats(){document.getElementById('topStats').innerHTML=`<span class="pill">Day <b>${state.day}</b></span><span class="pill">Money <b>${fmt(state.money)}</b></span><span class="pill">Respect <b>${Math.round(state.respect*10)/10}</b></span><span class="pill">Watch list <b>${state.watch.length}/${state.watchCap}</b></span>`}
+function hasEventSession(){return !!(state.lastEvent && !state.lastEvent.dayAdvanced);}
+function nav(){let items=['home','classifieds','garage','event'];if(hasEventSession())items.push('currentEvent');items.push('upgrades','market','watch','social','season','log');let labels={home:'Opening',classifieds:'Classifieds',garage:'Garage',event:'Event Calendar',currentEvent:'Current Event',upgrades:'Upgrades',market:'Car Market',watch:'Watch List',social:'Social Garage',season:'Balance Sheets',log:'Log'};document.getElementById('nav').innerHTML=items.map(s=>`<button class="${state.screen===s?'active':''}" onclick="show('${s}')">${labels[s]}</button>`).join('')}
+function currentPanel(){let el=document.getElementById('currentCarPanel'); if(!state.car){el.innerHTML='No car yet.<br><span class="small">Buy one or attend as a spectator.</span>';return} let c=state.car;calculateBuildEffects(c);let tune=tuneSensitiveCount(c)>0?(c.tuneFresh&&c.tuneSignature===buildSignature(c)?'Dyno tuned':'Needs dyno tune'):'Stock tune ok';el.innerHTML=`<b>${c.name}</b><br><span class="muted">${c.type} / ${c.drive}</span><br>Power: ${Math.round(c.power)} hp<br>Weight: ${Math.round(c.weight)} kg<br>Tyres/grip: ${Math.round(c.grip*100)}%<br>Trans: ${c.trans.toUpperCase()} ${c.trans==='auto'?'/ '+c.shiftMode:''}<br>Reliability: ${Math.round(c.reliability)}%<br><span class="small muted">${tune}</span><br>Gear max: ${(gearMaxes(c)||[]).map(x=>Math.round(x)).join('/')} km/h`;}
+function render(){normaliseState();topStats();nav();currentPanel();let screensMap={home,classifieds,garage,event,currentEvent,travel,arrival,upgrades,market,watch,social,season,log:logScreen};let fn=screensMap[state.screen]||home;document.getElementById('screen').innerHTML=fn();renderSocialPanel();}
+function show(s){if(liveRun&&liveRun.raf){cancelAnimationFrame(liveRun.raf);liveRun=null;}if(travelTimer){clearTimeout(travelTimer);travelTimer=null;}state.screen=s;render()}
+function home(){let carText=state.car?`your current car is a <b>${state.car.name}</b>`:'no car';return `<section class="card"><h2>Opening Choice</h2><p>You have <b>${fmt(state.money)}</b>, ${carText}, and a flyer for legal street drags sitting next to a pile of classifieds.</p><div class="grid"><div class="listing"><h3>Classifieds</h3><p class="muted">Look for a platform. Cheap cars rotate quickly; nicer cars hang around longer.</p><button class="btn" onclick="show('classifieds')">Browse cars</button></div><div class="listing"><h3>Event Calendar</h3><p class="muted">Check upcoming race nights, locked venues, entry costs and what Respect level you are working toward.</p><button class="btn" onclick="show('event')">Open calendar</button></div></div></section>`}
+function classifieds(){if(!state.listings.length)refreshListings();return `<section class="card"><div class="row"><div><h2>Classifieds</h2><p class="muted">Small rotating selection. Honest sellers declare known issues.</p></div><button class="btn secondary" onclick="nextDayListings()">Wait a day / refresh cheap listings</button></div><div class="grid">${state.listings.map(listingCard).join('')}</div></section>`}
+function listingCard(l){let car=carById(l.carId);if(!l.trans)l.trans=rollListingTrans(car);let can=state.money>=l.price;let trans=l.trans.toUpperCase();let issues=l.issues.length?l.issues.map(i=>`<span class="issue">${i.name}</span>`).join(''):'<span class="goodText small">No declared issues</span>';let inspected=l.inspected?'<p class="goodText small">Inspected: clearer condition notes available.</p>':'';return `<div class="listing ${l.price>state.money?'':'owned'}"><div class="row"><h3>${car.name}</h3><span class="${l.price>state.money?'expensive':'price'}">${fmt(l.price)}</span></div><p class="muted small">${car.type} / ${car.drive} / Listed as ${trans}</p><p>${Math.round(car.power)} hp, ${Math.round(car.weight)} kg, ${car.asp}</p><div>${issues}</div>${inspected}<div class="hr"></div><div class="btns"><button class="btn secondary" onclick="inspectCar('${l.id}')" ${state.money<150&&!l.inspected?'disabled':''}>Inspect $150</button><button class="btn" onclick="buyCar('${l.id}')" ${!can?'disabled':''}>Buy this ${trans}</button></div></div>`}
+function nextDayListings(){state.day++;let keep=state.listings.filter(l=>carById(l.carId).price>=16000 && Math.random()<.75);let cheap=CARS.filter(c=>c.price<16000).sort(()=>Math.random()-.5).slice(0,Math.max(0,6-keep.length));state.listings=[...keep,...cheap.map(car=>{let issues=rollIssues(car);return {id:car.id+'_'+Math.random().toString(16).slice(2),carId:car.id,trans:rollListingTrans(car),issues,price:listingPrice(car,issues),inspected:false}})];log('You waited a day and checked fresh classifieds.');processMarketDay();}
+function inspectCar(id){let l=state.listings.find(x=>x.id===id); if(!l||state.money<150)return;let before=snapshot();state.money-=150;l.inspected=true;logChange('Paid $150 for an independent inspection on '+carById(l.carId).name+'. It confirms the obvious issues and likely near-term costs.',before,'money',[`Inspection ${carById(l.carId).name}`]);}
+function buyCar(id){let l=state.listings.find(x=>x.id===id);if(!l)return;let base=carById(l.carId); if(state.money<l.price)return;if(!l.trans)l.trans=rollListingTrans(base);let trans=l.trans;if(trans==='manual'&&!base.manual)trans='auto';if(trans==='auto'&&!base.auto)trans='manual';let mode=trans==='auto'?'D':'manual';let before=snapshot();let car=makeOwned(base,trans,mode,l);state.money-=l.price;state.car=car;state.owned.push(car);state.listings=state.listings.filter(x=>x.id!==id);logChange('Bought '+car.name+' for '+fmt(l.price)+'.',before,'money',[`Vehicle purchase ${car.name}`,`As-listed transmission ${trans.toUpperCase()}`]);state.screen='garage';render();}
+function garage(){
+  if(!state.car)return `<section class="card"><h2>Garage</h2><p class="muted">No car yet.</p></section>`;
+  let c=state.car;normaliseState();
+  let saleStatus=c.listedForSale?`<p class="warning"><b>Listed for sale</b> - ${c.saleMode||'Fair Price'} listing. You can keep driving it, but reliability changes and big wins can affect offers.</p>`:'<p class="muted">Not listed for sale.</p>';
+  let value=estimateCarValue(c);
+  return `<section class="card"><h2>Garage</h2><div class="grid"><div class="listing"><h3>${c.name}</h3><p class="muted">${c.type} / ${c.cat}</p><p><b>${Math.round(c.power)} hp</b> / ${Math.round(c.torque)} Nm / ${Math.round(c.weight)} kg</p><p>Drive: ${c.drive} | Aspiration: ${c.asp} | Redline: ${c.red} rpm</p><p>Issues: ${c.issueNames.length?c.issueNames.map(x=>`<span class="issue">${x}</span>`).join(''):'<span class="goodText">None declared</span>'}</p><p>Build: ${installedUpgradeSummary(c).join('<br>')}</p><p>Tags: ${c.buildTags&&c.buildTags.length?c.buildTags.map(t=>`<span class="issue">${t}</span>`).join(''):'<span class="muted">Stock / unproven</span>'}</p><p>Best ET: ${c.bestET?c.bestET.toFixed(2)+'s':'not recorded'} | Wins: ${c.wins||0}</p></div><div class="listing"><h3>Transmission</h3><p>Current: ${c.trans.toUpperCase()} ${c.trans==='auto'?c.shiftMode:''}</p>${c.trans==='auto'?`<button class="btn secondary" onclick="toggleAutoMode()">Toggle D / Manual shift mode</button>`:'<p class="muted">Manual: spacebar or tap-to-shift during race.</p>'}</div><div class="listing"><h3>Car Market</h3>${saleStatus}<p>Estimated private value: <b>${fmt(value.privateValue)}</b></p><p>Instant wholesaler: <b>${fmt(value.wholesaleValue)}</b></p><div class="btns"><button class="btn secondary" onclick="show('market')">Sell / list car</button>${c.listedForSale?`<button class="btn secondary" onclick="cancelCarListing()">Cancel listing</button>`:''}</div></div></div></section>`}
+function toggleAutoMode(){state.car.shiftMode=state.car.shiftMode==='D'?'Manual':'D';log('Set automatic shift mode to '+state.car.shiftMode+'.');}
+function workshopUsedToday(){return state.workshopDayUsed===state.day}
+function workshopBlockedByEvent(){return hasEventSession()&&state.lastEvent&&!state.lastEvent.over}
+function workshopStatusText(){if(workshopBlockedByEvent())return '<p class="warning"><b>Workshop closed while you are at an event.</b> Finish or leave the current event before buying or fitting mods.</p>';return workshopUsedToday()?'<p class="warning"><b>Workshop slot used today.</b> You can only complete one same-day mod per in-game day. Wait a day, attend an event, or let longer work advance time before installing another mod.</p>':'<p class="goodText"><b>Workshop slot available today.</b> You can fit one same-day mod before the day is used up.</p>'}
+
+function estimateCarValue(c){
+  if(!c)return {privateValue:0,wholesaleValue:0};
+  calculateBuildEffects(c);
+  let base=carById(c.id)?.price||c.price||5000;
+  let modValue=c.modMarketValue||0;
+  let rel=Math.max(.55,Math.min(1.08,(c.reliability||85)/88));
+  let perf=(c.power/(c.basePower||carById(c.id)?.power||c.power||1));
+  let perfValue=base*(perf-1)*.55;
+  let scene=(c.sceneValue||0)*280;
+  let best=c.bestET?Math.max(0,(16-c.bestET))*130:0;
+  let tunePenalty=(tuneSensitiveCount(c)>0&&!(c.tuneFresh&&c.tuneSignature===buildSignature(c)))?-.06:0;
+  let privateValue=Math.max(800,Math.round((base+modValue+perfValue+scene+best)*(rel+tunePenalty)));
+  let wholesaleValue=Math.max(500,Math.round(privateValue*rand(.58,.72)));
+  return {privateValue,wholesaleValue};
+}
+function listingMultiplier(mode){return mode==='quick'?.92:mode==='optimistic'?1.12:mode==='dreaming'?1.28:1.0}
+function listingLabel(mode){return mode==='quick'?'Quick Sale':mode==='optimistic'?'Optimistic':mode==='dreaming'?'Dreaming':'Fair Price'}
+function market(){normaliseState();if(!state.car)return `<section class="card"><h2>Car Market</h2><p class="muted">Buy a car first.</p></section>`;let c=state.car,v=estimateCarValue(c);let offers=(state.marketOffers||[]).filter(o=>!o.closed);return `<section class="card"><div class="row"><div><h2>Car Market</h2><p class="muted">You can keep driving a listed car. If you accept an offer while at an event, the sale completes after you leave.</p></div><button class="btn secondary" onclick="show('garage')">Back to garage</button></div><div class="grid"><div class="listing"><h3>${c.name}</h3><p>${c.listedForSale?'<span class="warning">Listed and still driving</span>':'Not currently listed.'}</p><p>Estimated private value: <b>${fmt(v.privateValue)}</b></p><p>Instant wholesaler offer: <b>${fmt(v.wholesaleValue)}</b></p><p class="small muted">Wholesale is quick, safe, and deliberately low. Classifieds can pay better but take time and invite lowballers.</p><div class="btns"><button class="btn danger" onclick="instantSellCar()">Sell immediately</button>${c.listedForSale?`<button class="btn secondary" onclick="cancelCarListing()">Cancel listing</button>`:''}</div></div><div class="listing"><h3>List in classifieds</h3><p class="muted">Choose how ambitious the asking price is. Buyer offers will come through the market screen and event log.</p><div class="btns"><button class="btn secondary" onclick="listCarForSale('quick')">Quick Sale</button><button class="btn secondary" onclick="listCarForSale('fair')">Fair Price</button><button class="btn secondary" onclick="listCarForSale('optimistic')">Optimistic</button><button class="btn secondary" onclick="listCarForSale('dreaming')">Dreaming</button></div></div></div><div class="hr"></div><h3>Current offers</h3><div class="grid">${offers.length?offers.map(offerCard).join(''):'<p class="muted">No active buyer offers yet.</p>'}</div>${state.pendingSale?`<div class="hr"></div><div class="listing owned"><h3>Pending sale</h3><p>${state.pendingSale.buyer} will buy the car for <b>${fmt(state.pendingSale.amount)}</b> when you leave the current event.</p></div>`:''}</section>`}
+function offerCard(o){return `<div class="listing"><h3>${o.buyer}</h3><p>${o.message}</p><p>Offer: <b>${fmt(o.amount)}</b></p><p class="small muted">${o.kind||'classified'} offer / Day ${o.day}</p><div class="btns"><button class="btn" onclick="acceptCarOffer('${o.id}')">Accept</button><button class="btn secondary" onclick="counterCarOffer('${o.id}')">Counter +10%</button><button class="btn secondary" onclick="declineCarOffer('${o.id}')">Decline</button></div></div>`}
+function listCarForSale(mode='fair'){normaliseState();if(!state.car)return;state.car.listedForSale=true;state.car.saleMode=mode;state.car.listedDay=state.day;log('Listed '+state.car.name+' in the classifieds: '+listingLabel(mode)+'.','money',[`Still drivable while listed`]);show('market')}
+function cancelCarListing(){if(!state.car)return;state.car.listedForSale=false;state.car.saleMode=null;log('Cancelled the classified listing for '+state.car.name+'.','event');show('garage')}
+function instantSellCar(){normaliseState();if(!state.car)return;let v=estimateCarValue(state.car);let before=snapshot();let sold=state.car.name;state.money+=v.wholesaleValue;state.car=null;state.owned=[];state.marketOffers=[];state.pendingSale=null;logChange('Sold '+sold+' immediately to a wholesaler.',before,'money',[`Sale price ${fmt(v.wholesaleValue)}`]);state.screen='garage';render()}
+function makeMarketOffer(kind='classified',bonus=1){normaliseState();let c=state.car;if(!c||!c.listedForSale)return null;let v=estimateCarValue(c);let mode=c.saleMode||'fair';let ask=v.privateValue*listingMultiplier(mode);let interest=mode==='quick'?.55:mode==='fair'?.32:mode==='optimistic'?.18:.08;interest+=Math.min(.18,(state.respect||0)*.004)+Math.min(.18,(c.sceneValue||0)*.025);if(Math.random()>interest*bonus)return null;let buyers=['Bloke from the pits','Local P-plater','Older racer','Facebook Marketplace buyer','Mate of a mate','Workshop regular','Cash buyer'];let ratio=mode==='quick'?rand(.88,1.02):mode==='fair'?rand(.9,1.08):mode==='optimistic'?rand(.82,1.02):rand(.7,.92);let amount=Math.round(Math.max(v.wholesaleValue*1.05,ask*ratio)/50)*50;let id='offer_'+Date.now()+'_'+Math.random().toString(16).slice(2);let message=kind==='pit'?`Saw the car run and wants to buy it while it has some hype.`:`Responded to your ${listingLabel(mode)} listing. Reliability, mods and recent runs affect the offer.`;let offer={id,day:state.day,buyer:choice(buyers),amount,kind,message,closed:false};state.marketOffers.push(offer);log('New buyer offer for '+c.name+': '+fmt(amount)+'.','money',[offer.buyer,kind]);return offer;}
+function acceptCarOffer(id){let o=(state.marketOffers||[]).find(x=>x.id===id&&!x.closed);if(!o||!state.car)return;o.closed=true;if(hasEventSession()){state.pendingSale={amount:o.amount,buyer:o.buyer,carName:state.car.name};log('Accepted buyer offer. Sale will complete after the current event.','money',[`Pending sale ${fmt(o.amount)}`]);show('market');return;}completePendingSale(o.amount,o.buyer)}
+function completePendingSale(amount,buyer='Buyer'){if(!state.car)return;let before=snapshot();let sold=state.car.name;state.money+=amount;state.car=null;state.owned=[];state.marketOffers=[];state.pendingSale=null;logChange('Sold '+sold+' to '+buyer+'.',before,'money',[`Sale price ${fmt(amount)}`]);state.screen='garage';render()}
+function declineCarOffer(id){let o=(state.marketOffers||[]).find(x=>x.id===id);if(o)o.closed=true;log('Declined buyer offer.','event');show('market')}
+function counterCarOffer(id){let o=(state.marketOffers||[]).find(x=>x.id===id&&!x.closed);if(!o)return;let target=Math.round(o.amount*1.10/50)*50;if(Math.random()<(.35+Math.min(.2,(state.respect||0)*.004))){o.amount=target;o.message+=' Counter accepted.';log('Counter offer accepted: '+fmt(target)+'.','money');}else{o.closed=true;log('Counter offer rejected. Buyer walked away.','event',[`Counter ${fmt(target)}`]);}show('market')}
+function processMarketDay(){normaliseState();if(state.pendingSale&&!hasEventSession()){completePendingSale(state.pendingSale.amount,state.pendingSale.buyer);return;}if(state.car&&state.car.listedForSale){makeMarketOffer('classified',1)}}
+
+function upgrades(){if(!state.car)return `<section class="card"><h2>Upgrades</h2><p>Buy a car first.</p></section>`;normaliseState();let c=state.car;calculateBuildEffects(c);let used=workshopUsedToday();let atEvent=workshopBlockedByEvent();let options=currentUpgradeOptions(c);let tuneStatus=tuneSensitiveCount(c)>0?(c.tuneFresh&&c.tuneSignature===buildSignature(c)?'<span class="goodText">Fresh dyno tune</span>':'<span class="warning">Tune-sensitive build needs dyno time</span>'):'<span class="muted">No tune-sensitive mods yet</span>';return `<section class="card"><h2>Upgrade Shop</h2><p class="muted">Phase A upgrade paths are now staged. Tune-sensitive intake, exhaust and ECU mods can have slightly unpredictable results until a full-day dyno tune resolves them. Same-day jobs still use the single daily workshop slot.</p>${workshopStatusText()}<div class="listing"><h3>Current build</h3><p>${installedUpgradeSummary(c).join('<br>')}</p><p>Build tags: ${c.buildTags&&c.buildTags.length?c.buildTags.map(t=>`<span class="issue">${t}</span>`).join(''):'<span class="muted">Stock / unproven</span>'}</p><p>Tune state: ${tuneStatus}</p></div><div class="hr"></div><div class="grid">${options.map(u=>{let blockedSameDay=u.day===0&&used;let disabled=state.money<u.cost||blockedSameDay||atEvent;let reason=atEvent?'At event':state.money<u.cost?'Not enough money':blockedSameDay?'Workshop used today':u.tuneService?'Book dyno tune':'Install';let time=u.day?u.day+' day'+(u.day===1?'':'s'):'same-day / uses today\'s workshop slot';return `<div class="listing"><div class="row"><h3>${u.name}</h3><span class="pill"><b>${u.pathLabel}</b></span></div><p>${u.desc}</p><p class="price">${fmt(u.cost)}</p><p class="small muted">Time: ${time}</p>${u.tuneSensitive?'<p class="small warning">Tune-sensitive: result can vary until dyno tuned.</p>':''}${u.blockedBrands?'<p class="small muted">Platform rule: not available to Toyota/Lexus where listed.</p>':''}${blockedSameDay?'<p class="small warning">Come back tomorrow for another same-day job.</p>':''}${atEvent?'<p class="small warning">Finish the current event before buying mods.</p>':''}<button class="btn" onclick="buyUpgrade('${u.id}')" ${disabled?'disabled':''}>${reason}</button></div>`}).join('')}</div></section>`}
+function buyUpgrade(id){normaliseState();let c=state.car;if(!c)return;let u=currentUpgradeOptions(c).find(x=>x.id===id);if(!u||state.money<u.cost)return;if(workshopBlockedByEvent()){log('You are still at an event. Finish or leave the event before buying or fitting mods.','event',['Upgrade blocked while participating in event']);return;}if(u.day===0&&workshopUsedToday()){log('The workshop slot has already been used today. Wait until tomorrow before fitting another same-day mod.','event',['Same-day mod blocked']);return;}if(u.tuneService){renderDynoTune(u);return;}let before=snapshot();state.money-=u.cost;applyUpgradeToCar(c,u);let extra=[];if(u.tuneSensitive&&!u.tuneService)extra.push(`Tune variance ${(c.tuneVariance*100).toFixed(1)}% until dyno tuned`);if(u.day===0){state.workshopDayUsed=state.day;logChange('Installed '+u.name+' on '+c.name+'. That used your workshop slot for today.',before,'money',[`Upgrade ${u.name}`,`Time same-day`,...extra]);}else{state.day+=u.day;state.workshopDayUsed=null;logChange('Installed '+u.name+' on '+c.name+' over '+u.day+' day'+(u.day===1?'':'s')+'.',before,'money',[`Upgrade ${u.name}`,`Workshop time ${u.day} day${u.day===1?'':'s'}`,...extra]);processMarketDay();}}
+let dynoSession=null;
+function renderDynoTune(u){let c=state.car;if(!c)return;calculateBuildEffects(c);dynoSession={upgrade:u,best:null,last:null,running:false,samples:[],runs:[],start:0,raf:null,hold:false};let currentCurve=c.dynoCurve?'<p class="small muted">Current saved curve: '+Math.round(c.dynoCurve.peakHp)+' hp peak, tune quality '+Math.round((c.dynoQuality||1)*100)+'%.</p>':'';document.getElementById('screen').innerHTML=`<section class="card"><div class="row"><div><h2>Dyno Tune</h2><p class="muted">Run the car through the rev range under dyno load. Bring the throttle in smoothly and hold it wide open while the rollers load the engine. A full pull takes around 10–15 seconds.</p></div><span class="pill"><b>${fmt(u.cost)}</b></span></div><div class="dynoStage"><div class="dynoLayout"><div><canvas id="dynoCanvas" class="dynoGraph" width="760" height="260"></canvas><div class="hr"></div><div class="dynoTach"><div class="dynoTachFill" id="dynoTachFill"></div></div><div class="row small muted"><span id="dynoRpm">Idle</span><span id="dynoThrottleRead">Throttle 0%</span><span id="dynoPowerRead">Power -</span></div><p class="raceNote" id="dynoNote">Use the throttle slider, or hold the button, then start a loaded dyno pull. The engine will not free-rev; the rollers load it, so even full throttle takes time to reach redline.</p></div><div class="dynoControls"><div class="dynoStat"><div class="muted">Car</div><div class="value">${c.name}</div><p class="small muted">Redline ${c.red} rpm. Tune-sensitive mods: ${tuneSensitiveCount(c)}.</p>${currentCurve}</div><label class="small muted">Throttle</label><input id="dynoThrottle" class="dynoSlider" type="range" min="0" max="100" value="0" oninput="updateDynoThrottleRead()"><button class="btn secondary dynoHold" id="dynoHoldBtn" onpointerdown="dynoHoldThrottle(true)" onpointerup="dynoHoldThrottle(false)" onpointercancel="dynoHoldThrottle(false)" onpointerleave="dynoHoldThrottle(false)">Hold throttle</button><button class="btn" id="dynoRunBtn" onclick="startDynoRun()">Start baseline pull</button><button class="btn good" id="dynoApplyLastBtn" onclick="acceptDynoTune('last')" disabled>Apply this run and leave</button><button class="btn secondary" id="dynoAcceptBtn" onclick="acceptDynoTune('best')" disabled>Apply best run and leave</button><button class="btn secondary" onclick="show('upgrades')">Back to upgrades</button><div id="dynoResults"></div></div></div></div></section>`;topStats();currentPanel();drawDynoGraph([]);}
+function dynoHoldThrottle(on){if(!dynoSession)return;dynoSession.hold=on;let el=document.getElementById('dynoThrottle');if(el){el.value=on?100:Math.min(35,Number(el.value)||0);updateDynoThrottleRead();}}
+function updateDynoThrottleRead(){let el=document.getElementById('dynoThrottleRead'),sl=document.getElementById('dynoThrottle');if(el&&sl)el.textContent='Throttle '+sl.value+'%';}
+function startDynoRun(){if(!dynoSession||dynoSession.running)return;dynoSession.running=true;dynoSession.samples=[];dynoSession.start=performance.now();dynoSession.loadedRpm=idleRpm(state.car);dynoSession.lastTick=undefined;dynoSession.targetDuration=11000+Math.random()*4000;document.getElementById('dynoRunBtn').disabled=true;let applyBtn=document.getElementById('dynoApplyLastBtn');if(applyBtn)applyBtn.disabled=true;document.getElementById('dynoAcceptBtn').disabled=true;let nextRun=(dynoSession.runs?dynoSession.runs.length:0)+1;document.getElementById('dynoNote').textContent=nextRun===1?'Baseline loaded dyno pull running. Bring the throttle up smoothly and hold it; the rollers are loading the engine.':'Tuning pull running. Keep the throttle strong and smooth while the engine climbs under load.';dynoSession.raf=requestAnimationFrame(tickDynoRun);}
+function dynoBaseCurve(c,rpm){let peak=c.peak||c.basePeak||5500;let red=c.red||6500;let low=Math.max(1200,(c.band&&c.band[0])||peak-2200);let width=(c.asp==='turbo'?1700:2100);let shape=Math.exp(-Math.pow((rpm-peak)/width,2));let lowBoost=Math.max(.45,Math.min(1,(rpm-low)/(peak-low+.01)));let fall=rpm>peak?Math.max(.72,1-((rpm-peak)/(red-peak+.01))*.18):1;return Math.max(.35,shape*.78+lowBoost*.22)*fall;}
+function tickDynoRun(now){
+  if(!dynoSession||!dynoSession.running)return;
+  let c=state.car;
+  if(dynoSession.loadedRpm===undefined)dynoSession.loadedRpm=idleRpm(c);
+  if(dynoSession.lastTick===undefined)dynoSession.lastTick=now;
+  let dt=Math.max(.016,Math.min(.08,(now-dynoSession.lastTick)/1000));
+  dynoSession.lastTick=now;
+  let elapsed=(now-dynoSession.start)/1000;
+  let minDur=dynoSession.targetDuration||12500;
+  let idle=idleRpm(c);
+  let sl=document.getElementById('dynoThrottle');
+  if(dynoSession.hold&&sl)sl.value=100;
+  let throttle=Number(sl?sl.value:0);
+  let throttle01=Math.max(0,Math.min(1,throttle/100));
+  let loadFactor=c.asp==='turbo'?0.92:1.0;
+  let baseSweepPerSec=(c.red-idle)/(minDur/1000)*loadFactor;
+  let throttleDrive=Math.max(0,(throttle01-.18)/.82);
+  let ramp=baseSweepPerSec*(.18+throttleDrive*.98);
+  if(throttle<45)ramp*=.35;
+  if(throttle<18)ramp*=-.20;
+  let rpm=dynoSession.loadedRpm+(ramp*dt);
+  let softLimit=c.red-80;
+  rpm=Math.max(idle,Math.min(softLimit,rpm));
+  dynoSession.loadedRpm=rpm;
+  let t=Math.max(0,Math.min(1,(rpm-idle)/(c.red-idle)));
+  let last=dynoSession.samples[dynoSession.samples.length-1];
+  let swing=last?Math.abs(throttle-last.throttle):0;
+  let idealThrottle=92;
+  let throttleScore=Math.max(.55,1-Math.abs(throttle-idealThrottle)/115);
+  let smoothPenalty=Math.min(.16,swing/420);
+  let basePower=(c.basePower||c.power||100)*dynoBaseCurve(c,rpm);
+  let tuneSens=Math.max(1,tuneSensitiveCount(c));
+  let loadBonus=throttle>88?.025:0;
+  let raw=basePower*(.92+(throttleScore*.16)-smoothPenalty+loadBonus)*(1+(tuneSens*.006));
+  raw+=Math.sin((elapsed/(minDur/1000))*14)*1.5;
+  let hp=Math.max(0,raw);
+  let torque=hp*7127/Math.max(900,rpm);
+  dynoSession.samples.push({rpm,throttle,hp,torque,swing,elapsed});
+  updateDynoHud(rpm,throttle,hp,elapsed,minDur/1000);
+  drawDynoGraph(dynoSession.samples);
+  let completeByRpm=rpm>=softLimit-20;
+  let completeByTime=elapsed>=15.5 && rpm>c.red*.82;
+  if(completeByRpm||completeByTime){finishDynoRun();return;}
+  dynoSession.raf=requestAnimationFrame(tickDynoRun);
+}
+function updateDynoHud(rpm,throttle,hp,elapsed=0,target=12.5){
+  let c=state.car;
+  let fill=document.getElementById('dynoTachFill');
+  if(fill)fill.style.width=Math.min(100,(rpm/c.red)*100)+'%';
+  let r=document.getElementById('dynoRpm');
+  if(r)r.textContent=Math.round(rpm)+' rpm';
+  let tr=document.getElementById('dynoThrottleRead');
+  if(tr)tr.textContent='Throttle '+Math.round(throttle)+'%';
+  let pr=document.getElementById('dynoPowerRead');
+  if(pr)pr.textContent=Math.round(hp)+' hp';
+  let note=document.getElementById('dynoNote');
+  if(note&&dynoSession&&dynoSession.running){
+    let remaining=Math.max(0,target-elapsed);
+    note.textContent='Loaded pull running: '+elapsed.toFixed(1)+'s elapsed. Hold a smooth wide-open throttle; estimated pull time about '+target.toFixed(0)+'s.';
+  }
+}
+function finishDynoRun(){dynoSession.running=false;let samples=dynoSession.samples;let runNo=(dynoSession.runs?dynoSession.runs.length:0)+1;let avgThrottle=samples.reduce((s,x)=>s+x.throttle,0)/Math.max(1,samples.length);let smooth=samples.reduce((s,x)=>s+x.swing,0)/Math.max(1,samples.length);let peakHp=Math.max(...samples.map(x=>x.hp));let peakTorque=Math.max(...samples.map(x=>x.torque));let throttleQuality=Math.max(.75,1-Math.abs(avgThrottle-92)/140);let smoothQuality=Math.max(.82,1-smooth/95);let quality=Math.max(.72,Math.min(1.18,throttleQuality*smoothQuality+0.11));if(runNo===1){quality=Math.min(.98,quality);peakHp*=.965;peakTorque*=.965;}else{let tuneProgress=Math.min(.10,.035*(runNo-1));quality=Math.min(1.18,quality+tuneProgress);peakHp*=1+(tuneProgress*.55);peakTorque*=1+(tuneProgress*.35);}let result={runNo,baseline:runNo===1,quality,peakHp,peakTorque,curve:samples.map((x,i)=>i%3===0?{rpm:Math.round(x.rpm),hp:Math.round(runNo===1?x.hp*.965:x.hp*(1+Math.min(.10,.035*(runNo-1))*.55)),torque:Math.round(runNo===1?x.torque*.965:x.torque*(1+Math.min(.10,.035*(runNo-1))*.35))}:null).filter(Boolean)};dynoSession.last=result;if(!dynoSession.runs)dynoSession.runs=[];dynoSession.runs.push(result);if(!dynoSession.best||result.quality>dynoSession.best.quality)dynoSession.best=result;let best=dynoSession.best===result;document.getElementById('dynoRunBtn').disabled=false;document.getElementById('dynoRunBtn').textContent=runNo===1?'Run tuning pull':'Run again';let applyBtn=document.getElementById('dynoApplyLastBtn');if(applyBtn)applyBtn.disabled=false;document.getElementById('dynoAcceptBtn').disabled=false;document.getElementById('dynoNote').textContent=runNo===1?'Baseline pull complete. You can apply these changes now, or keep tuning to chase a cleaner curve.':best?'Best pull so far. Apply this run, apply the best run, or run again to chase more.':'This pull is usable, though your best curve is still stronger.';renderDynoResults();}
+function renderDynoResults(){let box=document.getElementById('dynoResults');if(!box||!dynoSession)return;let last=dynoSession.last,best=dynoSession.best;if(!last){box.innerHTML='';return;}let lastTitle=last.baseline?'Baseline Pull - non optimised':'Last Tuning Pull';let lastNote=last.baseline?'This is the first baseline result before the tune is properly dialled in.':'This run can be applied now if you like the curve.';box.innerHTML=`<div class="dynoResult ${last===best?'best':''}"><h3>${lastTitle}</h3><p>Peak: <b>${Math.round(last.peakHp)} hp</b> / ${Math.round(last.peakTorque)} Nm</p><p>Tune quality: <b>${Math.round(last.quality*100)}%</b></p><p class="small muted">${lastNote}</p></div><div class="dynoResult best" style="margin-top:8px"><h3>Best Available Tune</h3><p>Peak: <b>${Math.round(best.peakHp)} hp</b> / ${Math.round(best.peakTorque)} Nm</p><p>Quality if applied: <b>${Math.round(best.quality*100)}%</b></p></div>`;}
+function drawDynoGraph(samples){let canvas=document.getElementById('dynoCanvas');if(!canvas)return;if(canvas.clientWidth){canvas.width=Math.max(320,Math.floor(canvas.clientWidth*window.devicePixelRatio));canvas.height=Math.max(220,Math.floor(canvas.clientHeight*window.devicePixelRatio));}let ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;ctx.clearRect(0,0,w,h);ctx.fillStyle='#05070a';ctx.fillRect(0,0,w,h);ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=1;for(let i=1;i<6;i++){let y=i*h/6;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}ctx.fillStyle='rgba(255,255,255,.55)';ctx.font='12px system-ui';ctx.fillText('Power curve',14,20);if(!samples||samples.length<2){ctx.fillText('Run the car to draw a curve',14,44);return;}let maxHp=Math.max(80,...samples.map(x=>x.hp));let minRpm=samples[0].rpm,maxRpm=samples[samples.length-1].rpm;ctx.strokeStyle='#ffb02e';ctx.lineWidth=3;ctx.beginPath();samples.forEach((x,i)=>{let px=(x.rpm-minRpm)/Math.max(1,maxRpm-minRpm)*w;let py=h-((x.hp/maxHp)*(h-34))-18;if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);});ctx.stroke();ctx.strokeStyle='#8ecae6';ctx.lineWidth=2;ctx.beginPath();samples.forEach((x,i)=>{let px=(x.rpm-minRpm)/Math.max(1,maxRpm-minRpm)*w;let py=h-((x.torque/Math.max(100,...samples.map(s=>s.torque)))*(h-34))-18;if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);});ctx.stroke();ctx.fillStyle='#ffb02e';ctx.fillText('HP',w-54,22);ctx.fillStyle='#8ecae6';ctx.fillText('Torque',w-54,40);}
+function acceptDynoTune(which='best'){if(!dynoSession||!state.car)return;let chosen=which==='last'?dynoSession.last:dynoSession.best;if(!chosen)return;let u=dynoSession.upgrade,c=state.car;if(state.money<u.cost){alert('Not enough money to pay for the dyno tune.');return;}let before=snapshot();state.money-=u.cost;applyUpgradeToCar(c,u,chosen);state.day+=u.day;state.workshopDayUsed=null;let chosenLabel=which==='last'?'this dyno run':'the best dyno run';logChange('Applied '+chosenLabel+' to '+c.name+'. The tune-sensitive build is now sorted and the curve has been saved.',before,'money',[`Dyno tune ${fmt(u.cost)}`,`Run ${chosen.runNo}${chosen.baseline?' baseline':''}`,`Tune quality ${Math.round((c.dynoQuality||1)*100)}%`,`Peak dyno pull ${Math.round(chosen.peakHp)} hp`,`Workshop time ${u.day} day`]);dynoSession=null;processMarketDay();state.screen='garage';render();}
+
+function normaliseState(){
+  if(!state.completedEvents)state.completedEvents={};
+  if(!state.bestETs)state.bestETs={};
+  if(state.pendingArrival===undefined)state.pendingArrival=null;
+  if(state.workshopDayUsed===undefined)state.workshopDayUsed=null;
+  normaliseAccounting();
+  if(state.car)calculateBuildEffects(state.car);
+  if(state.lastEvent){
+    if(state.lastEvent.raceHistory===undefined)state.lastEvent.raceHistory={};
+    if(state.lastEvent.roundNo===undefined)state.lastEvent.roundNo=0;
+    if(state.lastEvent.lineup===undefined)state.lastEvent.lineup=[];
+    if(state.lastEvent.queueIndex===undefined)state.lastEvent.queueIndex=0;
+    if(state.lastEvent.selectedOpponentIndex===undefined)state.lastEvent.selectedOpponentIndex=null;
+    if(state.lastEvent.eventAccounting===undefined)state.lastEvent.eventAccounting=[];
+    if(state.lastEvent.raceReports===undefined)state.lastEvent.raceReports=[];
+    if(state.lastEvent.eventStartMoney===undefined)state.lastEvent.eventStartMoney=state.money;
+    if(state.lastEvent.eventStartRespect===undefined)state.lastEvent.eventStartRespect=state.respect;
+  }
+}
+function eventById(id){return EVENT_CALENDAR.find(e=>e.id===id)||EVENT_CALENDAR[0];}
+function daysUntil(ev){let r=(ev.offset-state.day)%ev.interval;if(r<0)r+=ev.interval;return r;}
+function eventTotalCost(ev,kind){return (kind==='race'?ev.entryFee:ev.spectatorFee)+(ev.travelCost||0);}
+function canEnterEvent(ev,kind){
+  if(hasEventSession())return false;
+  if(daysUntil(ev)!==0)return false;
+  // Respect gates racer entry only. Spectator access is open if the event is running and the player can afford ticket + travel.
+  if(kind==='race'&&state.respect<ev.reqRespect)return false;
+  if(kind==='race'&&!state.car)return false;
+  return state.money>=eventTotalCost(ev,kind);
+}
+function eventStatusText(ev){
+  let d=daysUntil(ev);
+  let timing=d===0?'Running today':'In '+d+' day'+(d===1?'':'s');
+  if(state.respect<ev.reqRespect)return timing+' / racer entry needs Respect '+ev.reqRespect;
+  return timing;
+}
+function calendarCard(ev){
+  let d=daysUntil(ev), racerLocked=state.respect<ev.reqRespect, today=d===0, active=hasEventSession(), raceCost=eventTotalCost(ev,'race'), specCost=eventTotalCost(ev,'spectate');
+  let completed=state.completedEvents&&state.completedEvents[ev.id]?state.completedEvents[ev.id]:0;
+  let cls=racerLocked?'listing lockedEvent':today?'listing owned':'listing';
+  return '<div class="'+cls+'"><div class="row"><h3>'+ev.name+'</h3><span class="pill"><b>'+ev.tier+'</b></span></div>'+
+    '<p class="muted small">'+ev.venue+'</p>'+
+    '<p>'+ev.desc+'</p>'+
+    '<div class="row"><span class="'+(racerLocked?'warning':today?'goodText':'warning')+'"><b>'+eventStatusText(ev)+'</b></span><span class="small muted">Every '+ev.interval+' days</span></div>'+
+    '<div class="hr"></div>'+
+    '<p class="small">Racer Respect required: <b>'+ev.reqRespect+'</b> | Win payout: <b>'+fmt(ev.winPayout)+'</b> | Travel/logistics: <b>'+fmt(ev.travelCost||0)+'</b></p>'+
+    '<p class="small muted">Racer total: '+fmt(raceCost)+' | Spectator total: '+fmt(specCost)+' | Completed: '+completed+'</p>'+
+    (racerLocked?'<p class="small warning">Racer entry locked. Spectator entry is still available when this event is running.</p>':'')+
+    (active?'<p class="small warning">You have already entered an event today. Travel is closed until that event is finished.</p>':'')+
+    '<div class="btns"><button class="btn" onclick="travelToEvent(\''+ev.id+'\')" '+((today&&!active)?'':'disabled')+'>Drive out / arrive</button></div>'+
+  '</div>';
+}
+function event(){normaliseState();let spectatorToday=EVENT_CALENDAR.filter(e=>daysUntil(e)===0);let racerToday=spectatorToday.filter(e=>state.respect>=e.reqRespect);let active=hasEventSession();return `<section class="card"><div class="row"><div><h2>Event Calendar</h2><p class="muted">Travel to a running event first, then decide on arrival whether to drive or spectate. Respect gates racer entry, not spectating. Higher events still cost more to attend because spectator price includes ticket plus travel/logistics.</p></div><span class="pill">Today: <b>Day ${state.day}</b></span></div>${active?`<div class="listing owned"><h3>Already at an event</h3><p>You have already paid into <b>${state.lastEvent.eventName||'the current event'}</b> today. Finish that session before entering another event or paying another entry fee.</p><button class="btn" onclick="show('currentEvent')">Go to current event</button></div><div class="hr"></div>`:''}${spectatorToday.length?`<p class="goodText">Events running today: ${spectatorToday.map(e=>e.name).join(', ')}</p>`:`<p class="warning">No event is running today. Wait through classifieds, upgrade work, or advance after your next event.</p>`}${racerToday.length?`<p class="small muted">Racer entry available today: ${racerToday.map(e=>e.name).join(', ')}</p>`:`<p class="small warning">You may still spectate running events even when racer entry is locked.</p>`}<div class="grid">${EVENT_CALENDAR.map(calendarCard).join('')}</div></section>`}
+function currentEvent(){normaliseState();let e=state.lastEvent;if(!e)return `<section class="card"><h2>Current Event</h2><p class="muted">You have not entered an event today.</p><button class="btn" onclick="show('event')">Open event calendar</button></section>`;let leaveTop=(!e.over&&!e.dayAdvanced)?`<button class="btn danger" onclick="endEvent()">Leave event</button>`:'';return `<section class="card"><div class="row"><div><h2>Current Event</h2><p class="muted">This is the venue session you have already paid for today. The calendar is separate so you do not accidentally pay another entry fee.</p></div><div class="btns"><button class="btn secondary" onclick="show('event')">Back to calendar</button>${leaveTop}</div></div>${eventPanel()}</section>`}
+
+function crowdAtmosphere(busy){
+  if(!busy)return 'People are milling around the pits.';
+  if(busy.name==='Quiet night')return 'The place feels quiet, with room in the lanes and a relaxed crowd.';
+  if(busy.name==='Normal night')return 'There is a healthy crowd and a steady stream of cars heading to the lanes.';
+  if(busy.name==='Busy night')return 'The venue is lively, the pits are full, and plenty of people are watching the lanes.';
+  return 'It is packed. The car park is heaving and the staging lanes are stacked deep.';
+}
+
+function hashSeed(str){let n=0;for(let i=0;i<str.length;i++)n=(n*31+str.charCodeAt(i))>>>0;return n;}
+function seededPick(arr,seed){return arr[Math.abs(seed)%arr.length]}
+const EVENT_STORIES={
+  heathcote_legal:{
+    travel:['You roll out past scrub and paddocks, with that distinct country-night feel building as the track gets closer.','The road out feels easy and familiar, and you can almost imagine hearing open headers before you get there.'],
+    venue:['The Heathcote crowd has a grassroots feel - trailers, street cars, and people happy to talk setups.','It has that country drag-strip atmosphere: practical cars, folding chairs, and plenty of people comparing timeslips.'],
+    turnout:['There is a strong mix of budget street cars and backyard-built combinations tonight.','You spot plenty of learner-level street builds, a few serious regulars, and lots of people just enjoying some passes.'],
+    notes:['A few people are talking about tyre pressures and short-shifting to keep the car happy.','There is a relaxed vibe in the pits, with plenty of cars lining up for repeat runs.'],
+    weather:[
+      {label:'Cool clear country air',temp:12,track:'The air is crisp and the track looks friendly for a clean launch.',sky:'Clear above the paddocks.'},
+      {label:'Mild and dry',temp:18,track:'The track surface is dry and settled, with a slightly softer feel in the air.',sky:'A calm mild evening.'},
+      {label:'Warm inland night',temp:22,track:'The surface feels warm and stable, which should keep the lanes consistent.',sky:'A warm evening hanging on after sunset.'},
+      {label:'Chilly dense-air night',temp:9,track:'The air feels dense and grippy, the kind of night people expect solid numbers from.',sky:'A cold clean sky with barely any cloud.'}
+    ]
+  },
+  calder_test:{
+    travel:['You cut through the outer suburbs and industrial roads, heading toward the strip with a more hard-edged city feel.','The run to Calder feels closer to the city scene - shorter, sharper, and full of people making last-minute setup decisions.'],
+    venue:['Calder feels more serious, with people studying the lanes and timing boards between passes.','The mood is more technical here, with plenty of modified street cars and people paying attention to the numbers.'],
+    turnout:['There is a solid turbo street-car presence, plus a few cars that clearly come here to test properly.','You can see a stronger field than the local beginner nights, and a few tidy builds look ready to lean on them hard.'],
+    notes:['People are swapping notes on boost, converter behaviour, and what the track is doing tonight.','You hear plenty of talk about consistency, reaction time, and whether the lane choice matters.'],
+    weather:[
+      {label:'Cool metro evening',temp:14,track:'The surface is dry and the cool air should help the stronger turbo cars.',sky:'A cool evening under clear city skies.'},
+      {label:'Breezy and mild',temp:17,track:'There is a light breeze across the venue, though the track itself stays dry and raceable.',sky:'Some movement in the air, no real threat to racing.'},
+      {label:'Still crisp night',temp:11,track:'The air is settled and the strip looks good for tidy, repeatable passes.',sky:'A still night with clean air.'},
+      {label:'Warm suburban night',temp:20,track:'The lanes feel warm and predictable, with no drama in the conditions.',sky:'A warmer evening hanging over the western suburbs.'}
+    ]
+  },
+  mildura_regional:{
+    travel:['The drive stretches out through regional roads, and the landscape opens up into a more remote, red-dirt feel.','You head further north and the trip starts feeling like a proper outing rather than a quick local run.'],
+    venue:['Mildura has that regional-meet feeling - people have travelled, and the crowd is making a night of it.','The venue feels like a big regional gathering, with a mix of locals and people who have driven in from a fair way out.'],
+    turnout:['There is a healthy mix of tough street cars, country-built utes, and a few surprisingly serious combinations.','You notice plenty of practical street cars, but also several builds that look sharper than their owners let on.'],
+    notes:['Dust hangs lightly around the outer car park, while the racing surface itself stays clean and dry.','There is a proper trip-away vibe in the staging area, with people setting up for a long night.'],
+    weather:[
+      {label:'Dry warm inland air',temp:24,track:'The air is dry and the track looks consistent, though the warm surface may soften the launch a touch.',sky:'A warm inland evening with dry air.'},
+      {label:'Hot lingering heat',temp:28,track:'The surface is carrying heat from the day, which should keep conditions steady but not especially sharp.',sky:'The daytime heat is still hanging around after sunset.'},
+      {label:'Cooling desert-style night',temp:17,track:'The temperature is dropping quickly now, and the lanes are starting to come around nicely.',sky:'The sky opens up and the air cools fast once the sun is gone.'},
+      {label:'Dry dusty evening',temp:21,track:'The surrounding ground feels dusty, but the prepared racing surface stays clean and race-ready.',sky:'A dry regional night with a faint dusty feel.'}
+    ]
+  },
+  state_grudge:{
+    travel:['The trip has a serious feel to it - still local enough to manage, but with the sense that reputations matter more tonight.','You head out knowing this is the kind of night where people care who they line up against and who sees it.'],
+    venue:['This one feels more serious and a bit more watchful, with crews and regulars paying close attention to who is quick.','There is a grudge-night edge here: people are friendly enough, but they are absolutely keeping score.'],
+    turnout:['There are plenty of serious street builds here, and more than a few cars look like they are not just out for a casual pass.','The pits are full of sharper local builds, with turbo sixes, V8s, and well-sorted street cars all in the mix.'],
+    notes:['You can feel the social side of racing a bit more here - who wins, who backs it up, and who gets talked about later.','The fence line is lively, with people clearly watching the pairings as much as the times.'],
+    weather:[
+      {label:'Cool Victorian evening',temp:13,track:'The strip looks race-ready and the cooler air should help the better-sorted cars.',sky:'A cool evening with clean air.'},
+      {label:'Mild with light crosswind',temp:16,track:'A small crosswind moves through the venue, but conditions still look good for racing.',sky:'Some movement in the breeze, nothing enough to stop the night.'},
+      {label:'Cold and crisp',temp:8,track:'The air feels sharp and the lanes could reward cars that put the power down cleanly.',sky:'A cold Victorian night settling in.'},
+      {label:'Cloud cover holding heat',temp:15,track:'The air is slightly softer under the cloud, though the surface remains dry and consistent.',sky:'Cloud overhead, but the track stays dry.'}
+    ]
+  },
+  bend_open:{
+    travel:['The interstate haul makes the whole thing feel bigger - more commitment, more cost, and a stronger sense that the night matters.','You settle in for the longer drive and it starts to feel like a proper campaign, not just a quick local outing.'],
+    venue:['The Bend feels polished and open, with a more professional atmosphere and a stronger interstate presence.','There is a big-event feel here - open space, stronger machinery, and plenty of people who have made the trip for a reason.'],
+    turnout:['You spot plenty of sharp late-model street cars, some well-sorted turbo builds, and a few combinations that clearly travel often.','The field looks tougher overall, with plenty of interstate cars and a more polished feel to the pit area.'],
+    notes:['There is more of a destination-event vibe here, and people look prepared rather than casual.','The staging lanes look busy with capable cars, and even the quieter conversations feel more serious.'],
+    weather:[
+      {label:'Cool open-plains breeze',temp:13,track:'There is a light breeze across the open venue, but the track surface looks excellent.',sky:'Cool air moving across the plains.'},
+      {label:'Crisp SA evening',temp:11,track:'The cool dry air should make the fast cars feel especially sharp tonight.',sky:'A crisp and very clear evening.'},
+      {label:'Mild and settled',temp:18,track:'Conditions look steady and professional, with a clean dry surface and calm air.',sky:'A mild settled night.'},
+      {label:'Warm with crosswind',temp:20,track:'A bit of wind moves across the venue, though the prepared lanes still look tidy and predictable.',sky:'Warm air and a noticeable breeze.'}
+    ]
+  },
+  sydney_challenge:{
+    travel:['The interstate trip up to Sydney feels like a major step, the sort of drive that makes the game world open up a bit.','It takes longer, costs more, and feels far more serious - exactly the kind of trip you make when you want a bigger stage.'],
+    venue:['Sydney feels busy and sharp, with a big crowd and a strong mix of polished street builds.','There is a national-level energy here: more people, more noise, and more cars that look like they are built to prove a point.'],
+    turnout:['The field looks deep, with strong late-model builds, plenty of turbo cars, and lots of confident crews.','This is one of the tougher scenes so far, and even the ordinary-looking cars seem like they might have something in reserve.'],
+    notes:['You get that feeling of being a little further from home, with a crowd that has its own rhythm and its own favourites.','The pits feel bigger and busier, with people moving quickly and plenty of interest around the quick cars.'],
+    weather:[
+      {label:'Humid coastal night',temp:22,track:'The air is heavier than inland, and the track feels warm and sticky underfoot.',sky:'A humid coastal evening.'},
+      {label:'Mild sea breeze',temp:19,track:'A gentle sea breeze moves the air around, while the lanes remain dry and well-prepared.',sky:'Mild coastal conditions with a light breeze.'},
+      {label:'Sticky warm air',temp:24,track:'The heavier air takes a little edge off things, but the surface still looks good for a proper pass.',sky:'Warm and a touch sticky after dark.'},
+      {label:'Cool clear coastal evening',temp:16,track:'The air is cleaner and cooler tonight, which could help the stronger cars show a bit more.',sky:'A clear coastal night with surprisingly fresh air.'}
+    ]
+  }
+};
+function eventSeed(ev,day=state.day){return hashSeed((ev.id||ev.name)+'|'+day+'|'+(ev.offset||0)+'|'+(ev.travelCost||0));}
+function weatherForEvent(ev,day=state.day){let data=EVENT_STORIES[ev.id]||EVENT_STORIES.heathcote_legal;return seededPick(data.weather,eventSeed(ev,day));}
+function eventNarrative(ev,busy,day=state.day){
+  let data=EVENT_STORIES[ev.id]||EVENT_STORIES.heathcote_legal;
+  let seed=eventSeed(ev,day);
+  let crowd = crowdAtmosphere(busy);
+  if(state.respect>=25) crowd += ' People clock you a little more quickly now that you have some respect behind your name.';
+  if((busy&&busy.name)==='Packed night') crowd += ' Spectators are stacked deep along the fence.';
+  return {
+    travel: seededPick(data.travel,seed+1),
+    venue: seededPick(data.venue,seed+2),
+    turnout: seededPick(data.turnout,seed+3),
+    note: seededPick(data.notes,seed+4),
+    crowd,
+    weather: weatherForEvent(ev,day)
+  };
+}
+function finishTravel(){
+  if(travelTimer){clearTimeout(travelTimer);travelTimer=null;}
+  if(!state.pendingArrival)return;
+  state.screen='arrival';
+  render();
+}
+function cancelArrival(){
+  if(travelTimer){clearTimeout(travelTimer);travelTimer=null;}
+  state.pendingArrival=null;
+  state.screen='event';
+  render();
+}
+function travelToEvent(eventId='heathcote_legal'){
+  normaliseState();
+  let ev=eventById(eventId);
+  if(!ev||hasEventSession()||daysUntil(ev)!==0)return;
+  let busy=eventProfile(ev);
+  let field=makeOpponents(busy.cars,ev);
+  let raceSlots=pickRaceSlots(field,busy.raceSlots);
+  let story=eventNarrative(ev,busy,state.day);
+  state.pendingArrival={eventId:ev.id,eventName:ev.name,eventDef:ev,busy,totalCars:field.length,opponents:field,raceSlots,story,weather:story.weather};
+  state.screen='travel';
+  render();
+  if(travelTimer){clearTimeout(travelTimer);}
+  let delay=2200+Math.min(1200,Math.round((ev.travelCost||0)*.8));
+  travelTimer=setTimeout(finishTravel,delay);
+}
+function travel(){
+  let a=state.pendingArrival;
+  if(!a)return `<section class="card"><h2>Travel</h2><p class="muted">No trip is currently in progress.</p><button class="btn" onclick="show('event')">Back to calendar</button></section>`;
+  let ev=a.eventDef, story=a.story||eventNarrative(ev,a.busy,state.day), weather=a.weather||story.weather;
+  return `<section class="card"><h2>On the road</h2><p class="muted">You head out for <b>${ev.name}</b> at ${ev.venue}. ${story.travel}</p><div class="travelScene"><div class="travelGlow"></div><div class="travelInfo"><h3>${ev.tier} event</h3><p>${ev.desc}</p><p class="weatherLine">Conditions expected on arrival: ${weather.label}, about ${weather.temp}°C.</p><p class="small muted">${weather.sky} ${weather.track}</p><div class="travelStatLine"><span class="pill">Travel/logistics <b>${fmt(ev.travelCost||0)}</b></span><span class="pill">Potential win <b>${fmt(ev.winPayout)}</b></span><span class="pill">Racer respect <b>${ev.reqRespect}</b></span></div><p class="small muted" style="margin-top:12px">You will choose whether to drive or spectate once you arrive.</p></div><div class="travelDust">. . .</div><div class="travelCar">`+String.fromCodePoint(0x1F697)+`</div><div class="travelRoad"><div class="roadStripe"></div></div></div><div class="hr"></div><div class="btns"><button class="btn" onclick="finishTravel()">Arrive now</button><button class="btn secondary" onclick="cancelArrival()">Turn back</button></div></section>`;
+}
+function arrival(){
+  let a=state.pendingArrival;
+  if(!a)return `<section class="card"><h2>Arrival</h2><p class="muted">You are not currently arriving at an event.</p><button class="btn" onclick="show('event')">Back to calendar</button></section>`;
+  let ev=a.eventDef, raceCost=eventTotalCost(ev,'race'), specCost=eventTotalCost(ev,'spectate');
+  let story=a.story||eventNarrative(ev,a.busy,state.day), weather=a.weather||story.weather;
+  let racerLocked=state.respect<ev.reqRespect;
+  let canRace=!!state.car && !racerLocked && state.money>=raceCost;
+  let canSpectate=state.money>=specCost;
+  return `<section class="card"><div class="row"><div><h2>Arrival: ${ev.name}</h2><p class="muted">${ev.venue}</p></div><span class="pill"><b>${a.busy.name}</b></span></div><div class="arrivalBanner"><p><b>${story.crowd}</b></p><p class="weatherLine">Weather: ${weather.label}, around ${weather.temp}°C.</p><p class="muted">${weather.sky} ${weather.track}</p><p class="muted">${a.totalCars} cars are on site. About ${a.raceSlots.length} look like realistic call-ups for your current setup, while the rest give you more runs to watch, scout and size up.</p></div><div class="hr"></div><div class="sceneGrid"><div class="storyCard"><h3>Venue feel</h3><p>${story.venue}</p><p class="small muted">${story.note}</p></div><div class="storyCard"><h3>Turnout</h3><p>${story.turnout}</p><p class="small muted">${crowdAtmosphere(a.busy)}</p></div></div><div class="hr"></div><div class="grid"><div class="listing"><h3>Drive tonight</h3><p class="muted">Enter the lanes yourself and unlock your available runs for the night.</p><p class="small">Total to race: <b>${fmt(raceCost)}</b> (${fmt(ev.entryFee)} entry + ${fmt(ev.travelCost||0)} travel)</p><p class="small muted">Runs available tonight: ${a.busy.runs}</p>${!state.car?'<p class="small warning">You need to own a car before you can race.</p>':''}${racerLocked?'<p class="small warning">Racer entry unlocks at Respect '+ev.reqRespect+'.</p>':''}${state.money<raceCost?'<p class="small warning">Not enough cash to race tonight.</p>':''}<button class="btn" onclick="confirmArrival('race')" ${canRace?'':'disabled'}>Drive / enter as racer</button></div><div class="listing"><h3>Spectate tonight</h3><p class="muted">Walk the fence line, watch passes, scout the field, and place side bets when allowed.</p><p class="small">Total to spectate: <b>${fmt(specCost)}</b> (${fmt(ev.spectatorFee)} ticket + ${fmt(ev.travelCost||0)} travel)</p><p class="small muted">Watch chances tonight: ${a.busy.watch}</p>${state.money<specCost?'<p class="small warning">Not enough cash to spectate tonight.</p>':'<p class="small goodText">Spectator entry is open regardless of Respect.</p>'}<button class="btn secondary" onclick="confirmArrival('spectate')" ${canSpectate?'':'disabled'}>Spectate</button></div></div><div class="hr"></div><div class="btns"><button class="btn secondary" onclick="cancelArrival()">Leave / back to calendar</button></div></section>`;
+}
+function confirmArrival(kind){
+  normaliseState();
+  let a=state.pendingArrival;
+  if(!a)return;
+  let ev=a.eventDef;
+  let fee=eventTotalCost(ev,kind);
+  if(kind==='race' && (!state.car || state.respect<ev.reqRespect))return;
+  if(state.money<fee)return;
+  let before=snapshot();
+  state.money-=fee;
+  state.lastEvent={kind,eventId:ev.id,eventName:ev.name,eventDef:ev,busy:a.busy,totalCars:a.totalCars,runsLeft:kind==='race'?a.busy.runs:0,watchesLeft:a.busy.watch,opponents:a.opponents,raceSlots:a.raceSlots,weather:a.weather,story:a.story,missed:0,over:false,dayAdvanced:false,raceHistory:{},roundNo:0,lineup:[],queueIndex:0,selectedOpponentIndex:null,eventStartMoney:before.money,eventStartRespect:before.respect,eventAccounting:[],raceReports:[]};
+  if(kind==='spectate')prepareSpectatorRound(false);
+  state.pendingArrival=null;
+  state.screen='currentEvent';
+  logChange(`Arrived at ${ev.name} and entered as ${kind==='race'?'a racer':'a spectator'}: ${a.busy.name}. ${a.totalCars} cars are in the lanes/pits.`,before,'event',[`Entry ${fmt(kind==='race'?ev.entryFee:ev.spectatorFee)}`,`Travel/logistics ${fmt(ev.travelCost||0)}`,`Total cost ${fmt(fee)}`,`Conditions ${a.weather.label} / ${a.weather.temp}C`, `Runs available ${kind==='race'?a.busy.runs:0}`,`Watch chances ${a.busy.watch}`,`Raceable cars ${a.raceSlots.length}`,(kind==='spectate'&&state.respect<ev.reqRespect)?`Racer entry locked until Respect ${ev.reqRespect}`:''].filter(Boolean));
+  render();
+}
+
+function eventProfile(ev=EVENT_CALENDAR[0]){let roll=Math.random();let base=roll<.25?{name:'Quiet night',runs:10,raceSlots:4,cars:18,watch:18}:roll<.6?{name:'Normal night',runs:6,raceSlots:6,cars:34,watch:30}:roll<.87?{name:'Busy night',runs:4,raceSlots:8,cars:56,watch:44}:{name:'Packed night',runs:2,raceSlots:8,cars:74,watch:58};base.cars=Math.round(base.cars*(ev.fieldMult||1));base.watch=Math.round(base.watch*(ev.fieldMult||1));base.raceSlots=Math.min(base.raceSlots+Math.floor((ev.reqRespect||0)/10),14);return base;}
+function startEvent(kind,eventId='heathcote_legal'){travelToEvent(eventId);}
+function makeOpponents(n,ev=null){let pool=CARS.filter(c=>c.price<34000);let names=['Mick','Sarah','Davo','Jess','Rob','Tayla','Chris','Ari','Ben','Mia','Noah','Eli','Zoe','Jay','Sam','Alex','Riley','Casey'];return Array.from({length:n},(_,i)=>{let base=choice(pool);let trans=base.manual&&(!base.auto||Math.random()<.55)?'manual':'auto';let o=makeOwned(base,trans);let tier=i/n;let level=rand(.9,1.14)+(state.respect/260)+(tier>.75?rand(.02,.12):0)+(ev?ev.opponentBoost||0:0);o.power*=level;o.grip+=rand(-.035,.09)+(tier>.75?.025:0);if(Math.random()<.18){o.weight-=rand(25,90);o.mods.push('Light interior strip');}o.visible=visibleClues(o);o.label=tier>.88?'quick regular':tier>.7?'serious local':'local car';o.driver=choice(names);o.eventIndex=i;o.entryId=o.id+'_'+i+'_'+Math.random().toString(16).slice(2);return o;});}
+function perfIndex(c){let driveBonus=(c.drive==='AWD'||c.drive==='4WD')?1.035:1;let aeroPenalty=1-Math.max(0,(c.aero||.32)-.32)*.12;return (c.power/Math.max(700,c.weight))*(c.grip||.84)*driveBonus*aeroPenalty;}
+function pickRaceSlots(field,n){
+  if(!state.car){return field.slice(0,Math.min(n,field.length)).map((_,i)=>i)}
+  let playerScore=perfIndex(state.car);
+  let scored=field.map((o,i)=>({i,score:perfIndex(o),gap:Math.abs(perfIndex(o)-playerScore)}));
+  let matched=scored.slice().sort((a,b)=>a.gap-b.gap).slice(0,Math.min(n,field.length));
+  let obviouslySlower=scored.filter(x=>x.score<playerScore*.88);
+  let combined=[];
+  for(const item of [...matched,...obviouslySlower]){if(!combined.includes(item.i))combined.push(item.i)}
+  return combined.sort((a,b)=>a-b);
+}
+function completeEventNight(reason='The event night is over.',kind='event',details=[]){let e=state.lastEvent;if(!e||e.dayAdvanced)return;let summary=finaliseEventSummary(e);let before=snapshot();state.day++;e.dayAdvanced=true;e.over=true;let summaryDetails=summary?[`Cash net ${signedMoney(summary.cashNet)}`,`Respect net ${signedNumber(summary.respectNet,1)}`,`Races ${summary.raceCount}`,`Event P/L ${signedMoney(summary.cashNet)}`]:[];logChange(reason+' A new day begins.',before,kind,[...details,...summaryDetails]);if(state.pendingSale){completePendingSale(state.pendingSale.amount,state.pendingSale.buyer);return;}processMarketDay();}
+function finaliseEventSummary(e){normaliseAccounting();if(!e)return null;if(e.eventSummary)return e.eventSummary;let entries=e.eventAccounting||[];let cashIn=sumAccounting(entries,'cashDelta',x=>x.cashDelta>0);let cashOut=sumAccounting(entries,'cashDelta',x=>x.cashDelta<0);let respectIn=sumAccounting(entries,'respectDelta',x=>x.respectDelta>0);let respectOut=sumAccounting(entries,'respectDelta',x=>x.respectDelta<0);let summary={id:(e.eventId||'event')+'_'+(e.day||state.day)+'_'+Date.now(),season:seasonForDay(e.day||state.day),day:e.day||state.day,eventName:e.eventName||'Event',venue:e.eventDef?e.eventDef.venue:'',tier:e.eventDef?e.eventDef.tier:'',kind:e.kind||'event',startMoney:e.eventStartMoney!==undefined?e.eventStartMoney:state.money,startRespect:e.eventStartRespect!==undefined?e.eventStartRespect:state.respect,endMoney:state.money,endRespect:state.respect,cashIn,cashOut,cashNet:state.money-(e.eventStartMoney!==undefined?e.eventStartMoney:state.money),respectIn,respectOut,respectNet:state.respect-(e.eventStartRespect!==undefined?e.eventStartRespect:state.respect),raceCount:(e.raceReports||[]).length,winCount:(e.raceReports||[]).filter(r=>r.win).length,lossCount:(e.raceReports||[]).filter(r=>!r.win).length,raceReports:(e.raceReports||[]).slice(),entries:entries.slice()};e.eventSummary=summary;state.eventSummaries.push(summary);return summary;}
+function balanceTableRows(entries){if(!entries.length)return '<tr><td colspan="5" class="muted">No balance movements recorded.</td></tr>';return entries.map(x=>`<tr><td>Day ${x.day}</td><td>${x.kind}</td><td>${x.label}</td><td class="${x.cashDelta>=0?'goodText':'badText'}">${x.cashDelta?signedMoney(x.cashDelta):'-'}</td><td class="${x.respectDelta>=0?'goodText':'badText'}">${x.respectDelta?signedNumber(x.respectDelta,1):'-'}</td></tr>`).join('');}
+function eventSummaryHtml(summary){if(!summary)return '<p class="muted">No event summary available.</p>';let raceRows=summary.raceReports.length?summary.raceReports.map(r=>`<tr><td>${r.result}</td><td>${r.opponent}</td><td>${r.yourEt.toFixed(2)} @ ${r.yourTrap.toFixed(0)} km/h</td><td>${r.oppEt.toFixed(2)} @ ${r.oppTrap.toFixed(0)} km/h</td><td class="${r.cashDelta>=0?'goodText':'badText'}">${signedMoney(r.cashDelta)}</td><td class="goodText">${signedNumber(r.respectDelta,1)}</td></tr>`).join(''):'<tr><td colspan="6" class="muted">No personal races recorded.</td></tr>';return `<div class="arrivalBanner"><h3>End of Event Summary</h3><div class="raceHud"><div class="gauge"><div class="muted">Cash start</div><div class="value">${fmt(summary.startMoney)}</div></div><div class="gauge"><div class="muted">Cash finish</div><div class="value">${fmt(summary.endMoney)}</div></div><div class="gauge"><div class="muted">Event cash P/L</div><div class="value ${summary.cashNet>=0?'goodText':'badText'}">${signedMoney(summary.cashNet)}</div></div><div class="gauge"><div class="muted">Respect net</div><div class="value ${summary.respectNet>=0?'goodText':'badText'}">${signedNumber(summary.respectNet,1)}</div></div></div><div class="hr"></div><h3>Cash balance sheet</h3><p class="small muted">Income ${fmt(summary.cashIn)} / Costs ${fmt(Math.abs(summary.cashOut))} / Net <b>${signedMoney(summary.cashNet)}</b></p><h3>Respect balance sheet</h3><p class="small muted">Gained ${summary.respectIn.toFixed(1)} / Lost ${Math.abs(summary.respectOut).toFixed(1)} / Net <b>${signedNumber(summary.respectNet,1)}</b></p><div class="hr"></div><h3>Race report</h3><table style="width:100%;border-collapse:collapse"><thead><tr><th align="left">Result</th><th align="left">Opponent</th><th align="left">Your run</th><th align="left">Opponent run</th><th align="left">Cash</th><th align="left">Respect</th></tr></thead><tbody>${raceRows}</tbody></table></div>`;}
+function visibleClues(o){let clues=[];if(o.grip>.93)clues.push('serious tyres');else if(o.grip>.87)clues.push('good street tyres');else clues.push('street tyres');if(o.power>carById(o.id)?.power*1.08)clues.push('non-factory exhaust');if(o.asp==='turbo'&&o.power>230)clues.push('possible intercooler');if(o.weight<carById(o.id)?.weight-25)clues.push('looks stripped');return clues.join(', ')}
+function ensureEventShape(e){if(!e)return;if(!e.raceSlots)e.raceSlots=(e.opponents||[]).slice(0,4).map((_,i)=>i);if(!e.totalCars)e.totalCars=(e.opponents||[]).length;if(e.dayAdvanced===undefined)e.dayAdvanced=false;}
+function opponentBrief(o){return `${o.driver?o.driver+' - ':''}${o.name} / ${o.type} / ${o.drive}`}
+function carClueLine(o){return `<p class="clue">Visible clues: ${o.visible||'street car, details unclear'}</p>`}
+function raceSlotCard(i){let e=state.lastEvent,o=e.opponents[i];let rec=getEventRaceRecord(o);let slower=state.car&&perfIndex(o)<perfIndex(state.car)*.88;let recText=rec.attempts?`<p class="small warning">Your record tonight: ${rec.wins}-${rec.losses} across ${rec.attempts} run${rec.attempts===1?'':'s'}. ${rec.wins?'Repeat-win rewards are reduced.':''}${rec.losses&&!rec.wins?' Revenge bonus available if you beat them.':''}</p>`:'';return `<div class="opponent"><h3>${o.name}</h3><p class="muted">${opponentBrief(o)}${slower?' / slower on paper':' / matched call-up'}</p>${carClueLine(o)}${recText}<div class="btns"><button class="btn" onclick="chooseRoundOpponent(${i})">Queue against this car</button>${state.watch.length<state.watchCap?`<button class="btn secondary" onclick="addWatch(${i})">Watch list</button>`:''}</div></div>`}
+function shuffleIndexes(arr){let out=arr.slice();for(let i=out.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]];}return out;}
+function buildNpcPairIndexes(e,exclude=[]){let banned=new Set(exclude);let indexes=shuffleIndexes(e.opponents.map((_,i)=>i).filter(i=>!banned.has(i)));let pairs=[];for(let i=0;i<indexes.length-1;i+=2){pairs.push([indexes[i],indexes[i+1]]);}return pairs;}
+function prepareSpectatorRound(shouldLog=true){let e=state.lastEvent;if(!e||e.over)return;let pairCount=Math.min(6,Math.max(2,Math.ceil((e.watchesLeft||0)/2)+2));let pairs=buildNpcPairIndexes(e).slice(0,pairCount);e.roundNo=(e.roundNo||0)+1;e.selectedOpponentIndex=null;e.lineup=pairs.map((p,idx)=>({type:'npc',aIdx:p[0],bIdx:p[1],done:false,label:'Race '+(idx+1)}));e.queueIndex=0;if(shouldLog)log(`The staging lanes reset for round ${e.roundNo}. The next race card is ready.`, 'event', [`Line-up races ${e.lineup.length}`]);}
+function chooseRoundOpponent(i){let e=state.lastEvent;if(!e||e.kind!=='race'||e.runsLeft<=0||!(e.raceSlots||[]).includes(i))return;e.roundNo=(e.roundNo||0)+1;e.selectedOpponentIndex=i;let pairs=buildNpcPairIndexes(e,[i]).slice(0,Math.min(5,Math.max(3,e.busy&&e.busy.name==='Quiet night'?3:5)));let lineup=pairs.map((p,idx)=>({type:'npc',aIdx:p[0],bIdx:p[1],done:false,label:'Race '+(idx+1)}));let slot=Math.min(lineup.length,Math.floor(Math.random()*(lineup.length+1)));lineup.splice(slot,0,{type:'player',opponentIndex:i,done:false,label:'Your race'});e.lineup=lineup;e.queueIndex=0;log(`You joined the round ${e.roundNo} race queue against ${e.opponents[i].name}.`, 'event', [`Queue position ${slot+1} of ${lineup.length}`, `Runs left ${e.runsLeft}`]);render();}
+function currentLineupEntry(){let e=state.lastEvent;if(!e||!e.lineup)return null;while(e.queueIndex<e.lineup.length&&e.lineup[e.queueIndex].done)e.queueIndex++;return e.lineup[e.queueIndex]||null;}
+function lineupProgressText(e){let total=(e.lineup||[]).length;let done=(e.lineup||[]).filter(r=>r.done).length;return `${Math.min(done+1,total)} / ${total}`;}
+function lineupQueueList(e){if(!e.lineup||!e.lineup.length)return '';return `<div class="grid">${e.lineup.map((r,idx)=>{let active=idx===e.queueIndex&&!r.done;let title=r.type==='player'?'Your lane call':`Race ${idx+1}`;let body=r.type==='player'?`You vs ${e.opponents[r.opponentIndex].name}`:`${e.opponents[r.aIdx].name} vs ${e.opponents[r.bIdx].name}`;return `<div class="listing ${active?'owned':''}"><h3>${r.done?'Done':active?'Next':'Queued'}: ${title}</h3><p class="small muted">${body}</p></div>`}).join('')}</div>`}
+function nextLineupPanel(e){let entry=currentLineupEntry();if(!entry){finishLineupRound();return `<p class="muted">The round has finished.</p>`;}let queue=`<p class="small muted">Queue progress: ${lineupProgressText(e)}. ${entry.type==='player'?'You are being called to the lanes.':'You can watch, bet on, or skip the next race.'}</p>`;if(entry.type==='player'){let o=e.opponents[entry.opponentIndex];return `<div class="arrivalBanner"><h3>Your race is next</h3><p><b>${state.car.name}</b> vs <b>${o.name}</b></p>${carClueLine(o)}<p class="small muted">This uses one of your available runs. Betting is only available on other cars' races, not your own lane call.</p><div class="btns"><button class="btn" onclick="startQueuedPlayerRace()">Stage for your run</button><button class="btn secondary" onclick="missQueuedPlayerRace()">Miss lane call</button></div></div>${queue}<div class="hr"></div>${lineupQueueList(e)}`}
+let a=e.opponents[entry.aIdx],b=e.opponents[entry.bIdx];let betDisabled=e.watchesLeft<=0||state.money<50||state.respect<10;let betReason=state.respect<10?'Betting unlocks at Respect 10.':e.watchesLeft<=0?'No watch chances left for betting.':state.money<50?'Need at least $50 to place a side bet.':'Pick stake and approach before this pair runs.';let betButton=`<button class="btn secondary" onclick="betNextLineupRace()" ${betDisabled?'disabled':''}>Bet on next race</button><p class="small ${betDisabled?'warning':'muted'}">${betReason}</p>`;return `<div class="arrivalBanner"><h3>Next race on the card</h3><p><b>${a.name}</b> vs <b>${b.name}</b></p><div class="grid"><div>${carClueLine(a)}<p class="small muted">${opponentBrief(a)}</p></div><div>${carClueLine(b)}<p class="small muted">${opponentBrief(b)}</p></div></div><div class="btns"><button class="btn" onclick="watchNextLineupRace(false)" ${e.watchesLeft<=0?'disabled':''}>Watch next race</button>${betButton}<button class="btn secondary" onclick="skipNextLineupRace()">Skip simulation</button></div></div>${queue}<div class="hr"></div>${lineupQueueList(e)}`}
+function finishLineupRound(){let e=state.lastEvent;if(!e||!e.lineup||!e.lineup.length)return;let completed=e.lineup.every(r=>r.done);if(!completed)return;e.lineup=[];e.queueIndex=0;e.selectedOpponentIndex=null;if(e.kind==='race'&&e.runsLeft>0){log(`Round ${e.roundNo} is complete. Choose your next opponent for the next call-up.`, 'event', [`Runs left ${e.runsLeft}`, `Watch chances ${e.watchesLeft}`]);}else if(e.watchesLeft>0){log(`Round ${e.roundNo} is complete. You can watch another race card or leave the event.`, 'event', [`Watch chances ${e.watchesLeft}`]);}else{log(`Round ${e.roundNo} is complete. You are out of runs/watch chances for tonight.`, 'event');}}
+function markCurrentLineupRaceComplete(){let e=state.lastEvent;if(!e||!e.lineup||!e.lineup.length)return;let entry=currentLineupEntry();if(entry)entry.done=true;e.queueIndex++;if(e.queueIndex>=e.lineup.length||!currentLineupEntry())finishLineupRound();}
+function startQueuedPlayerRace(){let e=state.lastEvent,entry=currentLineupEntry();if(!e||!entry||entry.type!=='player')return;renderRaceSetup(entry.opponentIndex);}
+function missQueuedPlayerRace(){let e=state.lastEvent,entry=currentLineupEntry();if(!e||!entry||entry.type!=='player')return;let before=snapshot();e.runsLeft=Math.max(0,e.runsLeft-1);e.missed=(e.missed||0)+1;let loss=e.missed===1?2:e.missed===2?4:8;state.respect=Math.max(-20,state.respect-loss);markCurrentLineupRaceComplete();logChange('You missed your lane call and lost the run opportunity.',before,'bad',[`Lane-call penalty -${loss} Respect`,`Runs left ${e.runsLeft}`]);render();}
+function skipNextLineupRace(){let e=state.lastEvent,entry=currentLineupEntry();if(!e||!entry||entry.type!=='npc')return;let a=e.opponents[entry.aIdx],b=e.opponents[entry.bIdx];let r1=simulate(a,null,true),r2=simulate(b,null,true);let winner=r1.et<r2.et?a:b;markCurrentLineupRaceComplete();log(`Skipped a non-watched race: ${a.name} ${r1.et.toFixed(2)} @ ${r1.trap.toFixed(0)} vs ${b.name} ${r2.et.toFixed(2)} @ ${r2.trap.toFixed(0)}. ${winner.name} won.`, 'event');render();}
+function watchNextLineupRace(betData=false){let e=state.lastEvent,entry=currentLineupEntry();if(!e||!entry||entry.type!=='npc'||e.watchesLeft<=0)return;e.watchesLeft--;let a=e.opponents[entry.aIdx],b=e.opponents[entry.bIdx];let r1=simulate(a,null,true),r2=simulate(b,null,true);renderWatchRun(a,b,r1,r2,betData||{bet:false});}
+function bettingRisk(stake,approach='discreet'){
+  let e=state.lastEvent||{};
+  let mod=approach==='quiet'?-0.04:approach==='obvious'?0.06:0;
+  let repMitigation=Math.min(.05,Math.max(0,(state.respect-10)*.002));
+  let racerRisk=e.kind==='race'?.06:0;
+  return Math.max(.02,Math.min(.45,.04+(stake/150)*.08+racerRisk+mod-repMitigation));
+}
+function updateBetPanel(){let stake=Number(document.getElementById('betStake')?.value)||50;let approach=document.getElementById('betApproach')?.value||'discreet';let read=document.getElementById('betStakeReadout');if(read)read.textContent=fmt(stake);let risk=document.getElementById('betRiskReadout');if(risk)risk.textContent=Math.round(bettingRisk(stake,approach)*100)+'%';}
+function betNextLineupRace(){let e=state.lastEvent,entry=currentLineupEntry();if(!e||!entry||entry.type!=='npc'||e.watchesLeft<=0||state.respect<10)return;let a=e.opponents[entry.aIdx],b=e.opponents[entry.bIdx];let maxStake=Math.min(150,Math.max(50,Math.floor(state.money/50)*50));let defaultStake=Math.min(100,maxStake);document.getElementById('screen').innerHTML=`<section class="card"><h2>Side bet: next queued race</h2><p class="muted">Set the stake and how visible you want the bet to be. Quiet bets reduce the chance of getting caught, obvious bets are quicker to arrange but draw attention.</p><div class="grid"><div class="listing choiceCard" onclick="selectBetPick('a')"><h3 id="pickAHead">${a.name}</h3>${carClueLine(a)}<p class="small muted">${opponentBrief(a)}</p><button class="btn" onclick="selectBetPick('a');event.stopPropagation();">Pick ${a.name}</button></div><div class="listing choiceCard" onclick="selectBetPick('b')"><h3 id="pickBHead">${b.name}</h3>${carClueLine(b)}<p class="small muted">${opponentBrief(b)}</p><button class="btn" onclick="selectBetPick('b');event.stopPropagation();">Pick ${b.name}</button></div></div><div class="rangeWrap"><div class="row"><label class="small muted">Stake</label><span class="bigStat" id="betStakeReadout">${fmt(defaultStake)}</span></div><input type="range" id="betStake" min="50" max="${maxStake}" step="50" value="${defaultStake}" oninput="updateBetPanel()"><p class="small muted">Early venue side bets are small. Larger stakes are easier to notice.</p></div><div class="listing"><label class="small muted">Risk mitigation approach</label><br><select class="select" id="betApproach" onchange="updateBetPanel()"><option value="quiet">Quiet / discreet with regulars</option><option value="discreet" selected>Normal side conversation</option><option value="obvious">Obvious / rushed</option></select><p class="small muted">Caught risk: <b id="betRiskReadout">${Math.round(bettingRisk(defaultStake,'discreet')*100)}%</b></p></div><div class="hr"></div><div class="btns"><button class="btn" id="confirmBetBtn" disabled onclick="placeLineupBet()">Choose a car first</button><button class="btn secondary" onclick="show('currentEvent')">Back to race card</button></div></section>`;state.pendingBetPick=null;topStats();currentPanel();}
+function selectBetPick(which){state.pendingBetPick=which;let btn=document.getElementById('confirmBetBtn');let e=state.lastEvent,entry=currentLineupEntry();if(!e||!entry)return;let car=which==='a'?e.opponents[entry.aIdx]:e.opponents[entry.bIdx];if(btn){btn.disabled=false;btn.textContent='Place bet on '+car.name;}let a=document.getElementById('pickAHead'),b=document.getElementById('pickBHead');if(a)a.className=which==='a'?'goodText':'';if(b)b.className=which==='b'?'goodText':'';}
+function showBetCaught(stake,pen,risk,picked,a,b,approach){document.getElementById('screen').innerHTML=`<section class="card"><h2 class="badText">Caught betting</h2><div class="arrivalBanner"><p><b>One of the event staff has noticed the side bet before the pair runs.</b></p><p>You get pulled aside, the bet is killed, and you are told your night is done. You lose the stake and take a Respect hit because you look careless around the venue.</p></div><div class="raceHud"><div class="gauge"><div class="muted">Stake lost</div><div class="value">${fmt(stake)}</div></div><div class="gauge"><div class="muted">Respect penalty</div><div class="value">-${pen}</div></div><div class="gauge"><div class="muted">Caught risk</div><div class="value">${Math.round(risk*100)}%</div></div><div class="gauge"><div class="muted">Approach</div><div class="value">${approach}</div></div></div><p class="small muted">Bet was on ${picked.name} in ${a.name} vs ${b.name}. Quiet approaches lower risk; larger stakes and betting while entered as a racer increase it.</p><div class="hr"></div><button class="btn" onclick="show('currentEvent')">View event summary</button></section>`;topStats();currentPanel();}
+function placeLineupBet(){let e=state.lastEvent,entry=currentLineupEntry();if(!e||!entry||entry.type!=='npc'||e.watchesLeft<=0||state.respect<10)return;let a=e.opponents[entry.aIdx],b=e.opponents[entry.bIdx];let stake=Number(document.getElementById('betStake')?.value)||50;stake=Math.min(150,Math.max(50,stake));if(stake>state.money){log('You do not have enough money for that side bet.','bad',[`Stake ${fmt(stake)}`]);show('currentEvent');return;}let approach=document.getElementById('betApproach')?.value||'discreet';let picked=state.pendingBetPick==='b'?b:a;let before=snapshot();state.money-=stake;let risk=bettingRisk(stake,approach);logChange('Placed side bet on the next queued race: '+a.name+' vs '+b.name+'.',before,'bet',[`Picked ${picked.name}`,`Stake ${fmt(stake)}`,`Approach ${approach}`,`Caught risk ${Math.round(risk*100)}%`]);if(Math.random()<risk){let penaltyBefore=snapshot();let pen=stake>=100?10:5;state.respect=Math.max(-20,state.respect-pen);logChange('Caught betting before the race ran. You lost the stake, lost Respect, and were removed from the event.',penaltyBefore,'bad',[`Penalty -${pen} Respect`,`Event ends immediately`]);completeEventNight('Event ended because you were caught betting.','bad',[`Stake lost ${fmt(stake)}`]);showBetCaught(stake,pen,risk,picked,a,b,approach);return;}watchNextLineupRace({bet:true,stake,picked,approach});}
+function eventPanel(){let e=state.lastEvent;ensureEventShape(e);normaliseState();if(e.over){let summary=e.eventSummary||finaliseEventSummary(e);return `<div class="hr"></div><p class="warning">Event night is over. ${e.dayAdvanced?'The calendar has moved on to Day '+state.day+'.':'Leave the event to move to the next day.'}</p>${eventSummaryHtml(summary)}`;}let weather=e.weather?`${e.weather.label}, about ${e.weather.temp}°C. ${e.weather.track}`:'';let scene=e.story&&e.story.note?e.story.note:'';let header=`<div class="hr"></div><div class="row"><h3>${e.eventName?e.eventName+' - ':''}${e.busy.name}</h3><span class="pill">Cars here: <b>${e.totalCars}</b></span><span class="pill">Raceable cars: <b>${e.raceSlots.length}</b></span><span class="pill">Runs left: <b>${e.runsLeft}</b></span><span class="pill">Watch chances: <b>${e.watchesLeft}</b></span></div><p class="muted">${weather} ${scene}</p>`;let body='';if(e.lineup&&e.lineup.length){body=nextLineupPanel(e);}else if(e.kind==='race'&&e.runsLeft>0){body=`<p class="muted">Choose your opponent for the next round. Once you join the queue, the event card runs in order. You can watch, bet on, or skip the non-player races before your call-up.</p><div class="grid">${(e.raceSlots||[]).map(raceSlotCard).join('')}</div>`;}else if(e.watchesLeft>0){body=`<p class="muted">You are not queued for more personal runs. You can still watch the next race card, scout, or bet if you have enough Respect.</p><button class="btn" onclick="prepareSpectatorRound(true)">Prepare next race card</button>`;}else{body=`<p class="warning">No runs or watch chances remain for tonight.</p>`;}return header+body+`<div class="hr"></div><button class="btn secondary" onclick="endEvent()">Leave event / advance to next day</button>`}
+function getOpponentRaceKey(o){return (o&&o.entryId)||((o&&o.id?o.id:'unknown')+'_'+(o&&o.eventIndex!==undefined?o.eventIndex:'x'))}
+function getEventRaceRecord(o){let e=state.lastEvent;if(!e){return {attempts:0,wins:0,losses:0}};if(!e.raceHistory)e.raceHistory={};let key=getOpponentRaceKey(o);if(!e.raceHistory[key])e.raceHistory[key]={attempts:0,wins:0,losses:0};return e.raceHistory[key];}
+function calculateRaceRewards(win,opponent,ev,record){let baseCash=win?(ev.winPayout||150):0;let strength=Math.max(0,(opponent.power-(state.car?state.car.power:opponent.power))/180);let baseRespect=(0.35+(win?0.75:0.15)+strength)*(ev.respectMult||1);let details=[];let cashMult=1,respectMult=1;if(record&&record.wins>0){cashMult=record.wins===1?.45:.25;respectMult=record.wins===1?.35:.15;details.push('Repeat-win diminishing returns');}if(win&&record&&record.losses>0&&record.wins===0){cashMult*=1.5;respectMult*=1.65;details.push('Revenge win bonus');}if(ev&&ev.tier==='Local'&&state.respect>=12){let localDiminish=Math.max(.35,1-((state.respect-12)*.035));respectMult*=localDiminish;details.push('Local Respect diminishing returns');}let cash=Math.round(baseCash*cashMult);let respect=Math.max(win?.35:.1,baseRespect*respectMult);return {cash,respect,details,cashMult,respectMult};}
+function opponentCard(o,i){return raceSlotCard(i)}
+function endEvent(){completeEventNight('You left the event.');}
+function addWatch(i){let o=state.lastEvent.opponents[i]; if(state.watch.length>=state.watchCap)return;state.watch.push({name:o.name,type:o.type,last:'Visible: '+o.visible});log('Added '+o.name+' to the watch list.');}
+function watchRace(i,bet){show('currentEvent');}
+function raceOpponent(i){let e=state.lastEvent;if(!e||!state.car||e.runsLeft<=0)return;renderRaceSetup(i);}
+function renderRaceSetup(i){
+  let opp=state.lastEvent.opponents[i], c=state.car;
+  let ideal=idealLaunch(c), stall=converterStall(c), idle=idleRpm(c);
+  let launchControls='';
+  if(c.trans==='manual'){
+    launchControls=`<div class="rangeWrap"><div class="row"><label class="small muted">Launch RPM</label><span class="bigStat" id="manualLaunchReadout">${ideal} rpm</span></div><input type="range" id="launchRpm" min="1200" max="${c.red}" step="100" value="${ideal}" oninput="updateManualLaunchHelp()"><p class="small muted" id="manualLaunchHelp">Set the launch rpm, then choose how the clutch comes in.</p></div><label class="small muted">Clutch style</label><input type="hidden" id="launchStyle" value="slip"><div class="toggleGrid"><button type="button" class="toggleBtn active" id="clutchSlipBtn" onclick="setClutchStyle('slip')">Slip clutch<br><span class="small muted">Smoother, safer</span></button><button type="button" class="toggleBtn" id="clutchDumpBtn" onclick="setClutchStyle('dump')">Dump clutch<br><span class="small muted">Harder hit, riskier</span></button></div><p class="small muted">Manual: slip is better for high-torque RWD street cars; dump can work for AWD, low torque, or sticky-tyre setups.</p>`;
+  }else{
+    let suggested=Math.min(stall,autoIdealStall(c));
+    let diff=diffInfo(c), tyre=tyreInfo(c);
+    launchControls=`<label class="small muted">Auto launch mode</label><select class="select" id="launchStyle" onchange="updateAutoLaunchHelp()"><option value="brake stall">Brake stall converter</option><option value="normal">Normal idle launch</option></select><div class="rangeWrap"><div class="row"><label class="small muted">Stall-up RPM</label><span class="bigStat" id="autoStallReadout">${suggested} rpm</span></div><input type="range" id="autoStallRpm" min="${idle}" max="${stall}" step="100" value="${suggested}" onchange="updateAutoLaunchHelp()" oninput="updateAutoLaunchHelp()"><p class="small muted">You can only load the engine up to the converter stall limit.</p></div><div class="gauge"><div class="muted">Converter / grip</div><div class="value">${stall} rpm</div><p class="small muted">${diff.label}. ${tyre.label}.</p></div><p class="small muted" id="autoLaunchHelp">Brake stall: choose how hard to load the converter before launch. More RPM can improve the hit, or overwhelm available grip and spin the tyres.</p>`;
+  }
+  document.getElementById('screen').innerHTML=`<section class="card"><h2>Stage against ${opp.name}</h2><p class="muted">Set the launch, then run the quarter mile in real time. Manual and auto-manual cars shift with <b>spacebar</b>. Auto D shifts itself.</p><div class="grid"><div class="listing"><h3>Your car</h3><p><b>${c.name}</b></p><p>${Math.round(c.power)} hp / ${Math.round(c.weight)} kg / ${c.drive}</p><p>Transmission: ${c.trans.toUpperCase()} ${c.trans==='auto'?c.shiftMode:''}</p><p class="small muted">${c.trans==='manual'?'Suggested launch: about '+ideal+' rpm.':'Stock converter behaviour: idle '+idle+' rpm, stall '+stall+' rpm.'}</p></div><div class="listing"><h3>Opponent</h3><p><b>${opp.name}</b></p><p>${opp.type} / ${opp.drive}</p><p class="clue">Visible clues: ${opp.visible}</p></div><div class="listing"><h3>Launch setup</h3>${launchControls}</div></div><div class="hr"></div><div class="btns"><button class="btn" onclick="startLiveRace(${i})">Stage and launch</button><button class="btn secondary" onclick="show('currentEvent')">Back out</button></div></section>`;
+  topStats();currentPanel();
+}
+function setClutchStyle(style){
+  let input=document.getElementById('launchStyle'); if(input)input.value=style;
+  let slip=document.getElementById('clutchSlipBtn'), dump=document.getElementById('clutchDumpBtn');
+  if(slip)slip.classList.toggle('active',style==='slip');
+  if(dump)dump.classList.toggle('active',style==='dump');
+  updateManualLaunchHelp();
+}
+function updateManualLaunchHelp(){
+  if(!state.car)return;
+  let c=state.car, rpm=Number(document.getElementById('launchRpm')?.value)||idealLaunch(c);
+  let read=document.getElementById('manualLaunchReadout'); if(read)read.textContent=Math.round(rpm)+' rpm';
+  let style=document.getElementById('launchStyle')?.value||'slip';
+  let ideal=idealLaunch(c), diff=rpm-ideal;
+  let msg=Math.abs(diff)<350?'close to the suggested launch range':diff<0?'conservative; may bog if too low':'aggressive; watch for wheelspin or driveline shock';
+  let help=document.getElementById('manualLaunchHelp'); if(help)help.textContent=(style==='dump'?'Dump clutch selected: ':'Slip clutch selected: ')+msg+'.';
+}
+function updateAutoLaunchHelp(){
+  if(!state.car)return;
+  let c=state.car;
+  let style=document.getElementById('launchStyle')?.value||'brake stall';
+  let el=document.getElementById('autoLaunchHelp');
+  if(!el)return;
+  let stall=converterStall(c), idle=idleRpm(c);
+  let input=document.getElementById('autoStallRpm');
+  if(input){
+    input.min=idle;
+    input.max=stall;
+    input.disabled=style==='normal';
+    let raw=Number(input.value)||autoIdealStall(c);
+    let clamped=style==='normal'?idle:Math.max(idle,Math.min(stall,raw));
+    input.value=Math.round(clamped/100)*100;
+  }
+  let chosen=Math.max(idle,Math.min(stall,Number(input?.value)||autoIdealStall(c)));
+  let ro=document.getElementById('autoStallReadout');if(ro)ro.textContent=Math.round(chosen)+' rpm';
+  let read=autoLaunchRead(c,chosen);
+  el.textContent=style==='normal'
+    ? `Normal launch: the engine starts near idle at about ${idle} rpm, then the converter flashes toward its ${stall} rpm stall limit as the car begins moving. Safe and consistent, but usually softer off the line.`
+    : `Brake stall at about ${chosen} rpm. The converter cannot be loaded beyond its ${stall} rpm stall limit. ${read.summary}`;
+}
+function startLiveRace(i){
+  let e=state.lastEvent, opp=e.opponents[i], c=state.car;
+  let style=document.getElementById('launchStyle')?.value||(c.trans==='auto'?'brake stall':'slip');
+  let launch;
+  if(c.trans==='manual') launch=Number(document.getElementById('launchRpm')?.value)||idealLaunch(c);
+  else if(style==='brake stall') launch=Math.max(idleRpm(c),Math.min(converterStall(c),Number(document.getElementById('autoStallRpm')?.value)||autoIdealStall(c)));
+  else launch=idleRpm(c);
+  if(c.trans==='auto') launch=Math.max(idleRpm(c),Math.min(converterStall(c),launch));
+  let playerBase=simulate(c,{launch,style,noShift:true},false);
+  let rival=simulate(opp,null,true);
+  e.runsLeft--;
+  runLiveRace({playerCar:c,rivalCar:opp,opponentIndex:i,playerBase,rival,launch,style});
+}
+function idleRpm(c){return c.asp==='turbo'?900:850}
+function converterStall(c){let bonus=c.stallBonus||0;if(c.installed&&c.installed.includes('converter'))bonus=Math.max(bonus,650);return Math.round(Math.min(c.red*.55,(c.stallRpm||2200)+bonus));}
+function idealLaunch(c){let base=c.drive==='FWD'?2600:c.drive==='RWD'?3000:3600;if(c.torque>450)base-=400;if(c.asp==='turbo')base+=300;return Math.round(Math.min(c.red*.7,Math.max(1400,base)))}
+function autoIdealStall(c){let target=(c.band?c.band[0]:2200)+(c.asp==='turbo'?450:150);return Math.round(Math.min(c.red*.55,Math.max(1700,target)));}
+
+function diffInfo(c){
+  if(c.drive==='AWD')return {type:'awd',label:'AWD driveline',bonus:.11};
+  if(c.drive==='4WD')return {type:'4wd',label:'4WD driveline',bonus:.10};
+  if(c.installed&&c.installed.includes('lsd'))return {type:'clutch-lsd',label:'Aftermarket clutch LSD',bonus:.075};
+  const factory={wrx:['viscous centre/AWD',.10],m3:['factory LSD',.06],m5:['factory LSD',.055],c63:['factory LSD',.045],silvia:['viscous LSD',.04],suprana:['torsen LSD',.055],soarer:['torsen LSD',.045],monaro:['factory LSD',.045],commodoresho:['factory LSD',.04],falconxr6t:['factory LSD',.04],'300csrt':['factory LSD',.035]};
+  if(factory[c.id])return {type:factory[c.id][0],label:factory[c.id][0],bonus:factory[c.id][1]};
+  return {type:'open',label:'Open differential',bonus:0};
+}
+function tyreInfo(c){
+  if(c.mods&&c.mods.includes('Good street tyres'))return {type:'good-street',label:'Good street tyres',bonus:.08};
+  if(c.issueNames&&c.issueNames.includes('Worn tyres'))return {type:'worn',label:'Worn street tyres',bonus:-.08};
+  return {type:'stock-street',label:'Stock street tyres',bonus:0};
+}
+function autoLaunchRead(c,rpm){
+  let maxStall=converterStall(c), ideal=autoIdealStall(c), diff=diffInfo(c), tyre=tyreInfo(c);
+  rpm=Math.max(idleRpm(c),Math.min(maxStall,rpm));
+  let stallRatio=Math.max(.45,Math.min(1,rpm/maxStall));
+  let idealRatio=Math.max(.55,rpm/Math.max(1600,ideal));
+  let driveHit=c.drive==='FWD'?1.02:c.drive==='RWD'?1.0:(c.drive==='AWD'||c.drive==='4WD')?.72:.95;
+  let torqueHit=(c.torque/500)*stallRatio*idealRatio*driveHit;
+  let gripHold=(c.grip+diff.bonus)*Math.pow(Math.max(1100,c.weight)/1600,.12);
+  let score=torqueHit-gripHold;
+  let wheelspin=score>.065;
+  let nearSweet=Math.abs(rpm-ideal)<360;
+  let summary=wheelspin?`The hit looks too aggressive for the current tyres/diff, so expect wheelspin.`:nearSweet?`This looks close to the converter launch sweet spot.`:rpm<ideal?`This is conservative and may leave a little soft, but should be stable.`:`This is aggressive; it may be quick if it hooks.`;
+  return {wheelspin,score,gripHold,torqueHit,ideal,diff,tyre,summary};
+}
+function launchPhysics(c,launchData=null,npc=false){
+  let isAuto=c.trans==='auto';
+  let style=launchData?launchData.style:(isAuto?(Math.random()<.65?'brake stall':'normal'):(Math.random()<.55?'slip':'dump'));
+  let grip=c.grip+(c.launchBonus||0);
+  let feedback='', stress=0, launchMod=1, effectiveLaunchRpm=launchData&&launchData.launch?launchData.launch:idealLaunch(c);
+  let profile={kind:isAuto?'auto':'manual',style,startRpm:effectiveLaunchRpm,holdRpm:effectiveLaunchRpm,blendTime:1.0,flashRpm:effectiveLaunchRpm};
+  if(isAuto){
+    let stall=converterStall(c), idle=idleRpm(c), ideal=autoIdealStall(c);
+    if(style==='normal'){
+      effectiveLaunchRpm=idle;
+      profile={kind:'auto',style:'normal',startRpm:idle,holdRpm:idle,flashRpm:stall,converterFloorRpm:stall,blendTime:1.25};
+      launchMod+=.075;
+      if(c.asp==='turbo')launchMod+=.035;
+      feedback+='Normal idle launch. Converter flashed up after the car started moving. ';
+    }else{
+      let chosen=launchData&&launchData.launch?Math.max(idle,Math.min(stall,launchData.launch)):stall;
+      effectiveLaunchRpm=chosen;
+      let read=autoLaunchRead(c,chosen);
+      profile={kind:'auto',style:'brake stall',startRpm:chosen,holdRpm:chosen,flashRpm:chosen,converterFloorRpm:chosen,blendTime:.65,converterLockedToStall:true,wheelspin:read.wheelspin};
+      let delta=Math.abs(chosen-ideal);
+      launchMod+=(delta/2600)*.06;
+      if(chosen<ideal-450){launchMod+=.055;feedback+='Converter was released below the useful launch range and left soft. ';}
+      else if(read.wheelspin){launchMod+=.105+Math.min(.08,Math.max(0,read.score)*.16);stress+=.7;feedback+=`Stalled to ${Math.round(chosen)} rpm and overpowered the available grip. Wheelspin on launch. `;}
+      else feedback+=`Stalled to ${Math.round(chosen)} rpm and hooked in the useful range. `;
+      if(c.torque>480){stress+=read.wheelspin?.35:.18;feedback+='The auto driveline loaded up against the converter. ';}
+      feedback+=`${read.diff.label}; ${read.tyre.label}. `;
+    }
+  }else{
+    let launchRPM=launchData?launchData.launch:idealLaunch(c)+rand(-500,500);
+    let ideal=idealLaunch(c), delta=Math.abs(launchRPM-ideal);
+    effectiveLaunchRpm=launchRPM;
+    profile={kind:'manual',style,startRpm:launchRPM,holdRpm:launchRPM,flashRpm:launchRPM,blendTime:style==='slip'?1.05:.65};
+    launchMod+=(delta/3000)*.08;
+    if(launchRPM<ideal-700){launchMod+=.08;feedback+='Bogged launch. ';}
+    else if(launchRPM>ideal+850&&grip<.94){launchMod+=.1;feedback+='Wheelspin on launch. ';stress+=.8;}
+    else feedback+='Clean enough launch. ';
+    if(style==='dump'&&c.torque>420&&grip>.9){stress+=1.2;feedback+='Drivetrain shock risk. ';}
+    if(style==='slip'){launchMod+=.02;stress+=.4;feedback+='Clutch slip softened the hit. ';}
+  }
+  return {launchMod,feedback,stress,grip,effectiveLaunchRpm,profile};
+}
+function simulate(c,launchData=null,npc=false){let hp=c.power,kg=c.weight,lb=kg*2.20462;let base=5.825*Math.pow(lb/hp,1/3);let lp=launchPhysics(c,launchData,npc);let grip=lp.grip;let launchMod=lp.launchMod;let feedback=lp.feedback;let stress=lp.stress;
+let shiftMod=1;let shiftNote='';let bestShift=Math.min(c.red-150,c.peak+350);if(launchData&&launchData.noShift){shiftNote='Shift quality will depend on the live run. ';}
+else if(c.trans==='auto'&&c.shiftMode==='D'){let autoShift=c.red-100;if(autoShift>bestShift+350){shiftMod+=.035;shiftNote='Auto held gear past best acceleration. ';}}
+else if(!npc){let skill=rand(-.025,.025);shiftMod+=skill;shiftNote=skill>0.015?'A couple of shifts were a little off. ':'Shifts were tidy. ';}
+else shiftMod+=rand(-.02,.025);
+let aeroMod=1+Math.max(0,c.aero-.32)*.16;let gripMod=grip<.85?1.06:grip>.93?.96:1;let relMod=c.reliability<70?1.03:1;let et=(base*launchMod*shiftMod*aeroMod*gripMod*relMod)+rand(-.08,.12);let trap=377*Math.pow(hp/lb,1/3)*(1-(c.aero-.3)*.08)+rand(-3,3);let sixty=1.65+(et-10)*.12+(launchMod-1)*2.2;let eighth=et*.64+rand(-.05,.05);let gs=gSpark(et,launchMod,shiftMod,grip);return {et,trap,sixty,eighth,gs,accel:gs.vals[gs.vals.length-1],feedback:feedback+shiftNote,stress,launchMod,shiftMod,grip,launchProfile:lp.profile,effectiveLaunchRpm:lp.effectiveLaunchRpm};}
+function gSpark(et,launchMod,shiftMod,grip){let vals=[];let start=Math.max(.18,1.05/launchMod*(grip>.92?1.05:.9));for(let i=0;i<12;i++){let decay=i*.045;let v=start-decay+Math.sin(i/2)*.025-(shiftMod-1)*.5;if(i>8)v-=.07;vals.push(Math.max(.12,Math.min(1.15,v)));}let chars='▁▂▃▄▅▆▇█';let spark=vals.map(v=>chars[Math.max(0,Math.min(7,Math.floor(v/1.15*8)))]).join('');return {spark,vals};}
+function shiftTarget(c){return Math.min(c.red-(c.shiftBuffer||250),c.peak+350)}
+function gearMaxes(c){return (c.trans==='auto'?(c.autoMax||c.manualMax):(c.manualMax||c.autoMax))||[55,95,140,190,245,300].slice(0,c.gears||5)}
+function maxSpeedInGear(c,gear){let arr=gearMaxes(c);return arr[Math.max(0,Math.min(arr.length-1,gear-1))]||arr[arr.length-1]||220}
+function rpmFromSpeed(c,gear,speed,elapsed=9,profile=null){
+  let max=maxSpeedInGear(c,gear);
+  let roadRpm=(speed/max)*c.red;
+  let rpm=roadRpm;
+  if(profile&&profile.kind==='auto'){
+    if(profile.style==='brake stall'&&profile.converterLockedToStall){
+      // A brake-stalled auto cannot be loaded beyond converter stall before launch,
+      // and once released the engine should not instantly fall below that selected stall speed.
+      // Hold the converter floor until vehicle speed/gear load naturally pulls road rpm above it.
+      rpm=Math.max(roadRpm,profile.converterFloorRpm||profile.holdRpm||idleRpm(c));
+    }else if(profile.style==='normal'){
+      // Normal launch starts near idle, then the converter flashes toward stall.
+      // After the flash, keep converter rpm as a floor until road rpm catches up.
+      let t=Math.max(0,Math.min(1,elapsed/(profile.blendTime||1.25)));
+      let flash=profile.startRpm+(profile.flashRpm-profile.startRpm)*(1-Math.pow(1-t,2));
+      rpm=Math.max(roadRpm,Math.min(profile.flashRpm,flash));
+      if(t>=1)rpm=Math.max(roadRpm,profile.converterFloorRpm||profile.flashRpm||idleRpm(c));
+    }
+  }else if(profile&&elapsed<profile.blendTime){
+    let t=Math.max(0,Math.min(1,elapsed/profile.blendTime));
+    rpm=Math.max(roadRpm,profile.holdRpm*(1-t)+roadRpm*t);
+  }
+  return Math.max(idleRpm(c),Math.min(c.red+250,rpm));
+}
+function currentRpmForRun(c,gear,elapsed,totalEt,trap,profile=null){let p=progressForRun(elapsed,totalEt);return rpmFromSpeed(c,gear,speedForRun(trap,p),elapsed,profile)}
+function progressForRun(elapsed,totalEt){return Math.max(0,Math.min(1,elapsed/totalEt))}
+function speedForRun(trap,progress){return Math.max(0,trap*Math.pow(progress,.62))}
+function distanceForRun(progress){return 402*progress}
+function tachHtml(c){let target=shiftTarget(c);let green=Math.round((target/c.red)*100);let red=Math.round(((c.red-250)/c.red)*100);return `<div class="tachWrap"><div class="tachLabels"><span>0 rpm</span><span id="tachCurrent">0 rpm</span><span>${c.red} rpm</span></div><div class="tach"><div class="tachMark" style="left:${green}%"></div><div class="tachMark" style="left:${red}%"></div><div class="tachFill" id="tachFill"></div></div><div class="tachBandText"><span>green/useful</span><span>shift zone</span><span>redline</span></div></div>`}
+function treeHtml(){return `<div class="treeBox"><div class="tree"><div class="treeBulb small" id="treePre"></div><div class="treeBulb small" id="treeStage"></div><div class="treeBulb" id="treeAmber1"></div><div class="treeBulb" id="treeAmber2"></div><div class="treeBulb" id="treeAmber3"></div><div class="treeBulb" id="treeGreen"></div><div class="treeBulb" id="treeRed"></div><div class="treeText">Pre-stage<br>Stage<br>Ambers<br>Green<br>Red</div></div><div class="launchLampWrap"><div class="launchLamp" id="launchReadyLamp"></div><div class="launchLampLabel" id="launchLampLabel">Build launch rpm</div></div></div>`}
+function setLamp(id,on,cls){let el=document.getElementById(id);if(!el)return;el.className=el.className.replace(/\s+on(?:Pre|Stage|Amber|Green|Red)?/g,'');if(on)el.classList.add(cls)}
+function stageTargetRpm(c,launch,style){if(c.trans==='manual')return launch||idealLaunch(c);if(style==='brake stall')return launch||converterStall(c);return idleRpm(c)}
+function stageRpmForCountdown(c,launch,style,stageElapsed){let idle=idleRpm(c), target=stageTargetRpm(c,launch,style);if(c.trans==='auto'&&style==='normal'){let t=Math.max(0,Math.min(1,stageElapsed/.8));return idle+(70*t)+(Math.sin(Math.min(stageElapsed,1.2)*6)*8)}let t=Math.max(0,Math.min(1,stageElapsed/1.15));let eased=1-Math.pow(1-t,2);return idle+((target-idle)*eased)}
+function updateTreeAndStageRpm(left,stageElapsed){
+  let c=liveRun.playerCar,target=liveRun.stageTargetRpm,rpm=stageRpmForCountdown(c,liveRun.launch,liveRun.style,stageElapsed),ready=(c.trans==='manual'||(c.trans==='auto'&&liveRun.style==='brake stall'))&&rpm>=target-35;
+  setLamp('treePre',true,'onPre');
+  setLamp('treeStage',stageElapsed>.18,'onStage');
+  setLamp('treeAmber1',left<=1.5&&left>.95,'onAmber');
+  setLamp('treeAmber2',left<=1.0&&left>.45,'onAmber');
+  setLamp('treeAmber3',left<=0.5&&left>0.02,'onAmber');
+  setLamp('treeGreen',left<=0.02,'onGreen');
+  setLamp('treeRed',false,'onRed');
+  let launchLamp=document.getElementById('launchReadyLamp'); if(launchLamp) launchLamp.className='launchLamp'+(ready?' on':'');
+  let label=document.getElementById('launchLampLabel'); if(label) label.textContent=(c.trans==='auto'&&liveRun.style==='normal')?`Idle launch ${Math.round(rpm)} rpm`:(ready?`Launch rpm set ${Math.round(rpm)} rpm`:`Building to ${Math.round(target)} rpm`);
+  document.getElementById('raceTime').textContent='0.00s';
+  document.getElementById('raceDistance').textContent='0 m';
+  document.getElementById('raceSpeed').textContent='0 km/h';
+  document.getElementById('raceGear').textContent='1';
+  document.getElementById('raceRpm').textContent=Math.round(rpm);
+  document.getElementById('tachFill').style.width=Math.min(100,(rpm/c.red)*100)+'%';
+  let tachCurrent=document.getElementById('tachCurrent');if(tachCurrent)tachCurrent.textContent=Math.round(rpm)+' rpm';
+  return rpm;
+}
+function liveSpark(vals){const chars='▁▂▃▄▅▆▇█';return vals.slice(-14).map(v=>chars[Math.max(0,Math.min(7,Math.floor(v/1.15*8)))]).join('')}
+let liveRun=null;
+let travelTimer=null;
+function runLiveRace(cfg){
+  let playerCanShift=cfg.playerCar.trans==='manual'||(cfg.playerCar.trans==='auto'&&cfg.playerCar.shiftMode==='Manual');
+  let stageTarget=stageTargetRpm(cfg.playerCar,cfg.launch,cfg.style);
+  liveRun={...cfg,start:null,countStart:performance.now(),gear:1,penalty:0,shiftEvents:[],lastShiftAt:0,playerCanShift,finished:false,gVals:[],note:'Stage up, build your launch rpm and wait for green.',raf:null,stageTargetRpm:stageTarget};
+  document.getElementById('screen').innerHTML=`<section class="card"><h2>Quarter Mile Pass</h2><div class="raceStage"><div class="raceLayout"><div class="raceMain"><div id="countdown" class="bigCountdown">3</div><div class="raceHud"><div class="gauge"><div class="muted">Time</div><div class="value" id="raceTime">0.00s</div></div><div class="gauge"><div class="muted">Distance</div><div class="value" id="raceDistance">0 m</div></div><div class="gauge"><div class="muted">Speed</div><div class="value" id="raceSpeed">0 km/h</div></div><div class="gauge"><div class="muted">Gear</div><div class="value" id="raceGear">1</div></div><div class="gauge"><div class="muted">RPM</div><div class="value" id="raceRpm">0</div></div><div class="gauge"><div class="muted">Shift light</div><div class="value shiftLight" id="shiftLight">WAIT</div></div></div><div class="hr"></div><div class="lane"><div class="laneTop"><b>${cfg.playerCar.name}</b><span id="playerLaneText">0 m</span></div><div class="laneBar"><div id="playerLane" class="laneFill"></div><div id="playerDot" class="carDot">🏁</div></div></div><div class="lane"><div class="laneTop"><b>${cfg.rivalCar.name}</b><span id="rivalLaneText">0 m</span></div><div class="laneBar"><div id="rivalLane" class="laneFill rival"></div><div id="rivalDot" class="carDot">🚗</div></div></div><div class="hr"></div>${tachHtml(cfg.playerCar)}<p class="raceNote" id="raceNote">${playerCanShift?'Press SPACE or tap SHIFT when the light comes on.':'Auto D will shift for you.'}</p>${playerCanShift?'<button class="btn touchShiftBtn mobileOnly" id="touchShiftBtn" onclick="handleLiveShift()">TAP TO SHIFT</button>':''}<div class="spark" id="liveSpark"></div></div><div class="raceSide">${treeHtml()}</div></div></div></section>`;
+  topStats();currentPanel();
+  liveRun.raf=requestAnimationFrame(tickLiveRace);
+}
+function tickLiveRace(now){
+  if(!liveRun||liveRun.finished)return;
+  if(!liveRun.start){let stageElapsed=(now-liveRun.countStart)/1000;let left=3-stageElapsed;document.getElementById('countdown').textContent=left>0?Math.ceil(left):'GO';let stageRpm=updateTreeAndStageRpm(left,stageElapsed);document.getElementById('raceNote').textContent=(liveRun.playerCar.trans==='auto'&&liveRun.style==='normal')?`Normal auto launch staged at idle, about ${Math.round(stageRpm)} rpm.`:`Hold the engine on target. Release on green.`;if(left<=0.02){liveRun.start=now;document.getElementById('countdown').textContent='GO';document.getElementById('raceNote').textContent='Launched.';}liveRun.raf=requestAnimationFrame(tickLiveRace);return;}
+  let elapsed=(now-liveRun.start)/1000;
+  let pEt=liveRun.playerBase.et+liveRun.penalty;
+  let rEt=liveRun.rival.et;
+  let pp=progressForRun(elapsed,pEt), rp=progressForRun(elapsed,rEt);
+  let rpm=currentRpmForRun(liveRun.playerCar,liveRun.gear,elapsed,pEt,liveRun.playerBase.trap,liveRun.playerBase.launchProfile);
+  setLamp('treePre',true,'onPre');setLamp('treeStage',true,'onStage');setLamp('treeAmber1',false,'onAmber');setLamp('treeAmber2',false,'onAmber');setLamp('treeAmber3',false,'onAmber');setLamp('treeGreen',true,'onGreen');setLamp('treeRed',false,'onRed');
+  let launchLamp=document.getElementById('launchReadyLamp'); if(launchLamp) launchLamp.className='launchLamp on';
+  let label=document.getElementById('launchLampLabel'); if(label) label.textContent='Launch complete';
+  if(liveRun.playerCar.trans==='auto'&&liveRun.playerCar.shiftMode==='D'&&rpm>shiftTarget(liveRun.playerCar)&&liveRun.gear<gearMaxes(liveRun.playerCar).length){liveRun.gear++;liveRun.note='Auto shifted near the useful power band.';rpm=currentRpmForRun(liveRun.playerCar,liveRun.gear,elapsed,pEt,liveRun.playerBase.trap,liveRun.playerBase.launchProfile);}
+  if(liveRun.playerCanShift&&rpm>liveRun.playerCar.red&&liveRun.gear<gearMaxes(liveRun.playerCar).length){liveRun.penalty+=.006;liveRun.note='On the limiter - shift now.';}
+  let target=shiftTarget(liveRun.playerCar);
+  let shiftOn=liveRun.playerCanShift&&rpm>=target-250&&liveRun.gear<gearMaxes(liveRun.playerCar).length;
+  let accel=Math.max(.1,1.1-(pp*.75)-(liveRun.playerBase.launchMod-1)*.8-(liveRun.penalty*.06));
+  liveRun.gVals.push(accel);if(liveRun.gVals.length>20)liveRun.gVals.shift();
+  document.getElementById('raceTime').textContent=elapsed.toFixed(2)+'s';
+  document.getElementById('raceDistance').textContent=Math.round(distanceForRun(pp))+' m';
+  document.getElementById('raceSpeed').textContent=Math.round(speedForRun(liveRun.playerBase.trap,pp))+' km/h';
+  document.getElementById('raceGear').textContent=liveRun.gear;
+  document.getElementById('raceRpm').textContent=Math.round(rpm);
+  document.getElementById('tachFill').style.width=Math.min(100,(rpm/liveRun.playerCar.red)*100)+'%';
+  let tachCurrent=document.getElementById('tachCurrent');if(tachCurrent)tachCurrent.textContent=Math.round(rpm)+' rpm';
+  document.getElementById('shiftLight').className='value shiftLight '+(shiftOn?'on':'');
+  document.getElementById('shiftLight').textContent=shiftOn?'SHIFT':'WAIT';
+  let touchShift=document.getElementById('touchShiftBtn'); if(touchShift){touchShift.className='btn touchShiftBtn mobileOnly '+(shiftOn?'ready':'');touchShift.textContent=shiftOn?'SHIFT NOW':'TAP TO SHIFT';}
+  document.getElementById('raceNote').textContent=liveRun.note;
+  document.getElementById('liveSpark').textContent=liveSpark(liveRun.gVals);
+  document.getElementById('playerLane').style.width=(pp*100)+'%';document.getElementById('playerDot').style.left=(pp*100)+'%';document.getElementById('playerLaneText').textContent=Math.round(distanceForRun(pp))+' m';
+  document.getElementById('rivalLane').style.width=(rp*100)+'%';document.getElementById('rivalDot').style.left=(rp*100)+'%';document.getElementById('rivalLaneText').textContent=Math.round(distanceForRun(rp))+' m';
+  if(pp>=1&&rp>=1){finishLiveRace(pEt);return;}
+  liveRun.raf=requestAnimationFrame(tickLiveRace);
+}
+function handleLiveShift(){
+  if(!liveRun||!liveRun.start||liveRun.finished||!liveRun.playerCanShift)return;
+  let elapsed=(performance.now()-liveRun.start)/1000;
+  if(elapsed-liveRun.lastShiftAt<.25){liveRun.penalty+=.12;liveRun.note='Double-tap shift error. The car hesitated.';return;}
+  if(liveRun.gear>=gearMaxes(liveRun.playerCar).length){liveRun.note='No more gears.';return;}
+  let rpm=currentRpmForRun(liveRun.playerCar,liveRun.gear,elapsed,liveRun.playerBase.et+liveRun.penalty,liveRun.playerBase.trap,liveRun.playerBase.launchProfile);
+  let target=shiftTarget(liveRun.playerCar), diff=rpm-target;
+  let msg='Good shift.';
+  if(diff<-650){liveRun.penalty+=.22;msg='Shifted too early and dropped out of the power band.';}
+  else if(diff>500){liveRun.penalty+=.18;msg='Shifted late; acceleration had already fallen away.';}
+  else if(Math.abs(diff)<220){liveRun.penalty-=.03;msg='Sharp shift, right in the useful power band.';}
+  liveRun.gear++;liveRun.lastShiftAt=elapsed;liveRun.shiftEvents.push({gear:liveRun.gear,rpm,diff});liveRun.note=msg;
+}
+function finishLiveRace(pEt){
+  liveRun.finished=true;
+  let player={...liveRun.playerBase,et:pEt,trap:liveRun.playerBase.trap,sixty:liveRun.playerBase.sixty+(liveRun.penalty*.08),eighth:liveRun.playerBase.eighth+(liveRun.penalty*.45),gs:gSpark(pEt,liveRun.playerBase.launchMod,1+(liveRun.penalty/10),liveRun.playerBase.grip)};
+  player.accel=player.gs.vals[player.gs.vals.length-1];
+  let rival=liveRun.rival;
+  let win=player.et<rival.et;
+  let ev=state.lastEvent&&state.lastEvent.eventDef?state.lastEvent.eventDef:EVENT_CALENDAR[0];
+  let record=getEventRaceRecord(liveRun.rivalCar);
+  let rewards=calculateRaceRewards(win,liveRun.rivalCar,ev,record);
+  let cash=rewards.cash;
+  let respectGain=rewards.respect;
+  let before=snapshot();
+  state.money+=cash;state.respect+=respectGain;state.car.reliability-=player.stress+(liveRun.penalty*.25);if(state.car){state.car.bestET=state.car.bestET?Math.min(state.car.bestET,player.et):player.et;if(win)state.car.wins=(state.car.wins||0)+1;if(win&&liveRun.rivalCar&&liveRun.rivalCar.power>state.car.power*1.08){state.car.sceneValue=(state.car.sceneValue||0)+1;state.car.notableEvents=(state.car.notableEvents||[]);state.car.notableEvents.push('Upset win over '+liveRun.rivalCar.name+' on Day '+state.day);}}
+  record.attempts++; if(win)record.wins++; else record.losses++;
+  let shiftText=liveRun.playerCanShift?`${liveRun.shiftEvents.length} manual shifts. `:'';
+  let details=[win?'Result win':'Result loss',`Your ET ${player.et.toFixed(2)} @ ${player.trap.toFixed(0)} km/h`,`Opponent ${rival.et.toFixed(2)} @ ${rival.trap.toFixed(0)} km/h`,`Runs left ${state.lastEvent?state.lastEvent.runsLeft:0}`,`Opponent race count tonight ${record.attempts}`,...rewards.details];
+  details.push(`Launch ${liveRun.style} / ${Math.round(liveRun.playerBase.effectiveLaunchRpm||liveRun.launch)} rpm`);
+  if(liveRun.playerCanShift)details.push(`Manual shifts ${liveRun.shiftEvents.length}`);
+  if(cash)details.push(`Win payout ${fmt(cash)}`);details.push(`Respect gain ${respectGain.toFixed(1)}`);
+  let raceReport={day:state.day,season:seasonForDay(state.day),result:win?'WIN':'LOSS',win,opponent:liveRun.rivalCar.name,yourEt:player.et,yourTrap:player.trap,yourSixty:player.sixty,yourEighth:player.eighth,oppEt:rival.et,oppTrap:rival.trap,cashDelta:cash,respectDelta:respectGain,notes:rewards.details.slice()};
+  player.report=raceReport;
+  if(state.lastEvent){if(!state.lastEvent.raceReports)state.lastEvent.raceReports=[];state.lastEvent.raceReports.push(raceReport);}
+  let summary=`You raced ${liveRun.rivalCar.name}. You ran ${player.et.toFixed(2)} @ ${player.trap.toFixed(0)} km/h. Opponent ran ${rival.et.toFixed(2)} @ ${rival.trap.toFixed(0)}. ${win?'Win +'+fmt(cash)+'.':'Loss.'} Respect +${respectGain.toFixed(1)}. ${player.feedback}${shiftText}${liveRun.note}`;
+  state.lastRace=player;logChange(summary,before,'race',details);markCurrentLineupRaceComplete();renderRace(player,rival,win,summary);queueSocialRace(player,win);
+}
+function renderRace(player,rival,win,summary){let report=player.report||{result:win?'WIN':'LOSS',cashDelta:win?0:0,respectDelta:0,notes:[]};let notes=report.notes&&report.notes.length?`<p class="small warning">Reward notes: ${report.notes.join(', ')}</p>`:'';document.getElementById('screen').innerHTML=`<section class="card"><h2>Race Report</h2><p>${summary}</p><div class="raceHud"><div class="gauge"><div class="muted">Result</div><div class="value ${win?'goodText':'badText'}">${report.result}</div></div><div class="gauge"><div class="muted">Cash</div><div class="value ${report.cashDelta>=0?'goodText':'badText'}">${signedMoney(report.cashDelta||0)}</div></div><div class="gauge"><div class="muted">Respect</div><div class="value goodText">${signedNumber(report.respectDelta||0,1)}</div></div><div class="gauge"><div class="muted">Opponent</div><div class="value" style="font-size:16px">${liveRun?liveRun.rivalCar.name:'-'}</div></div></div><div class="hr"></div><h3>Useful Race Data</h3><div class="raceHud"><div class="gauge"><div class="muted">ET</div><div class="value">${player.et.toFixed(2)}s</div></div><div class="gauge"><div class="muted">Trap</div><div class="value">${player.trap.toFixed(0)} km/h</div></div><div class="gauge"><div class="muted">60 foot</div><div class="value">${player.sixty.toFixed(2)}s</div></div><div class="gauge"><div class="muted">1/8 mile</div><div class="value">${player.eighth.toFixed(2)}s</div></div><div class="gauge"><div class="muted">Opponent ET</div><div class="value">${rival.et.toFixed(2)}s</div></div><div class="gauge"><div class="muted">Opponent trap</div><div class="value">${rival.trap.toFixed(0)} km/h</div></div></div>${notes}<div class="hr"></div><h3>G-Meter Sparkline</h3><div class="spark">${player.gs.spark}</div><p class="muted">Last acceleration sample: ${player.accel.toFixed(2)} g. Falling bars suggest the car was no longer accelerating as hard.</p><div class="track"><div class="trackFill" style="width:100%"></div></div><div class="hr"></div><button class="btn" onclick="show('currentEvent')">Back to event</button></section>`;topStats();currentPanel();}
+function renderWatchRun(carA,carB,r1,r2,betData){
+  let run={start:null,countStart:performance.now()};
+  document.getElementById('screen').innerHTML=`<section class="card"><h2>Watching a pass</h2><p class="muted">The timing boards come up after the cars complete the quarter mile.</p><div class="raceStage"><div id="watchCountdown" class="bigCountdown">3</div><div class="lane"><div class="laneTop"><b>${carA.name}</b><span id="watchAText">0 m</span></div><div class="laneBar"><div id="watchALane" class="laneFill"></div><div id="watchADot" class="carDot">🚗</div></div></div><div class="lane"><div class="laneTop"><b>${carB.name}</b><span id="watchBText">0 m</span></div><div class="laneBar"><div id="watchBLane" class="laneFill rival"></div><div id="watchBDot" class="carDot">🚙</div></div></div><div class="raceHud"><div class="gauge"><div class="muted">Elapsed</div><div class="value" id="watchTime">0.00s</div></div><div class="gauge"><div class="muted">Leader</div><div class="value" id="watchLeader">-</div></div><div class="gauge"><div class="muted">Board</div><div class="value" id="watchBoard">WAIT</div></div></div></div></section>`;
+  function tick(now){
+    if(!run.start){let left=3-((now-run.countStart)/1000);document.getElementById('watchCountdown').textContent=left>0?Math.ceil(left):'GO';if(left<=-.25){run.start=now;document.getElementById('watchCountdown').textContent='GO';}requestAnimationFrame(tick);return;}
+    let elapsed=(now-run.start)/1000, pa=progressForRun(elapsed,r1.et), pb=progressForRun(elapsed,r2.et);
+    document.getElementById('watchTime').textContent=elapsed.toFixed(2)+'s';
+    document.getElementById('watchALane').style.width=(pa*100)+'%';document.getElementById('watchADot').style.left=(pa*100)+'%';document.getElementById('watchAText').textContent=Math.round(distanceForRun(pa))+' m';
+    document.getElementById('watchBLane').style.width=(pb*100)+'%';document.getElementById('watchBDot').style.left=(pb*100)+'%';document.getElementById('watchBText').textContent=Math.round(distanceForRun(pb))+' m';
+    document.getElementById('watchLeader').textContent=pa>=pb?carA.name:carB.name;
+    if(pa>=1&&pb>=1){finishWatchRun(carA,carB,r1,r2,betData);return;}
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);topStats();currentPanel();
+}
+function finishWatchRun(carA,carB,r1,r2,betData){
+  let winner=r1.et<r2.et?carA:carB;
+  let msg=`Watched ${carA.name} run ${r1.et.toFixed(2)} @ ${r1.trap.toFixed(0)} km/h against ${carB.name} (${r2.et.toFixed(2)} @ ${r2.trap.toFixed(0)}).`;
+  let before=snapshot();
+  let details=[`Winner ${winner.name}`,`${carA.name} ${r1.et.toFixed(2)} @ ${r1.trap.toFixed(0)} km/h`,`${carB.name} ${r2.et.toFixed(2)} @ ${r2.trap.toFixed(0)} km/h`];
+  if(betData.bet){
+    details.push(`Picked ${betData.picked.name}`,`Stake ${fmt(betData.stake)}`);if(betData.approach)details.push(`Approach ${betData.approach}`);
+    if(betData.picked===winner){state.money+=betData.stake*2;state.respect+=1;msg+=' Side bet won: +'+fmt(betData.stake)+'.';details.push('Bet result win');}
+    else {msg+=' Side bet lost.';details.push('Bet result loss');}
+    let e=state.lastEvent;
+    if(e&&e.kind==='race'&&Math.random()<((betData.approach==='quiet'?.035:.08)+betData.stake/450)){
+      e.runsLeft=Math.max(0,e.runsLeft-1);e.missed++;
+      let loss=e.missed===1?2:e.missed===2?4:8;
+      state.respect=Math.max(-20,state.respect-loss);
+      msg+=' You got distracted and missed a lane call. Respect -'+loss+'.';
+      details.push(`Missed lane call ${e.missed}`,`Runs left ${e.runsLeft}`,`Lane-call penalty -${loss} Respect`);
+      logChange(msg,before,'bad',details);
+      if(e.missed>=3){completeEventNight('You missed too many lane calls and were told to call it a night.','bad');return;}
+      markCurrentLineupRaceComplete();showTimingBoard(carA,carB,r1,r2,winner,msg);return;
+    }
+    logChange(msg,before,'bet',details);
+  }else{
+    state.respect+=.1;
+    details.push('Spectating Respect +0.1');
+    logChange(msg,before,'event',details);
+  }
+  markCurrentLineupRaceComplete();showTimingBoard(carA,carB,r1,r2,winner,msg);
+}
+function showTimingBoard(carA,carB,r1,r2,winner,msg){
+  document.getElementById('screen').innerHTML=`<section class="card"><h2>Timing Board</h2><div class="timingBoard"><div class="${winner===carA?'winner':''}">${carA.name}: ${r1.et.toFixed(2)} @ ${r1.trap.toFixed(0)} km/h</div><div class="${winner===carB?'winner':''}">${carB.name}: ${r2.et.toFixed(2)} @ ${r2.trap.toFixed(0)} km/h</div></div><p>${msg}</p><div class="hr"></div><button class="btn" onclick="show('currentEvent')">Back to event</button></section>`;
+  topStats();currentPanel();
+}
+function watch(){return `<section class="card"><h2>Watch List</h2><p class="muted">Capacity ${state.watch.length}/${state.watchCap}. Starts at 5.</p><div class="grid">${state.watch.length?state.watch.map(w=>`<div class="listing"><h3>${w.name}</h3><p>${w.type}</p><p class="muted">${w.last}</p></div>`).join(''):'<p>No watched opponents yet.</p>'}</div></section>`}
+let socialData=null,socialError='',socialBusy=false;
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function socialStat(v,fallback='-'){return v===null||v===undefined||v===''?fallback:esc(v)}
+function leaderboardRows(rows){if(!rows||!rows.length)return '<tr><td colspan="6" class="muted">No recorded passes yet.</td></tr>';return rows.map((r,i)=>`<tr><td><b>${i+1}</b></td><td>${esc(r.display_name)}</td><td>${r.best_et?Number(r.best_et).toFixed(2)+'s':'-'}</td><td>${socialStat(r.car_name)}</td><td>${r.power?Math.round(r.power)+' hp':'-'}</td><td>${Math.round(Number(r.respect)||0)} / ${Math.round(Number(r.wins)||0)}</td></tr>`).join('')}
+function renderSocialPanel(){let box=document.getElementById('socialPanel');if(!box)return;if(socialBusy&&!socialData){box.innerHTML='<span class="onlineDot"></span>Connecting...';return}if(!socialData){box.innerHTML=`${socialError?`<p class="warning">${esc(socialError)}</p>`:''}<div class="btns"><button class="btn" onclick="createAnonymousGarage()">Create anonymous garage</button><button class="btn secondary" onclick="recoverGarage()">Use recovery code</button></div><p class="footerNote">No email or personal details required.</p>`;return}box.innerHTML=`<div><span class="onlineDot"></span><b>${esc(socialData.profile.displayName)}</b></div><p class="small muted">Friend code</p><div class="socialCode">${esc(socialData.profile.friendCode)}</div><div class="btns" style="margin-top:10px"><button class="btn secondary" onclick="show('social')">Open Social Garage</button></div>`}
+function social(){
+  if(!socialData)return `<section class="card"><h2>Social Garage</h2><p class="muted">${socialBusy?'Connecting to the paddock...':esc(socialError||'Create an anonymous garage to sync progress and compare with friends.')}</p><div class="grid"><div class="listing"><h3>New driver</h3><p>No email, name or personal details required. You will receive one private recovery code.</p><button class="btn" onclick="createAnonymousGarage()">Create anonymous garage</button></div><div class="listing"><h3>Returning driver</h3><p>Paste the recovery code you saved previously to restore your online garage.</p><button class="btn secondary" onclick="recoverGarage()">Use recovery code</button></div></div></section>`;
+  let f=socialData.friends||[],lb=socialData.leaderboards||{friends:[],global:[]};
+  let sync=socialData.save?`Cloud save updated ${new Date(socialData.save.updatedAt).toLocaleString()}`:'No cloud save yet. Use Save to upload this career.';
+  let inviteCode=socialData.invite&&socialData.invite.code?socialData.invite.code:'';
+  let recoveryCode=localStorage.getItem(QMB_RECOVERY_STORAGE)||'';
+  return `<section class="card"><div class="row"><div><h2>Social Garage</h2><p class="muted"><span class="onlineDot"></span>Online as <b>${esc(socialData.profile.displayName)}</b></p></div><button class="btn secondary" onclick="forgetGarage()">Forget this device</button></div><div class="grid"><div class="listing"><h3>Your driver</h3><p class="muted">Your friend code connects existing drivers.</p><div class="socialCode">${esc(socialData.profile.friendCode)}</div><div class="btns" style="margin-top:12px"><button class="btn secondary" onclick="renameDriver()">Change display name</button><button class="btn" onclick="cloudSave(true)">Sync now</button><button class="btn secondary" onclick="cloudLoad()" ${socialData.save?'':'disabled'}>Load cloud career</button></div><p class="small muted">${esc(sync)}</p></div><div class="listing"><h3>Recovery code</h3><p class="muted">Keep this private. It is the only way to open this garage on another device.</p><div class="socialCode" style="font-size:14px;word-break:break-all">${esc(recoveryCode)}</div><div class="btns" style="margin-top:12px"><button class="btn secondary" onclick="copyRecoveryCode()">Copy recovery code</button></div></div><div class="listing"><h3>Invite new drivers</h3><p class="muted">Every new driver receives their own recovery code and invite link.</p><div class="socialCode">${esc(inviteCode)}</div><div class="btns" style="margin-top:12px"><button class="btn" onclick="copyInviteLink()" ${inviteCode?'':'disabled'}>Copy invite link</button></div><p class="small muted">New drivers are automatically added as your friend.</p></div><div class="listing"><h3>Add an existing driver</h3><p class="muted">Enter their 8-character friend code. Friendship is added for both drivers.</p><input class="select" id="friendCodeInput" maxlength="8" placeholder="AB12CD34" aria-label="Friend code"><div class="btns" style="margin-top:10px"><button class="btn" onclick="addFriend()">Add friend</button></div><p class="small muted">${f.length} friend${f.length===1?'':'s'} connected.</p></div></div>${socialError?`<p class="socialNotice warning">${esc(socialError)}</p>`:''}<div class="hr"></div><h3>Friends leaderboard</h3><p class="muted small">Ranked by quickest verified-range quarter-mile ET, then Respect.</p><div class="leaderboardWrap"><table class="socialTable"><thead><tr><th>#</th><th>Driver</th><th>Best ET</th><th>Car</th><th>Power</th><th>Respect / Wins</th></tr></thead><tbody>${leaderboardRows(lb.friends)}</tbody></table></div><div class="hr"></div><h3>Global leaderboard</h3><div class="leaderboardWrap"><table class="socialTable"><thead><tr><th>#</th><th>Driver</th><th>Best ET</th><th>Car</th><th>Power</th><th>Respect / Wins</th></tr></thead><tbody>${leaderboardRows(lb.global)}</tbody></table></div></section>`
+}
+async function callQmbApi(payload){let res=await fetch(QMB_API_URL,{method:'POST',headers:{'Content-Type':'application/json','apikey':QMB_PUBLISHABLE_KEY},body:JSON.stringify(payload)});let data=await res.json();if(!res.ok)throw new Error(data.error||'Multiplayer request failed.');return data}
+async function socialRequest(payload){let recoveryCode=localStorage.getItem(QMB_RECOVERY_STORAGE);if(!recoveryCode){socialError='Create or recover an anonymous garage first.';renderSocialPanel();return null}socialBusy=true;socialError='';renderSocialPanel();try{let data=await callQmbApi({...payload,recoveryCode});socialData=data;socialError='';return data}catch(err){socialError=err&&err.message?err.message:'Multiplayer request failed.';if(String(socialError).includes('recovery code'))socialData=null;return null}finally{socialBusy=false;renderSocialPanel();if(state.screen==='social')document.getElementById('screen').innerHTML=social()}}
+async function initSocial(){let recoveryCode=localStorage.getItem(QMB_RECOVERY_STORAGE);if(!recoveryCode){renderSocialPanel();return}let data=await socialRequest({action:'getSocial'});let invite=new URLSearchParams(location.search).get('invite');if(data&&invite){await socialRequest({action:'acceptInvite',code:invite});history.replaceState({},'',location.pathname)}}
+async function createAnonymousGarage(){if(localStorage.getItem(QMB_RECOVERY_STORAGE)&&!confirm('This device already has a recovery code. Create a different garage?'))return;socialBusy=true;renderSocialPanel();try{let inviteCode=new URLSearchParams(location.search).get('invite')||'';let data=await callQmbApi({action:'createAccount',inviteCode});localStorage.setItem(QMB_RECOVERY_STORAGE,data.recoveryCode);socialData=data.social;socialError='';history.replaceState({},'',location.pathname);try{await navigator.clipboard.writeText(data.recoveryCode)}catch{}prompt('Your garage is ready. Copy this recovery code now and keep it private:',data.recoveryCode);await cloudSave(false);render()}catch(err){socialError=err&&err.message?err.message:'Could not create a garage.'}finally{socialBusy=false;renderSocialPanel();if(state.screen==='social')document.getElementById('screen').innerHTML=social()}}
+async function recoverGarage(){let code=prompt('Paste your Quarter Mile Builder recovery code:');if(!code)return;code=code.trim().toUpperCase();try{let data=await callQmbApi({action:'login',recoveryCode:code});localStorage.setItem(QMB_RECOVERY_STORAGE,code);socialData=data;socialError='';let invite=new URLSearchParams(location.search).get('invite');if(invite)await socialRequest({action:'acceptInvite',code:invite});history.replaceState({},'',location.pathname);render()}catch(err){alert(err&&err.message?err.message:'That recovery code could not be used.')}}
+async function cloudSave(notify=false){localStorage.setItem('qmb_mvp_save',JSON.stringify(state));if(!localStorage.getItem(QMB_RECOVERY_STORAGE)){if(notify)alert('Local backup saved. Create an anonymous garage to sync online.');return}let data=await socialRequest({action:'save',state});if(notify)alert(data?'Career synced to the cloud.':socialError)}
+async function cloudLoad(){if(!socialData||!socialData.save||!socialData.save.state)return alert('No cloud career found.');if(!confirm('Load your cloud career and replace the current local session?'))return;state=socialData.save.state;localStorage.setItem('qmb_mvp_save',JSON.stringify(state));log('Cloud career loaded.','event',['Online sync']);render()}
+async function addFriend(){let input=document.getElementById('friendCodeInput');let code=input?input.value:'';let data=await socialRequest({action:'addFriend',code});if(data){alert('Friend added. Their progress now appears here.');render()}}
+async function renameDriver(){let current=socialData&&socialData.profile?socialData.profile.displayName:'Driver';let displayName=prompt('Choose a public driver name (2-30 characters):',current);if(displayName===null)return;let data=await socialRequest({action:'profile',displayName});if(data)render()}
+async function copyRecoveryCode(){let code=localStorage.getItem(QMB_RECOVERY_STORAGE)||'';if(!code)return;try{await navigator.clipboard.writeText(code);alert('Recovery code copied. Keep it private.')}catch{prompt('Copy this recovery code and keep it private:',code)}}
+async function copyInviteLink(){let code=socialData&&socialData.invite?socialData.invite.code:'';if(!code)return;let url=location.origin+location.pathname+'?invite='+encodeURIComponent(code);try{await navigator.clipboard.writeText(url);alert('Invite link copied. Send it to a friend.')}catch{prompt('Copy this invitation link:',url)}}
+function forgetGarage(){if(!confirm('Forget this garage on this device? Make sure you copied the recovery code first.'))return;localStorage.removeItem(QMB_RECOVERY_STORAGE);socialData=null;socialError='';render()}
+async function queueSocialRace(player,won){if(!socialData||!state.car)return;await socialRequest({action:'recordRace',race:{carName:state.car.name,et:player.et,trap:player.trap,power:state.car.power,won}});await cloudSave(false)}
+function season(){normaliseAccounting();let seasons=[...new Set(state.accounting.map(x=>x.season))].sort((a,b)=>a-b);let currentSeason=seasonForDay(state.day);if(!seasons.includes(currentSeason))seasons.push(currentSeason);let selected=state.accountingSeason||'all';let opts=['all',...seasons].map(s=>`<option value="${s}" ${String(selected)===String(s)?'selected':''}>${s==='all'?'All seasons':'Season '+s}</option>`).join('');let entries=state.accounting.filter(x=>selected==='all'||String(x.season)===String(selected));let summaries=(state.eventSummaries||[]).filter(x=>selected==='all'||String(x.season)===String(selected));let cashIn=sumAccounting(entries,'cashDelta',x=>x.cashDelta>0),cashOut=sumAccounting(entries,'cashDelta',x=>x.cashDelta<0),cashNet=sumAccounting(entries,'cashDelta'),respectIn=sumAccounting(entries,'respectDelta',x=>x.respectDelta>0),respectOut=sumAccounting(entries,'respectDelta',x=>x.respectDelta<0),respectNet=sumAccounting(entries,'respectDelta');let eventRows=summaries.length?summaries.slice().reverse().map(x=>`<tr><td>Day ${x.day}</td><td>${x.eventName}</td><td>${x.winCount}-${x.lossCount}</td><td class="${x.cashNet>=0?'goodText':'badText'}">${signedMoney(x.cashNet)}</td><td class="${x.respectNet>=0?'goodText':'badText'}">${signedNumber(x.respectNet,1)}</td></tr>`).join(''):'<tr><td colspan="5" class="muted">No completed events recorded for this selection.</td></tr>';return `<section class="card"><div class="row"><div><h2>Season Balance Sheet</h2><p class="muted">Track earnings, costs, Respect gains and profitability by season. A season is currently 14 in-game days.</p></div><select class="select" onchange="state.accountingSeason=this.value;render()">${opts}</select></div><div class="raceHud"><div class="gauge"><div class="muted">Cash income</div><div class="value goodText">${fmt(cashIn)}</div></div><div class="gauge"><div class="muted">Cash costs</div><div class="value badText">${fmt(Math.abs(cashOut))}</div></div><div class="gauge"><div class="muted">Cash net</div><div class="value ${cashNet>=0?'goodText':'badText'}">${signedMoney(cashNet)}</div></div><div class="gauge"><div class="muted">Respect net</div><div class="value ${respectNet>=0?'goodText':'badText'}">${signedNumber(respectNet,1)}</div></div></div><div class="hr"></div><h3>Completed event statements</h3><table style="width:100%;border-collapse:collapse"><thead><tr><th align="left">Day</th><th align="left">Event</th><th align="left">W-L</th><th align="left">Cash P/L</th><th align="left">Respect</th></tr></thead><tbody>${eventRows}</tbody></table><div class="hr"></div><h3>Cash and Respect ledger</h3><div class="log" style="max-height:420px"><table style="width:100%;border-collapse:collapse"><thead><tr><th align="left">Day</th><th align="left">Type</th><th align="left">Item</th><th align="left">Cash</th><th align="left">Respect</th></tr></thead><tbody>${balanceTableRows(entries.slice().reverse())}</tbody></table></div></section>`}
+function logScreen(){return `<section class="card"><h2>Log</h2><p class="muted">Every money, Respect, event and penalty change is shown here to make testing easier.</p><div class="log">${state.log.length?state.log.map(renderLogEntry).join(''):'<div class="muted">No log entries yet.</div>'}</div></section>`}
+function saveGame(){localStorage.setItem('qmb_mvp_save',JSON.stringify(state));log('Local backup saved.');cloudSave(true);}
+function loadGame(manual=false){if(manual&&socialData&&socialData.save)return cloudLoad();let s=localStorage.getItem('qmb_mvp_save');if(s){state=JSON.parse(s);if(manual)log('Local backup loaded.')}else if(manual)alert('No local or cloud save found.');render();}
+function resetGame(){if(confirm('Reset the game?')){localStorage.removeItem('qmb_mvp_save');state={money:15000,respect:0,day:1,car:null,owned:[],listings:[],log:[],screen:'home',watch:[],watchCap:5,lastEvent:null,pendingArrival:null,bettingUnlocked:false,completedEvents:{},bestETs:{},workshopDayUsed:null,accounting:[],eventSummaries:[],accountingSeason:'all',marketOffers:[],pendingSale:null};refreshListings();render();}}
+window.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();handleLiveShift();}});
+refreshListings();loadGame(false);render();initSocial();
+</script>
+</body>
+</html>
