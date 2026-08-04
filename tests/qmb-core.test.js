@@ -117,4 +117,107 @@ const shortOnWatchesQueue = evaluate(`(() => {
 assert.match(shortOnWatchesQueue, /watchAllRemainingRaces\(\)" disabled>Watch All Remaining Races/);
 assert.match(shortOnWatchesQueue, /You need 2 Watch chances/);
 
+assert.equal(evaluate(`Object.keys(BADGE_DEFINITIONS).length`), 24);
+assert.deepEqual(Array.from(evaluate(`BADGE_CATEGORIES`)), ['Victorian Motoring','Engineering','Racing','Garage and Market','Respect','Punter']);
+assert.equal(evaluate(`Object.values(BADGE_DEFINITIONS).every(x=>x.name&&x.category&&x.icon&&x.description&&x.hint)`), true);
+
+evaluate(`state=freshState();state.respect=50;normaliseState()`);
+assert.equal(evaluate(`hasBadge('known_around_the_pits')`), true);
+assert.equal(evaluate(`state.notifications.filter(x=>x.type==='badge').length`), 1);
+evaluate(`checkRelevantBadges('respect_changed');checkRelevantBadges('respect_changed')`);
+assert.equal(evaluate(`Object.keys(state.badges).filter(x=>x==='known_around_the_pits').length`), 1);
+assert.equal(evaluate(`state.notifications.filter(x=>x.type==='badge').length`), 1);
+assert.equal(JSON.parse(storage.get('qmb_mvp_save')).badges.known_around_the_pits.gameDay, 1);
+
+evaluate(`state=freshState();delete state.badges;delete state.badgeHistory;normaliseState()`);
+assert.equal(evaluate(`typeof state.badges`), 'object');
+assert.equal(evaluate(`state.badgeHistory.version`), 1);
+assert.equal(evaluate(`hasBadge('notice_of_disposal')`), false);
+
+evaluate(`state=freshState();state.badges={notice_of_disposal:{unlockedAt:'old',gameDay:3,carId:null,context:{}}};state.badgeHistory=freshBadgeHistory();let incoming=freshState();incoming.badges={known_around_the_pits:{unlockedAt:'new',gameDay:8,carId:null,context:{}}};state=mergeBadgeCareer(incoming,state)`);
+assert.equal(evaluate(`hasBadge('notice_of_disposal')&&hasBadge('known_around_the_pits')`), true);
+
+evaluate(`state=freshState();state.accounting=[{day:1,label:'Sold Car A immediately to a wholesaler.',cashDelta:1000},{day:100,label:'Sold Car B to Buyer.',cashDelta:1000},{day:200,label:'Sold Car C to Buyer.',cashDelta:1000},{day:365,label:'Sold Car D to Buyer.',cashDelta:1000}];state.day=365;normaliseState()`);
+assert.equal(evaluate(`hasBadge('notice_of_disposal')`), true);
+assert.equal(evaluate(`hasBadge('lmct_territory')`), true);
+
+evaluate(`state=freshState();ensureBadgeState();for(let i=0;i<10;i++)checkRelevantBadges('listing_inspected',{listingId:'same'})`);
+assert.equal(evaluate(`state.badgeHistory.inspectedListingIds.length`), 1);
+assert.equal(evaluate(`hasBadge('kick_the_tyres')`), false);
+evaluate(`for(let i=1;i<10;i++)checkRelevantBadges('listing_inspected',{listingId:'listing_'+i})`);
+assert.equal(evaluate(`hasBadge('kick_the_tyres')`), true);
+
+evaluate(`state=freshState();ensureBadgeState();state.car=makeOwned(CARS[0],'manual','manual');state.car.listedForSale=true`);
+assert.equal(evaluate(`hasBadge('notice_of_disposal')`), false);
+
+evaluate(`state=freshState();ensureBadgeState();state.car=makeOwned(CARS[0],'manual','manual');state.owned=[state.car];state.car.acquisitionPower=100;state.car.power=150;checkRelevantBadges('power_changed',{car:state.car,carId:state.car.uid,carName:state.car.name})`);
+assert.equal(evaluate(`hasBadge('ten_percent_solution')&&hasBadge('twenty_five_percent_more_trouble')&&hasBadge('call_the_vass_engineer')`), true);
+assert.equal(evaluate(`state.notifications.filter(x=>x.type==='badge').length`), 1);
+assert.equal(evaluate(`state.notifications.find(x=>x.type==='badge').badgeIds.length`), 3);
+
+evaluate(`state=freshState();ensureBadgeState();state.car=makeOwned(CARS[0],'manual','manual');state.car.firstPassET=14;state.car.firstSixty=2.2;state.car.bestRunSnapshot={et:14,power:100};checkRelevantBadges('race_completed',{car:state.car,carId:state.car.uid,run:{et:13.45,sixty:1.95},previous:{bestRunSnapshot:{et:14,power:100}},raceStartPower:102,opponentStartPower:100,win:false,noShiftRequired:false,allRequiredShiftsInTolerance:false,cleanPass:false,eventId:'heathcote_legal'})`);
+assert.equal(evaluate(`hasBadge('found_a_tenth')&&hasBadge('found_half_a_second')&&hasBadge('the_sixty_foot_fix')&&hasBadge('area_under_the_curve')`), true);
+
+const sweetAssessment = evaluate(`assessRaceForBadges({playerCanShift:true,shiftEvents:[{fromGear:1,gear:2,rpm:6000,diff:500}],limiterTime:0},{launch:{issue:null},shifting:{issues:[]}})`);
+assert.equal(sweetAssessment.allRequiredShiftsInTolerance, true);
+assert.equal(sweetAssessment.cleanPass, true);
+const lateAssessment = evaluate(`assessRaceForBadges({playerCanShift:true,shiftEvents:[{fromGear:1,gear:2,rpm:6501,diff:501}],limiterTime:0},{launch:{issue:null},shifting:{issues:[{type:'late'}]}})`);
+assert.equal(lateAssessment.allRequiredShiftsInTolerance, false);
+assert.equal(lateAssessment.cleanPass, false);
+const missedAssessment = evaluate(`assessRaceForBadges({playerCanShift:true,shiftEvents:[],limiterTime:0},{launch:{issue:null},shifting:{issues:[{type:'missed'}]}})`);
+assert.equal(missedAssessment.noShiftRequired, false);
+const oneGearAssessment = evaluate(`assessRaceForBadges({playerCanShift:true,shiftEvents:[],limiterTime:0},{launch:{issue:null},shifting:{issues:[]}})`);
+assert.equal(oneGearAssessment.noShiftRequired, true);
+assert.equal(oneGearAssessment.cleanPass, true);
+const automaticAssessment = evaluate(`assessRaceForBadges({playerCanShift:false,shiftEvents:[{fromGear:1,gear:2,rpm:5500,diff:0,automatic:true}],limiterTime:0},{launch:{issue:null},shifting:{issues:[]}})`);
+assert.equal(automaticAssessment.cleanPass, true);
+const autoManualAssessment = evaluate(`assessRaceForBadges({playerCanShift:true,shiftEvents:[{fromGear:1,gear:2,rpm:5500,diff:0}],limiterTime:0},{launch:{issue:null},shifting:{issues:[]}})`);
+assert.equal(autoManualAssessment.cleanPass, true);
+
+evaluate(`state=freshState();ensureBadgeState();state.car=makeOwned(CARS[0]);state.car.performanceModified=false;checkRelevantBadges('race_completed',{car:state.car,carId:state.car.uid,run:{et:14,sixty:2},previous:{},raceStartPower:100,opponentStartPower:121,win:true,noShiftRequired:false,allRequiredShiftsInTolerance:false,cleanPass:false,eventId:'heathcote_legal'})`);
+assert.equal(evaluate(`hasBadge('punching_above_your_weight')&&hasBadge('run_what_you_brung')`), true);
+evaluate(`state=freshState();ensureBadgeState();state.car=makeOwned(CARS[0]);state.car.performanceModified=true;checkRelevantBadges('race_completed',{car:state.car,run:{et:14,sixty:2},previous:{},raceStartPower:100,opponentStartPower:100,win:true,eventId:'heathcote_legal'})`);
+assert.equal(evaluate(`hasBadge('run_what_you_brung')`), false);
+
+assert.equal(evaluate(`eligibleVictorianVenueIds().includes('sydney_challenge')||eligibleVictorianVenueIds().includes('bend_open')`), false);
+evaluate(`state=freshState();ensureBadgeState();state.car=makeOwned(CARS[0]);state.badgeHistory.racedVenueIds=eligibleVictorianVenueIds().slice();checkRelevantBadges('race_completed',{car:state.car,run:{et:14,sixty:2},previous:{},raceStartPower:100,opponentStartPower:100,win:false,eventId:'sydney_challenge'})`);
+assert.equal(evaluate(`hasBadge('victorian_tour')`), true);
+
+evaluate(`state=freshState();ensureBadgeState();state.car=makeOwned(CARS.find(x=>x.id==='mx5'));ensureOwnedCarBadgeHistory(state.car);checkRelevantBadges('race_completed',{car:state.car,run:{et:14,sixty:2},previous:{},raceStartPower:140,opponentStartPower:140,win:false,historicEligible:BADGE_REFERENCE_YEAR-state.car.modelYear>=25,eventId:'heathcote_legal'})`);
+assert.equal(evaluate(`hasBadge('red_plate_royalty')`), true);
+assert.equal(evaluate(`state.car.modelYear`), 1999);
+
+evaluate(`state=freshState();ensureBadgeState();checkRelevantBadges('race_completed',{run:{et:14,sixty:2},previous:{},majorFailure:false})`);
+assert.equal(evaluate(`hasBadge('trailered_home')`), false);
+evaluate(`checkRelevantBadges('race_completed',{run:{et:14,sixty:2},previous:{},majorFailure:true})`);
+assert.equal(evaluate(`hasBadge('trailered_home')`), true);
+
+evaluate(`state=freshState();state.respect=50;normaliseState()`);
+assert.equal(evaluate(`hasBadge('known_around_the_pits')`), true);
+evaluate(`state=freshState();ensureBadgeState();checkRelevantBadges('private_offer_generated',{respectGated:false})`);
+assert.equal(evaluate(`hasBadge('word_gets_around')`), false);
+evaluate(`checkRelevantBadges('private_offer_generated',{respectGated:true})`);
+assert.equal(evaluate(`hasBadge('word_gets_around')`), true);
+
+evaluate(`state=freshState();ensureBadgeState();(()=>{let a={id:'a',entryId:'a_1'},b={id:'b',entryId:'b_1'};checkRelevantBadges('watched_run',{cars:[a],results:[{et:12}]});checkRelevantBadges('bet_settled',{won:true,informed:observedBeforeBet(a)&&observedBeforeBet(b)})})()`);
+assert.equal(evaluate(`hasBadge('read_the_form')`), false);
+evaluate(`(()=>{let b={id:'b',entryId:'b_1'};checkRelevantBadges('watched_run',{cars:[b],results:[{et:13}]});let a={id:'a',entryId:'a_1'};checkRelevantBadges('bet_settled',{won:true,informed:observedBeforeBet(a)&&observedBeforeBet(b)})})()`);
+assert.equal(evaluate(`hasBadge('read_the_form')`), true);
+
+evaluate(`state=freshState();ensureBadgeState();checkRelevantBadges('event_completed',{bettingProfit:25,wagerAfterProfit:false,disqualified:false,totalEventIncome:-500})`);
+assert.equal(evaluate(`hasBadge('walk_away')`), true);
+evaluate(`state=freshState();ensureBadgeState();checkRelevantBadges('event_completed',{bettingProfit:25,wagerAfterProfit:true,disqualified:false})`);
+assert.equal(evaluate(`hasBadge('walk_away')`), false);
+
+evaluate(`state=freshState();state.respect=50;normaliseState()`);
+const badgeMarkup = evaluate(`badges()`);
+assert.match(badgeMarkup, /Career Badges/);
+assert.match(badgeMarkup, /badgeCard unlocked/);
+assert.match(badgeMarkup, /badgeCard locked/);
+assert.match(html, /@media\(max-width:640px\)[\s\S]*\.badgeGrid\{grid-template-columns:1fr\}/);
+assert.doesNotMatch(evaluate(`nav.toString()`), /items\.push\('watch'/);
+assert.match(evaluate(`notifyMarketOffer.toString()`), /marketOffer/);
+assert.match(evaluate(`cloudSave.toString()`), /action:'save'/);
+assert.match(evaluate(`publicStatsSnapshot.toString()`), /respect/);
+
 console.log('Quarter Mile Builder core regression checks passed.');
