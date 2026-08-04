@@ -1922,42 +1922,174 @@ function renderWatchRun(carA,carB,r1,r2,betData){
   }
   requestAnimationFrame(tick);topStats();currentPanel();
 }
-function finishWatchRun(carA,carB,r1,r2,betData){
-  watchRaceActive=false;
-  let winner=r1.et<r2.et?carA:carB;
-  checkRelevantBadges('watched_run',{cars:[carA,carB],results:[r1,r2]});
-  let msg=`Watched ${carA.name} run ${r1.et.toFixed(2)} @ ${r1.trap.toFixed(0)} km/h against ${carB.name} (${r2.et.toFixed(2)} @ ${r2.trap.toFixed(0)}).`;
-  let before=snapshot();
-  let details=[`Winner ${winner.name}`,`${carA.name} ${r1.et.toFixed(2)} @ ${r1.trap.toFixed(0)} km/h`,`${carB.name} ${r2.et.toFixed(2)} @ ${r2.trap.toFixed(0)} km/h`];
-  if(betData.bet){
-    details.push(`Picked ${betData.picked.name}`,`Stake ${fmt(betData.stake)}`);if(betData.approach)details.push(`Approach ${betData.approach}`);
-    if(betData.picked===winner){state.money+=betData.stake*2;state.respect+=1;if(state.lastEvent&&state.lastEvent.bettingLedger){state.lastEvent.bettingLedger.profit+=betData.stake*2;if(state.lastEvent.bettingLedger.profit>0)state.lastEvent.bettingLedger.movedIntoProfit=true}msg+=' Side bet won: +'+fmt(betData.stake)+'.';details.push('Bet result win');checkRelevantBadges('bet_settled',{won:true,informed:betData.informed===true});}
-    else {msg+=' Side bet lost.';details.push('Bet result loss');checkRelevantBadges('bet_settled',{won:false,informed:betData.informed===true});}
-    let e = state.lastEvent;
-    let missedCallChance =
-  betData.approach === 'quiet' ? 0.03 :
-  betData.approach === 'discreet' ? 0.05 :
-  0.08;
+function finishWatchRun(carA, carB, r1, r2, betData) {
+  watchRaceActive = false;
 
-missedCallChance += Math.min(0.04, betData.stake / 7500);
+  const winner = r1.et < r2.et ? carA : carB;
 
-if (e && e.kind === 'race' && Math.random() < missedCallChance) {
-      e.runsLeft=Math.max(0,e.runsLeft-1);e.missed++;
-      let loss=e.missed===1?2:e.missed===2?4:8;
-      state.respect=Math.max(-20,state.respect-loss);
-      msg+=' You got distracted and missed a lane call. Respect -'+loss+'.';
-      details.push(`Missed lane call ${e.missed}`,`Runs left ${e.runsLeft}`,`Lane-call penalty -${loss} Respect`);
-      logChange(msg,before,'bad',details);
-      if(e.missed>=3){completeEventNight('You missed too many lane calls and were told to call it a night.','bad');return;}
-      markCurrentLineupRaceComplete();showTimingBoard(carA,carB,r1,r2,winner,msg);return;
+  checkRelevantBadges('watched_run', {
+    cars: [carA, carB],
+    results: [r1, r2]
+  });
+
+  let msg =
+    `Watched ${carA.name} run ${r1.et.toFixed(2)} ` +
+    `@ ${r1.trap.toFixed(0)} km/h against ${carB.name} ` +
+    `(${r2.et.toFixed(2)} @ ${r2.trap.toFixed(0)}).`;
+
+  const before = snapshot();
+
+  const details = [
+    `Winner ${winner.name}`,
+    `${carA.name} ${r1.et.toFixed(2)} @ ${r1.trap.toFixed(0)} km/h`,
+    `${carB.name} ${r2.et.toFixed(2)} @ ${r2.trap.toFixed(0)} km/h`
+  ];
+
+  if (betData && betData.bet) {
+    details.push(
+      `Picked ${betData.picked.name}`,
+      `Stake ${fmt(betData.stake)}`
+    );
+
+    if (betData.approach) {
+      details.push(`Approach ${betData.approach}`);
     }
-    logChange(msg,before,'bet',details);
-  }else{
-    state.respect+=.1;
+
+    if (betData.picked === winner) {
+      state.money += betData.stake * 2;
+      state.respect += 1;
+
+      if (
+        state.lastEvent &&
+        state.lastEvent.bettingLedger
+      ) {
+        /*
+         * The stake was deducted when the bet was placed.
+         * Receiving 2x stake produces only 1x stake in actual profit.
+         */
+        state.lastEvent.bettingLedger.profit +=
+          betData.stake * 2;
+
+        if (state.lastEvent.bettingLedger.profit > 0) {
+          state.lastEvent.bettingLedger.movedIntoProfit = true;
+        }
+      }
+
+      msg += ` Side bet won: +${fmt(betData.stake)}.`;
+      details.push('Bet result win');
+
+      checkRelevantBadges('bet_settled', {
+        won: true,
+        informed: betData.informed === true
+      });
+    } else {
+      msg += ' Side bet lost.';
+      details.push('Bet result loss');
+
+      checkRelevantBadges('bet_settled', {
+        won: false,
+        informed: betData.informed === true
+      });
+    }
+
+    const e = state.lastEvent;
+
+    const baseMissedCallChance =
+      betData.approach === 'quiet' ? 0.03 :
+      betData.approach === 'discreet' ? 0.05 :
+      0.08;
+
+    const stakeMissedCallChance =
+      Math.min(0.04, Number(betData.stake || 0) / 7500);
+
+    const missedCallChance =
+      baseMissedCallChance + stakeMissedCallChance;
+
+    if (
+      e &&
+      e.kind === 'race' &&
+      Math.random() < missedCallChance
+    ) {
+      e.runsLeft = Math.max(0, e.runsLeft - 1);
+      e.missed = (e.missed || 0) + 1;
+
+      const loss =
+        e.missed === 1 ? 2 :
+        e.missed === 2 ? 4 :
+        8;
+
+      state.respect = Math.max(
+        -20,
+        state.respect - loss
+      );
+
+      msg +=
+        ` You got distracted and missed a lane call. ` +
+        `Respect -${loss}.`;
+
+      details.push(
+        `Missed lane call ${e.missed}`,
+        `Runs left ${e.runsLeft}`,
+        `Lane-call penalty -${loss} Respect`
+      );
+
+      /*
+       * Mark the watched NPC race complete before anything
+       * re-renders the event screen.
+       */
+      markCurrentLineupRaceComplete();
+
+      logChange(msg, before, 'bad', details);
+
+      if (e.missed >= 3) {
+        completeEventNight(
+          'You missed too many lane calls and were told to call it a night.',
+          'bad'
+        );
+        return;
+      }
+
+      showTimingBoard(
+        carA,
+        carB,
+        r1,
+        r2,
+        winner,
+        msg
+      );
+
+      return;
+    }
+
+    /*
+     * Advance the lineup before logChange(), because logChange()
+     * calls render(). This prevents that render from rebuilding
+     * the event screen with the just-watched race still current.
+     */
+    markCurrentLineupRaceComplete();
+    logChange(msg, before, 'bet', details);
+  } else {
+    state.respect += 0.1;
     details.push('Spectating Respect +0.1');
-    logChange(msg,before,'event',details);
+
+    markCurrentLineupRaceComplete();
+    logChange(msg, before, 'event', details);
   }
-  markCurrentLineupRaceComplete();if(watchStopAfterCurrent){watchStopAfterCurrent=false;goToMyRace();return;}showTimingBoard(carA,carB,r1,r2,winner,msg);
+
+  if (watchStopAfterCurrent) {
+    watchStopAfterCurrent = false;
+    goToMyRace();
+    return;
+  }
+
+  showTimingBoard(
+    carA,
+    carB,
+    r1,
+    r2,
+    winner,
+    msg
+  );
 }
 function showTimingBoard(carA,carB,r1,r2,winner,msg){
   document.getElementById('screen').innerHTML=`<section class="card"><h2>Timing Board</h2><div class="timingBoard"><div class="${winner===carA?'winner':''}">${carA.name}: ${r1.et.toFixed(2)} @ ${r1.trap.toFixed(0)} km/h</div><div class="${winner===carB?'winner':''}">${carB.name}: ${r2.et.toFixed(2)} @ ${r2.trap.toFixed(0)} km/h</div></div><p>${msg}</p><div class="hr"></div><div class="btns">${watchAllMode?`<button class="btn secondary" onclick="stopWatchAllBeforeMine()">${watchAllStopLabel()}</button><span class="small muted">The next queued race will start automatically.</span>`:'<button class="btn" onclick="show(\'currentEvent\')">Back to event</button>'}</div></section>`;
