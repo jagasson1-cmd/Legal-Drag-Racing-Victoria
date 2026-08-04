@@ -222,6 +222,9 @@ assert.match(html, /@media\(max-width:860px\)[\s\S]*\.nav\{display:flex;overflow
 assert.match(html, /@media\(max-width:640px\)[\s\S]*\.queueCard\.done\{min-height:0;padding:8px 10px\}/);
 assert.match(evaluate(`lineupQueueList.toString()`), /listing queueCard/);
 assert.match(evaluate(`currentEvent.toString()`), /compactMobileActions/);
+assert.match(html, /@media\(max-width:640px\)\{[\s\S]*body\{font-size:14px\}/);
+assert.match(html, /\.badgeCard\{grid-template-columns:40px minmax\(0,1fr\);gap:8px;min-height:96px/);
+assert.match(html, /\.touchShiftBtn\{min-height:52px;font-size:18px\}/);
 assert.doesNotMatch(evaluate(`nav.toString()`), /items\.push\('watch'/);
 assert.match(evaluate(`notifyMarketOffer.toString()`), /marketOffer/);
 assert.match(evaluate(`cloudSave.toString()`), /action:'save'/);
