@@ -85,6 +85,24 @@ evaluate(`state={...freshState(),day:4,log:[{msg:'legacy progress'}]};delete sta
 assert.equal(evaluate(`state.notifications.length`), 0);
 assert.equal(evaluate(`state.guidance.created.firstRace`), true);
 
+evaluate(`state=freshState();refreshListings()`);
+assert.equal(evaluate(`state.listings.length`), 8);
+assert.equal(evaluate(`new Set(state.listings.map(x=>x.carId)).size`), 8);
+assert.equal(evaluate(`state.listings.filter(x=>carById(x.carId).price<10000).length`), 3);
+assert.equal(evaluate(`state.listings.filter(x=>carById(x.carId).price>=10000&&carById(x.carId).price<25000).length`), 3);
+assert.equal(evaluate(`state.listings.filter(x=>carById(x.carId).price>=25000).length`), 2);
+const firstClassifiedIds = evaluate(`state.listings.map(x=>x.id).join('|')`);
+evaluate(`advanceGameDays(1)`);
+assert.equal(evaluate(`state.day===2&&state.listingRotationDay===2`), true);
+assert.notEqual(evaluate(`state.listings.map(x=>x.id).join('|')`), firstClassifiedIds);
+const secondClassifiedIds = evaluate(`state.listings.map(x=>x.id).join('|')`);
+evaluate(`state.day+=3;normaliseState()`);
+assert.equal(evaluate(`state.listingRotationDay`), 5);
+assert.notEqual(evaluate(`state.listings.map(x=>x.id).join('|')`), secondClassifiedIds);
+assert.match(evaluate(`workTyreShopWeek.toString()`), /advanceGameDays\(7\)/);
+assert.match(evaluate(`skipCalendarDay.toString()`), /advanceGameDays\(1\)/);
+assert.match(evaluate(`completeEventNight.toString()`), /advanceGameDays\(1\)/);
+
 const spectatorQueue = evaluate(`(() => {
   state={...freshState(),money:1000,respect:0,car:{name:'Test car'}};
   state.lastEvent={kind:'spectate',queueIndex:0,watchesLeft:2,lineup:[{type:'npc',aIdx:0,bIdx:1,done:false}],opponents:[{name:'Car A',type:'Street',drive:'RWD',visible:'street tyres'},{name:'Car B',type:'Street',drive:'FWD',visible:'street tyres'}]};
