@@ -1933,6 +1933,7 @@ function finishWatchRun(carA,carB,r1,r2,betData){
     details.push(`Picked ${betData.picked.name}`,`Stake ${fmt(betData.stake)}`);if(betData.approach)details.push(`Approach ${betData.approach}`);
     if(betData.picked===winner){state.money+=betData.stake*2;state.respect+=1;if(state.lastEvent&&state.lastEvent.bettingLedger){state.lastEvent.bettingLedger.profit+=betData.stake*2;if(state.lastEvent.bettingLedger.profit>0)state.lastEvent.bettingLedger.movedIntoProfit=true}msg+=' Side bet won: +'+fmt(betData.stake)+'.';details.push('Bet result win');checkRelevantBadges('bet_settled',{won:true,informed:betData.informed===true});}
     else {msg+=' Side bet lost.';details.push('Bet result loss');checkRelevantBadges('bet_settled',{won:false,informed:betData.informed===true});}
+    let e = state.lastEvent;
     let missedCallChance =
   betData.approach === 'quiet' ? 0.03 :
   betData.approach === 'discreet' ? 0.05 :
