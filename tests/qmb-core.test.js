@@ -101,4 +101,20 @@ const playerQueue = evaluate(`(() => {
 assert.match(playerQueue, /Go to My Race/);
 assert.match(playerQueue, /Watch All Before Mine/);
 
+const postPlayerQueue = evaluate(`(() => {
+  state={...freshState(),money:1000,respect:0,car:{name:'Test car'}};
+  state.lastEvent={kind:'race',queueIndex:1,watchesLeft:2,lineup:[{type:'player',opponentIndex:0,done:true},{type:'npc',aIdx:0,bIdx:1,done:false},{type:'npc',aIdx:1,bIdx:0,done:false}],opponents:[{name:'Car A',type:'Street',drive:'RWD',visible:'street tyres'},{name:'Car B',type:'Street',drive:'FWD',visible:'street tyres'}]};
+  return nextLineupPanel(state.lastEvent);
+})()`);
+assert.match(postPlayerQueue, /Watch All Remaining Races/);
+assert.match(postPlayerQueue, /Watch the remaining 2 races automatically/);
+assert.doesNotMatch(postPlayerQueue, /Go to My Race/);
+
+const shortOnWatchesQueue = evaluate(`(() => {
+  state.lastEvent.watchesLeft=1;
+  return nextLineupPanel(state.lastEvent);
+})()`);
+assert.match(shortOnWatchesQueue, /watchAllRemainingRaces\(\)" disabled>Watch All Remaining Races/);
+assert.match(shortOnWatchesQueue, /You need 2 Watch chances/);
+
 console.log('Quarter Mile Builder core regression checks passed.');
