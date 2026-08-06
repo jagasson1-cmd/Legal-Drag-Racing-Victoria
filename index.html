@@ -1130,7 +1130,31 @@ function badgeProgress(id){let h=state.badgeHistory||freshBadgeHistory(),c=state
 function badgeCard(id){let def=BADGE_DEFINITIONS[id],record=state.badges[id],progress=badgeProgress(id),when=record?`Unlocked Day ${record.gameDay}${record.context&&record.context.carName?' · '+esc(record.context.carName):''}`:'Locked',text=record?def.description:def.hint,bar=progress?`<p class="muted">${esc(progress.label)}</p><div class="badgeProgress" aria-hidden="true"><span style="width:${Math.min(100,progress.value/progress.max*100)}%"></span></div>`:'';return `<article class="badgeCard ${record?'unlocked':'locked'}"><div class="badgeIcon" aria-hidden="true">${def.icon}</div><div><div class="badgeState">${when}</div><h3>${def.name}</h3><p>${text}</p>${bar}</div></article>`}
 function badges(){normaliseState();let count=Object.keys(state.badges).length;return `<section class="card"><div class="row"><div><h2>Career Badges</h2><p class="muted">Permanent milestones from your Victorian motoring, engineering and racing career.</p></div><div class="badgeSummary"><span class="pill"><b>${count}</b> / ${Object.keys(BADGE_DEFINITIONS).length} unlocked</span></div></div>${BADGE_CATEGORIES.map(category=>{let ids=Object.keys(BADGE_DEFINITIONS).filter(id=>BADGE_DEFINITIONS[id].category===category);return `<section class="badgeCategory"><h3>${category}</h3><div class="badgeGrid">${ids.map(badgeCard).join('')}</div></section>`}).join('')}</section>`}
 function freshGuidance(){return {version:1,created:{welcome:false,firstCar:false,firstRace:false}}}
-function freshState(){return {money:15000,respect:0,day:1,car:null,owned:[],listings:[],listingRotationDay:1,log:[],screen:'home',watch:[],watchCap:5,lastEvent:null,pendingArrival:null,bettingUnlocked:false,completedEvents:{},bestETs:{},workshopDayUsed:null,lastTyreWorkDay:null,accounting:[],eventSummaries:[],accountingSeason:'all',marketOffers:[],pendingSale:null,notifications:[],guidance:freshGuidance(),badges:{},badgeHistory:freshBadgeHistory()}}
+const GARAGE_SAVE_VERSION=2;
+function garageCapacityForRespect(respect=state.respect){let r=Number(respect)||0;return r>=300?5:r>=150?4:r>=75?3:r>=20?2:1}
+function ensureVehicleUid(c){if(!c)return null;if(!c.uid)c.uid=(c.id||'car')+'_'+Date.now()+'_'+Math.random().toString(16).slice(2);return c.uid}
+function normaliseGarageState(target=state){
+  if(!target)return target;
+  if(!Array.isArray(target.owned))target.owned=[];
+  if(target.car){ensureVehicleUid(target.car);if(!target.owned.some(c=>c&&ensureVehicleUid(c)===target.car.uid))target.owned.unshift(target.car)}
+  let seen=new Set();target.owned=target.owned.filter(c=>{if(!c)return false;let id=ensureVehicleUid(c);if(seen.has(id))return false;seen.add(id);return true});
+  let unlocked=garageCapacityForRespect(target.respect);target.garageCapacity=Math.max(1,Number(target.garageCapacity)||1,unlocked);
+  if(!target.activeCarId||!target.owned.some(c=>c.uid===target.activeCarId))target.activeCarId=target.car&&target.owned.some(c=>c.uid===target.car.uid)?target.car.uid:(target.owned[0]&&target.owned[0].uid)||null;
+  target.car=target.owned.find(c=>c.uid===target.activeCarId)||null;
+  if(!Array.isArray(target.marketOffers))target.marketOffers=[];
+  let listed=target.owned.find(c=>c.listedForSale);
+  for(let o of target.marketOffers){if(!o.vehicleId&&listed)o.vehicleId=listed.uid}
+  if(target.pendingSale&&!target.pendingSale.vehicleId){let pendingCar=listed||target.car;if(pendingCar)target.pendingSale.vehicleId=pendingCar.uid}
+  target.saveVersion=Math.max(Number(target.saveVersion)||1,GARAGE_SAVE_VERSION);
+  return target;
+}
+function activeCar(){normaliseGarageState();return state.car}
+function findOwnedCar(vehicleId){normaliseGarageState();return state.owned.find(c=>c.uid===vehicleId)||null}
+function listedCar(){normaliseGarageState();return state.owned.find(c=>c.listedForSale)||null}
+function setActiveCar(vehicleId){normaliseGarageState();let c=findOwnedCar(vehicleId);if(!c)return false;if(hasEventSession()||state.pendingArrival){alert('Finish the current trip or event before changing cars.');return false}state.activeCarId=c.uid;state.car=c;state.marketOffers=(state.marketOffers||[]);log('Selected '+c.name+' as the active car.','event',[`Garage ${state.owned.length}/${state.garageCapacity}`]);state.screen='garage';render();return true}
+function removeOwnedCar(vehicleId){normaliseGarageState();state.owned=state.owned.filter(c=>c.uid!==vehicleId);state.marketOffers=(state.marketOffers||[]).filter(o=>o.vehicleId!==vehicleId);if(state.activeCarId===vehicleId)state.activeCarId=(state.owned[0]&&state.owned[0].uid)||null;state.car=state.owned.find(c=>c.uid===state.activeCarId)||null;return state.car}
+function migrateGameState(target){return normaliseGarageState(target||freshState())}
+function freshState(){return {saveVersion:GARAGE_SAVE_VERSION,money:15000,respect:0,day:1,car:null,activeCarId:null,owned:[],garageCapacity:1,listings:[],listingRotationDay:1,log:[],screen:'home',watch:[],watchCap:5,lastEvent:null,pendingArrival:null,bettingUnlocked:false,completedEvents:{},bestETs:{},workshopDayUsed:null,lastTyreWorkDay:null,accounting:[],eventSummaries:[],accountingSeason:'all',marketOffers:[],pendingSale:null,notifications:[],guidance:freshGuidance(),badges:{},badgeHistory:freshBadgeHistory()}}
 let state=freshState();
 const EVENT_CALENDAR=[
 {id:'heathcote_legal',name:'Heathcote Friday Street Drags',venue:'Heathcote Park Raceway',region:'VIC',tier:'Local',reqRespect:0,interval:2,offset:1,entryFee:75,spectatorFee:25,travelCost:0,winPayout:150,respectMult:1.0,fieldMult:1.0,opponentBoost:0,desc:'Low-risk legal street drags. Good for testing, learning launches and earning early Respect.'},
@@ -1159,7 +1183,7 @@ function signedNumber(n,digits=1){return (n>=0?'+':'')+Number(n||0).toFixed(digi
 function sumAccounting(entries,key,filter){return entries.filter(filter||(()=>true)).reduce((s,x)=>s+(Number(x[key])||0),0);}
 
 function renderLogEntry(x){if(typeof x==='string')return `<div class="logEntry"><div class="logMsg">${x}</div></div>`;let details=x.details&&x.details.length?`<div class="logDetails">${x.details.map(d=>`<span>${d}</span>`).join('')}</div>`:'';return `<div class="logEntry ${x.kind||'event'}"><div class="logHead"><span class="logTag">Day ${x.day} / ${x.kind||'event'}</span></div><div class="logMsg">${x.msg}</div>${details}</div>`;}
-function makeOwned(base,trans='auto',mode='D',listing=null){let c={...clone(base),uid:base.id+'_'+Date.now(),trans,shiftMode:mode,power:base.power,weight:base.weight,grip:base.baseGrip,reliability:base.reliability||88,mods:[],installed:[],issueNames:[],launchBonus:0,sceneValueBase:0}; if(listing){c.issueNames=listing.issues.map(i=>i.name); for(const is of listing.issues){ if(is.effect.grip)c.grip+=is.effect.grip; if(is.effect.power)c.power*=1+is.effect.power; if(is.effect.reliability)c.reliability+=is.effect.reliability; }} c.basePower=c.power;c.baseWeight=c.weight;c.baseGrip=c.grip;c.basePeak=c.peak;c.baseReliability=c.reliability;normaliseBuild(c);calculateBuildEffects(c);return c;}
+function makeOwned(base,trans='auto',mode='D',listing=null){let c={...clone(base),uid:base.id+'_'+Date.now()+'_'+Math.random().toString(16).slice(2),trans,shiftMode:mode,power:base.power,weight:base.weight,grip:base.baseGrip,reliability:base.reliability||88,mods:[],installed:[],issueNames:[],launchBonus:0,sceneValueBase:0}; if(listing){c.issueNames=listing.issues.map(i=>i.name); for(const is of listing.issues){ if(is.effect.grip)c.grip+=is.effect.grip; if(is.effect.power)c.power*=1+is.effect.power; if(is.effect.reliability)c.reliability+=is.effect.reliability; }} c.basePower=c.power;c.baseWeight=c.weight;c.baseGrip=c.grip;c.basePeak=c.peak;c.baseReliability=c.reliability;normaliseBuild(c);calculateBuildEffects(c);return c;}
 function listingPrice(car,issues){return Math.max(900,car.price-issues.reduce((s,i)=>s+i.discount,0)+Math.round(rand(-450,450)))}
 function rollIssues(car){let out=[]; if(Math.random()<.45){let candidates=ISSUES.filter(i=>(!i.manualOnly||car.manual)&&(!i.autoOnly||car.auto)); out.push(choice(candidates)); if(Math.random()<.22)out.push(choice(candidates.filter(x=>!out.includes(x))));} return out;}
 function rollListingTrans(car){if(car.manual&&car.auto)return Math.random()<.52?'manual':'auto';return car.manual?'manual':'auto'}
@@ -1182,16 +1206,17 @@ function tyreWorkCooldown(){return state.lastTyreWorkDay===null?0:Math.max(0,(st
 function work(){normaliseState();let cooldown=tyreWorkCooldown(),busy=hasEventSession()||!!state.pendingArrival,available=!busy&&cooldown===0;let status=busy?'Finish travelling or the current event before taking a shift.':cooldown?`The next work week is available in ${cooldown} day${cooldown===1?'':'s'}.`:'A seven-day work block is available now.';return `<section class="card"><div class="row"><div><p class="small warning">Casual work</p><h2>Bob &amp; Jane's Tyre &amp; Suspension</h2><p class="muted">Change tyres, clean the workshop and grease suspension components. It is steady recovery money, but the racing calendar keeps moving while you work.</p></div><span class="pill">Wage: <b>$600</b></span></div><div class="grid"><div class="listing"><h3>Work a full week</h3><p>Earn <b>$600</b> and advance <b>7 in-game days</b>.</p><p class="small muted">Available once every 14 days. Listed cars receive one possible buyer-offer roll at the end of the week, not seven.</p><p class="${available?'goodText':'warning'}">${status}</p><button class="btn" onclick="workTyreShopWeek()" ${available?'':'disabled'}>Work the seven-day shift</button></div><div class="listing"><h3>Opportunity cost</h3><p class="muted">You may miss race meetings while working. The daily workshop slot resets, and the next calendar day after the job is Day ${state.day+7}.</p><button class="btn secondary" onclick="show('event')">Check event calendar first</button></div></div></section>`}
 function workTyreShopWeek(){normaliseState();if(hasEventSession()||state.pendingArrival||tyreWorkCooldown()>0)return;let before=snapshot(),startDay=state.day;state.money+=600;advanceGameDays(7);state.lastTyreWorkDay=startDay;logChange("Completed a work week at Bob & Jane's Tyre & Suspension.",before,'money',[`Wage ${fmt(600)}`,'Seven days passed','Tyres changed and suspension work completed']);processMarketDay();state.screen='work';render()}
 function classifieds(){if(!state.listings.length)refreshListings();return `<section class="card"><div class="row"><div><h2>Classifieds</h2><p class="muted">Eight listings rotate with every new day: three affordable, three mid-range and two premium cars. Honest sellers declare known issues.</p></div><button class="btn secondary" onclick="nextDayListings()">Wait a day / rotate classifieds</button></div><div class="grid">${state.listings.map(listingCard).join('')}</div></section>`}
-function listingCard(l){let car=carById(l.carId);if(!l.trans)l.trans=rollListingTrans(car);let can=state.money>=l.price;let trans=l.trans.toUpperCase();let issues=l.issues.length?l.issues.map(i=>`<span class="issue">${i.name}</span>`).join(''):'<span class="goodText small">No declared issues</span>';let inspected=l.inspected?'<p class="goodText small">Inspected: clearer condition notes available.</p>':'';return `<div class="listing ${l.price>state.money?'':'owned'}"><div class="row"><h3>${car.name}</h3><span class="${l.price>state.money?'expensive':'price'}">${fmt(l.price)}</span></div><p class="muted small">${car.type} / ${car.drive} / Listed as ${trans}</p><p>${Math.round(car.power)} hp, ${Math.round(car.weight)} kg, ${car.asp}</p><div>${issues}</div>${inspected}<div class="hr"></div><div class="btns"><button class="btn secondary" onclick="inspectCar('${l.id}')" ${state.money<150&&!l.inspected?'disabled':''}>Inspect $150</button><button class="btn" onclick="buyCar('${l.id}')" ${!can?'disabled':''}>Buy this ${trans}</button></div></div>`}
+function listingCard(l){normaliseGarageState();let car=carById(l.carId);if(!l.trans)l.trans=rollListingTrans(car);let space=state.owned.length<state.garageCapacity;let can=state.money>=l.price&&space;let trans=l.trans.toUpperCase();let issues=l.issues.length?l.issues.map(i=>`<span class="issue">${i.name}</span>`).join(''):'<span class="goodText small">No declared issues</span>';let inspected=l.inspected?'<p class="goodText small">Inspected: clearer condition notes available.</p>':'';let capacityNote=space?'':`<p class="warning small">Garage full: ${state.owned.length}/${state.garageCapacity}. Wait for a listed car to sell or earn more Respect to unlock space.</p>`;return `<div class="listing ${l.price>state.money?'':'owned'}"><div class="row"><h3>${car.name}</h3><span class="${l.price>state.money?'expensive':'price'}">${fmt(l.price)}</span></div><p class="muted small">${car.type} / ${car.drive} / Listed as ${trans}</p><p>${Math.round(car.power)} hp, ${Math.round(car.weight)} kg, ${car.asp}</p><div>${issues}</div>${inspected}${capacityNote}<div class="hr"></div><div class="btns"><button class="btn secondary" onclick="inspectCar('${l.id}')" ${state.money<150&&!l.inspected?'disabled':''}>Inspect $150</button><button class="btn" onclick="buyCar('${l.id}')" ${!can?'disabled':''}>${space?'Buy this '+trans:'Garage full'}</button></div></div>`}
 function nextDayListings(){advanceGameDays(1);log('You waited a day and checked a fresh balanced set of classifieds.');processMarketDay();}
 function inspectCar(id){let l=state.listings.find(x=>x.id===id); if(!l||state.money<150)return;let before=snapshot();state.money-=150;l.inspected=true;checkRelevantBadges('listing_inspected',{listingId:l.id});logChange('Paid $150 for an independent inspection on '+carById(l.carId).name+'. It confirms the obvious issues and likely near-term costs.',before,'money',[`Inspection ${carById(l.carId).name}`]);}
-function buyCar(id){let l=state.listings.find(x=>x.id===id);if(!l)return;let base=carById(l.carId); if(state.money<l.price)return;if(!l.trans)l.trans=rollListingTrans(base);let trans=l.trans;if(trans==='manual'&&!base.manual)trans='auto';if(trans==='auto'&&!base.auto)trans='manual';let mode=trans==='auto'?'D':'manual';let before=snapshot();let car=makeOwned(base,trans,mode,l);state.money-=l.price;state.car=car;state.owned.push(car);state.listings=state.listings.filter(x=>x.id!==id);createGuidanceNotification('firstCar');logChange('Bought '+car.name+' for '+fmt(l.price)+'.',before,'money',[`Vehicle purchase ${car.name}`,`As-listed transmission ${trans.toUpperCase()}`]);state.screen='garage';render();}
+function buyCar(id){normaliseGarageState();let l=state.listings.find(x=>x.id===id);if(!l)return;let base=carById(l.carId);if(state.money<l.price)return;if(state.owned.length>=state.garageCapacity){alert(`Your garage is full (${state.owned.length}/${state.garageCapacity}). List a car and wait for it to sell, or unlock more capacity with Respect.`);return}if(!l.trans)l.trans=rollListingTrans(base);let trans=l.trans;if(trans==='manual'&&!base.manual)trans='auto';if(trans==='auto'&&!base.auto)trans='manual';let mode=trans==='auto'?'D':'manual';let before=snapshot();let car=makeOwned(base,trans,mode,l);let eventLocked=hasEventSession();let eventCar=state.car;state.money-=l.price;state.owned.push(car);if(!eventLocked){state.activeCarId=car.uid;state.car=car}else if(eventCar){state.activeCarId=eventCar.uid;state.car=eventCar}state.listings=state.listings.filter(x=>x.id!==id);createGuidanceNotification('firstCar');let details=[`Vehicle purchase ${car.name}`,`As-listed transmission ${trans.toUpperCase()}`,`Garage ${state.owned.length}/${state.garageCapacity}`];if(eventLocked)details.push(`Delivered to garage - ${eventCar?eventCar.name:'current event vehicle'} remains active`);else details.push('New car selected as active');logChange(eventLocked?'Bought '+car.name+' for '+fmt(l.price)+'. It has been delivered to your garage.':'Bought '+car.name+' for '+fmt(l.price)+'.',before,'money',details);state.screen=eventLocked?'currentEvent':'garage';render();}
+function garageVehicleCard(c){calculateBuildEffects(c);let active=c.uid===state.activeCarId,locked=hasEventSession()||!!state.pendingArrival;let sale=c.listedForSale?'<span class="warning"><b>Listed for sale</b></span>':'<span class="muted">Not listed</span>';let actions=active?'<button class="btn secondary" disabled>Active car</button>':locked?'<button class="btn secondary" disabled>Locked during event</button>':`<button class="btn" onclick="setActiveCar('${c.uid}')">Make active</button>`;let marketAction=c.listedForSale?(active?`<button class="btn secondary" onclick="show('market')">View listing</button>`:(locked?'':`<button class="btn secondary" onclick="setActiveCar('${c.uid}');show('market')">View listing</button>`)):(active?`<button class="btn secondary" onclick="show('market')">Open market</button>`:'');return `<article class="listing ${active?'owned':''}"><div class="row"><h3>${c.name}</h3><span class="pill"><b>${active?'Active':'Stored'}</b></span></div><p class="muted">${c.type} / ${c.cat}</p><p><b>${Math.round(c.power)} hp</b> / ${Math.round(c.weight)} kg / ${Math.round(c.reliability)}% reliability</p><p>Best ET: ${c.bestET?c.bestET.toFixed(2)+'s':'not recorded'} | Wins: ${c.wins||0}</p><p>${sale}</p><div class="btns">${actions}${marketAction}</div></article>`}
 function garage(){
-  if(!state.car)return `<section class="card"><h2>Garage</h2><p class="muted">No car yet.</p></section>`;
-  let c=state.car;normaliseState();
-  let saleStatus=c.listedForSale?`<p class="warning"><b>Listed for sale</b> - ${c.saleMode||'Fair Price'} listing. You can keep driving it, but reliability changes and big wins can affect offers.</p>`:'<p class="muted">Not listed for sale.</p>';
-  let value=estimateCarValue(c);
-  return `<section class="card"><h2>Garage</h2><div class="grid"><div class="listing"><h3>${c.name}</h3><p class="muted">${c.type} / ${c.cat}</p><p><b>${Math.round(c.power)} hp</b> / ${Math.round(c.torque)} Nm / ${Math.round(c.weight)} kg</p><p>Drive: ${c.drive} | Aspiration: ${c.asp} | Redline: ${c.red} rpm</p><p>Issues: ${c.issueNames.length?c.issueNames.map(x=>`<span class="issue">${x}</span>`).join(''):'<span class="goodText">None declared</span>'}</p><p>Build: ${installedUpgradeSummary(c).join('<br>')}</p><p>Tags: ${c.buildTags&&c.buildTags.length?c.buildTags.map(t=>`<span class="issue">${t}</span>`).join(''):'<span class="muted">Stock / unproven</span>'}</p><p>Best ET: ${c.bestET?c.bestET.toFixed(2)+'s':'not recorded'} | Wins: ${c.wins||0}</p></div><div class="listing"><h3>Transmission</h3><p>Current: ${c.trans.toUpperCase()} ${c.trans==='auto'?c.shiftMode:''}</p>${c.trans==='auto'?`<button class="btn secondary" onclick="toggleAutoMode()">Toggle D / Manual shift mode</button>`:'<p class="muted">Manual: spacebar or tap-to-shift during race.</p>'}</div><div class="listing"><h3>Car Market</h3>${saleStatus}<p>Estimated private value: <b>${fmt(value.privateValue)}</b></p><p>Instant wholesaler: <b>${fmt(value.wholesaleValue)}</b></p><div class="btns"><button class="btn secondary" onclick="show('market')">Sell / list car</button>${c.listedForSale?`<button class="btn secondary" onclick="cancelCarListing()">Cancel listing</button>`:''}</div></div></div></section>`}
+  normaliseGarageState();
+  let capacity=`<div class="row"><div><h2>Garage</h2><p class="muted">Choose the active car used for racing, upgrades and the market. Vehicle sales remain handled through the Car Market.</p></div><span class="pill">Capacity <b>${state.owned.length}/${state.garageCapacity}</b></span></div>`;
+  if(!state.owned.length)return `<section class="card">${capacity}<p class="muted">No car yet.</p></section>`;
+  let c=state.car;normaliseState();let saleStatus=c.listedForSale?`<p class="warning"><b>Listed for sale</b> - ${c.saleMode||'Fair Price'} listing. You can keep driving it while offers develop.</p>`:'<p class="muted">Not listed for sale.</p>';let value=estimateCarValue(c);
+  return `<section class="card">${capacity}<div class="grid">${state.owned.map(garageVehicleCard).join('')}</div><div class="hr"></div><h3>Active vehicle details</h3><div class="grid"><div class="listing"><h3>${c.name}</h3><p class="muted">${c.type} / ${c.cat}</p><p><b>${Math.round(c.power)} hp</b> / ${Math.round(c.torque)} Nm / ${Math.round(c.weight)} kg</p><p>Drive: ${c.drive} | Aspiration: ${c.asp} | Redline: ${c.red} rpm</p><p>Issues: ${c.issueNames.length?c.issueNames.map(x=>`<span class="issue">${x}</span>`).join(''):'<span class="goodText">None declared</span>'}</p><p>Build: ${installedUpgradeSummary(c).join('<br>')}</p><p>Tags: ${c.buildTags&&c.buildTags.length?c.buildTags.map(t=>`<span class="issue">${t}</span>`).join(''):'<span class="muted">Stock / unproven</span>'}</p></div><div class="listing"><h3>Transmission</h3><p>Current: ${c.trans.toUpperCase()} ${c.trans==='auto'?c.shiftMode:''}</p>${c.trans==='auto'?`<button class="btn secondary" onclick="toggleAutoMode()">Toggle D / Manual shift mode</button>`:'<p class="muted">Manual: spacebar or tap-to-shift during race.</p>'}</div><div class="listing"><h3>Car Market</h3>${saleStatus}<p>Estimated private value: <b>${fmt(value.privateValue)}</b></p><p>Instant wholesaler: <b>${fmt(value.wholesaleValue)}</b></p><button class="btn secondary" onclick="show('market')">Open Car Market</button></div></div></section>`}
 function toggleAutoMode(){state.car.shiftMode=state.car.shiftMode==='D'?'Manual':'D';log('Set automatic shift mode to '+state.car.shiftMode+'.');}
 function workshopUsedToday(){return state.workshopDayUsed===state.day}
 function workshopBlockedByEvent(){return hasEventSession()&&state.lastEvent&&!state.lastEvent.over}
@@ -1214,12 +1239,12 @@ function estimateCarValue(c){
 }
 function listingMultiplier(mode){return mode==='quick'?.92:mode==='optimistic'?1.12:mode==='dreaming'?1.28:1.0}
 function listingLabel(mode){return mode==='quick'?'Quick Sale':mode==='optimistic'?'Optimistic':mode==='dreaming'?'Dreaming':'Fair Price'}
-function market(){normaliseState();if(!state.car)return `<section class="card"><h2>Car Market</h2><p class="muted">Buy a car first.</p></section>`;let c=state.car,v=estimateCarValue(c);let offers=(state.marketOffers||[]).filter(o=>!o.closed);return `<section class="card"><div class="row"><div><h2>Car Market</h2><p class="muted">You can keep driving a listed car. If you accept an offer while at an event, the sale completes after you leave.</p></div><button class="btn secondary" onclick="show('garage')">Back to garage</button></div><div class="grid"><div class="listing"><h3>${c.name}</h3><p>${c.listedForSale?'<span class="warning">Listed and still driving</span>':'Not currently listed.'}</p><p>Estimated private value: <b>${fmt(v.privateValue)}</b></p><p>Instant wholesaler offer: <b>${fmt(v.wholesaleValue)}</b></p><p class="small muted">Wholesale is quick, safe, and deliberately low. Classifieds can pay better but take time and invite lowballers.</p><div class="btns"><button class="btn danger" onclick="instantSellCar()">Sell immediately</button>${c.listedForSale?`<button class="btn secondary" onclick="cancelCarListing()">Cancel listing</button>`:''}</div></div><div class="listing"><h3>List in classifieds</h3><p class="muted">Choose how ambitious the asking price is. Buyer offers will come through the market screen and event log.</p><div class="btns"><button class="btn secondary" onclick="listCarForSale('quick')">Quick Sale</button><button class="btn secondary" onclick="listCarForSale('fair')">Fair Price</button><button class="btn secondary" onclick="listCarForSale('optimistic')">Optimistic</button><button class="btn secondary" onclick="listCarForSale('dreaming')">Dreaming</button></div></div></div><div class="hr"></div><h3>Current offers</h3><div class="grid">${offers.length?offers.map(offerCard).join(''):'<p class="muted">No active buyer offers yet.</p>'}</div>${state.pendingSale?`<div class="hr"></div><div class="listing owned"><h3>Pending sale</h3><p>${state.pendingSale.buyer} will buy the car for <b>${fmt(state.pendingSale.amount)}</b> when you leave the current event.</p></div>`:''}</section>`}
+function market(){normaliseState();normaliseGarageState();if(!state.car)return `<section class="card"><h2>Car Market</h2><p class="muted">Buy a car first.</p></section>`;let c=state.car,v=estimateCarValue(c),otherListed=listedCar();let offers=(state.marketOffers||[]).filter(o=>!o.closed&&o.vehicleId===c.uid);let listingBlocked=otherListed&&otherListed.uid!==c.uid;let pending=state.pendingSale&&state.pendingSale.vehicleId===c.uid?state.pendingSale:null;return `<section class="card"><div class="row"><div><h2>Car Market</h2><p class="muted">Selling remains deliberate: list a selected car, keep using it, and wait for an offer. Only one vehicle can be advertised at a time.</p></div><button class="btn secondary" onclick="show('garage')">Back to garage</button></div><div class="grid"><div class="listing"><h3>${c.name}</h3><p>${c.listedForSale?'<span class="warning">Listed and still drivable</span>':'Not currently listed.'}</p><p>Estimated private value: <b>${fmt(v.privateValue)}</b></p><p>Instant wholesaler offer: <b>${fmt(v.wholesaleValue)}</b></p><p class="small muted">Wholesale is quick and deliberately low. Classifieds can pay better but take time and invite lowballers.</p><div class="btns"><button class="btn danger" onclick="instantSellCar()">Sell immediately</button>${c.listedForSale?`<button class="btn secondary" onclick="cancelCarListing()">Cancel listing</button>`:''}</div></div><div class="listing"><h3>List in classifieds</h3>${listingBlocked?`<p class="warning">${otherListed.name} is already advertised. Select it in the garage to manage that listing.</p>`:'<p class="muted">Choose how ambitious the asking price is. Buyer offers arrive through this market screen and the event log.</p>'}<div class="btns"><button class="btn secondary" onclick="listCarForSale('quick')" ${listingBlocked?'disabled':''}>Quick Sale</button><button class="btn secondary" onclick="listCarForSale('fair')" ${listingBlocked?'disabled':''}>Fair Price</button><button class="btn secondary" onclick="listCarForSale('optimistic')" ${listingBlocked?'disabled':''}>Optimistic</button><button class="btn secondary" onclick="listCarForSale('dreaming')" ${listingBlocked?'disabled':''}>Dreaming</button></div></div></div><div class="hr"></div><h3>Offers for ${c.name}</h3><div class="grid">${offers.length?offers.map(offerCard).join(''):'<p class="muted">No active buyer offers for this car.</p>'}</div>${pending?`<div class="hr"></div><div class="listing owned"><h3>Pending sale</h3><p>${pending.buyer} will buy ${c.name} for <b>${fmt(pending.amount)}</b> when you leave the current event.</p></div>`:''}</section>`}
 function offerCard(o){return `<div class="listing"><h3>${o.buyer}</h3><p>${o.message}</p><p>Offer: <b>${fmt(o.amount)}</b></p><p class="small muted">${o.kind||'classified'} offer / Day ${o.day}</p><div class="btns"><button class="btn" onclick="acceptCarOffer('${o.id}')">Accept</button><button class="btn secondary" onclick="counterCarOffer('${o.id}')">Counter +10%</button><button class="btn secondary" onclick="declineCarOffer('${o.id}')">Decline</button></div></div>`}
-function listCarForSale(mode='fair'){normaliseState();if(!state.car)return;state.car.listedForSale=true;state.car.saleMode=mode;state.car.listedDay=state.day;log('Listed '+state.car.name+' in the classifieds: '+listingLabel(mode)+'.','money',[`Still drivable while listed`]);show('market')}
-function cancelCarListing(){if(!state.car)return;state.car.listedForSale=false;state.car.saleMode=null;log('Cancelled the classified listing for '+state.car.name+'.','event');show('garage')}
-function instantSellCar(){normaliseState();if(!state.car)return;let v=estimateCarValue(state.car),soldCar=state.car;let before=snapshot();let sold=soldCar.name;state.money+=v.wholesaleValue;state.car=null;state.owned=[];state.marketOffers=[];state.pendingSale=null;checkRelevantBadges('vehicle_transferred',{transferId:`sale_${soldCar.uid}_${state.day}_${Date.now()}`,day:state.day,carId:soldCar.uid,carName:sold,type:'sale'});logChange('Sold '+sold+' immediately to a wholesaler.',before,'money',[`Sale price ${fmt(v.wholesaleValue)}`]);state.screen='garage';render()}
-function makeMarketOffer(kind='classified',bonus=1){normaliseState();let c=state.car;if(!c||!c.listedForSale)return null;let v=estimateCarValue(c);let mode=c.saleMode||'fair';let ask=v.privateValue*listingMultiplier(mode);let interest=mode==='quick'?.55:mode==='fair'?.32:mode==='optimistic'?.18:.08;interest+=Math.min(.18,(state.respect||0)*.004)+Math.min(.18,(c.sceneValue||0)*.025);if(Math.random()>interest*bonus)return null;let buyers=['Bloke from the pits','Local P-plater','Older racer','Facebook Marketplace buyer','Mate of a mate','Workshop regular','Cash buyer'];let ratio=mode==='quick'?rand(.88,1.02):mode==='fair'?rand(.9,1.08):mode==='optimistic'?rand(.82,1.02):rand(.7,.92);let amount=Math.round(Math.max(v.wholesaleValue*1.05,ask*ratio)/50)*50;let id='offer_'+Date.now()+'_'+Math.random().toString(16).slice(2);let message=kind==='pit'?`Saw the car run and wants to buy it while it has some hype.`:`Responded to your ${listingLabel(mode)} listing. Reliability, mods and recent runs affect the offer.`;let offer={id,day:state.day,buyer:choice(buyers),amount,kind,message,closed:false,unread:true};state.marketOffers.push(offer);log('New buyer offer for '+c.name+': '+fmt(amount)+'.','money',[offer.buyer,kind]);notifyMarketOffer(offer,c.name);return offer;}
+function listCarForSale(mode='fair'){normaliseState();normaliseGarageState();if(!state.car)return;let existing=listedCar();if(existing&&existing.uid!==state.car.uid){alert(existing.name+' is already listed. Only one car can be advertised at a time.');return}state.car.listedForSale=true;state.car.saleMode=mode;state.car.listedDay=state.day;log('Listed '+state.car.name+' in the classifieds: '+listingLabel(mode)+'.','money',[`Still drivable while listed`]);show('market')}
+function cancelCarListing(){if(!state.car)return;let id=state.car.uid;state.car.listedForSale=false;state.car.saleMode=null;state.marketOffers=(state.marketOffers||[]).filter(o=>o.vehicleId!==id);log('Cancelled the classified listing for '+state.car.name+'.','event');show('garage')}
+function instantSellCar(){normaliseState();normaliseGarageState();if(!state.car)return;let v=estimateCarValue(state.car),soldCar=state.car;let before=snapshot();let sold=soldCar.name;state.money+=v.wholesaleValue;removeOwnedCar(soldCar.uid);if(state.pendingSale&&state.pendingSale.vehicleId===soldCar.uid)state.pendingSale=null;checkRelevantBadges('vehicle_transferred',{transferId:`sale_${soldCar.uid}_${state.day}_${Date.now()}`,day:state.day,carId:soldCar.uid,carName:sold,type:'sale'});logChange('Sold '+sold+' immediately to a wholesaler.',before,'money',[`Sale price ${fmt(v.wholesaleValue)}`,`${state.owned.length} vehicle${state.owned.length===1?'':'s'} remain`]);state.screen='garage';render()}
+function makeMarketOffer(kind='classified',bonus=1){normaliseState();let c=state.car;if(!c||!c.listedForSale)return null;let v=estimateCarValue(c);let mode=c.saleMode||'fair';let ask=v.privateValue*listingMultiplier(mode);let interest=mode==='quick'?.55:mode==='fair'?.32:mode==='optimistic'?.18:.08;interest+=Math.min(.18,(state.respect||0)*.004)+Math.min(.18,(c.sceneValue||0)*.025);if(Math.random()>interest*bonus)return null;let buyers=['Bloke from the pits','Local P-plater','Older racer','Facebook Marketplace buyer','Mate of a mate','Workshop regular','Cash buyer'];let ratio=mode==='quick'?rand(.88,1.02):mode==='fair'?rand(.9,1.08):mode==='optimistic'?rand(.82,1.02):rand(.7,.92);let amount=Math.round(Math.max(v.wholesaleValue*1.05,ask*ratio)/50)*50;let id='offer_'+Date.now()+'_'+Math.random().toString(16).slice(2);let message=kind==='pit'?`Saw the car run and wants to buy it while it has some hype.`:`Responded to your ${listingLabel(mode)} listing. Reliability, mods and recent runs affect the offer.`;let offer={id,vehicleId:c.uid,carName:c.name,day:state.day,buyer:choice(buyers),amount,kind,message,closed:false,unread:true};state.marketOffers.push(offer);log('New buyer offer for '+c.name+': '+fmt(amount)+'.','money',[offer.buyer,kind]);notifyMarketOffer(offer,c.name);return offer;}
 let marketToastTimer=null;
 function notifyMarketOffer(offer,carName){playSfx('marketOffer');let toast=document.getElementById('marketToast'),message=document.getElementById('marketToastMessage');if(message)message.textContent=offer.buyer+' offered '+fmt(offer.amount)+' for '+carName+'.';if(toast)toast.classList.add('show');if(marketToastTimer)clearTimeout(marketToastTimer);marketToastTimer=setTimeout(()=>dismissMarketNotification(),9000);nav()}
 function dismissMarketNotification(event){if(event)event.stopPropagation();let toast=document.getElementById('marketToast');if(toast)toast.classList.remove('show');if(marketToastTimer){clearTimeout(marketToastTimer);marketToastTimer=null}}
@@ -1229,11 +1254,11 @@ function pendingGuidanceNotification(){return (state.notifications||[]).find(n=>
 function updateGuidanceNotification(){let toast=document.getElementById('guidanceToast'),note=pendingGuidanceNotification();if(!toast)return;if(!note){toast.classList.remove('show');return;}let title=document.getElementById('guidanceToastTitle'),message=document.getElementById('guidanceToastMessage'),icon=document.getElementById('guidanceToastIcon');if(title)title.textContent=note.title;if(message)message.textContent=note.message;if(icon)icon.textContent=note.icon||(note.type==='badge'?'🏆':'i');toast.style.cursor=note.type==='badge'?'pointer':'default';toast.classList.add('show')}
 function openPendingNotification(){let note=pendingGuidanceNotification();if(note&&note.type==='badge'){note.dismissed=true;show('badges');cloudSave(false)}}
 function dismissGuidanceNotification(event){if(event)event.stopPropagation();let note=pendingGuidanceNotification();if(note)note.dismissed=true;updateGuidanceNotification();cloudSave(false)}
-function acceptCarOffer(id){let o=(state.marketOffers||[]).find(x=>x.id===id&&!x.closed);if(!o||!state.car)return;o.closed=true;if(hasEventSession()){state.pendingSale={amount:o.amount,buyer:o.buyer,carName:state.car.name};log('Accepted buyer offer. Sale will complete after the current event.','money',[`Pending sale ${fmt(o.amount)}`]);show('market');return;}completePendingSale(o.amount,o.buyer)}
-function completePendingSale(amount,buyer='Buyer'){if(!state.car)return;let soldCar=state.car,before=snapshot();let sold=soldCar.name;state.money+=amount;state.car=null;state.owned=[];state.marketOffers=[];state.pendingSale=null;checkRelevantBadges('vehicle_transferred',{transferId:`sale_${soldCar.uid}_${state.day}_${Date.now()}`,day:state.day,carId:soldCar.uid,carName:sold,type:'sale'});logChange('Sold '+sold+' to '+buyer+'.',before,'money',[`Sale price ${fmt(amount)}`]);state.screen='garage';render()}
+function acceptCarOffer(id){normaliseGarageState();let o=(state.marketOffers||[]).find(x=>x.id===id&&!x.closed);if(!o)return;let saleCar=findOwnedCar(o.vehicleId);if(!saleCar)return;o.closed=true;if(hasEventSession()){state.pendingSale={vehicleId:saleCar.uid,amount:o.amount,buyer:o.buyer,carName:saleCar.name};log('Accepted buyer offer. Sale will complete after the current event.','money',[`Pending sale ${fmt(o.amount)}`,saleCar.name]);show('market');return;}completePendingSale(o.amount,o.buyer,saleCar.uid)}
+function completePendingSale(amount,buyer='Buyer',vehicleId=null){normaliseGarageState();let id=vehicleId||(state.pendingSale&&state.pendingSale.vehicleId)||(state.car&&state.car.uid);let soldCar=findOwnedCar(id);if(!soldCar)return;let before=snapshot(),sold=soldCar.name;state.money+=amount;removeOwnedCar(soldCar.uid);state.pendingSale=null;checkRelevantBadges('vehicle_transferred',{transferId:`sale_${soldCar.uid}_${state.day}_${Date.now()}`,day:state.day,carId:soldCar.uid,carName:sold,type:'sale'});logChange('Sold '+sold+' to '+buyer+'.',before,'money',[`Sale price ${fmt(amount)}`,`${state.owned.length} vehicle${state.owned.length===1?'':'s'} remain`]);state.screen='garage';render()}
 function declineCarOffer(id){let o=(state.marketOffers||[]).find(x=>x.id===id);if(o)o.closed=true;log('Declined buyer offer.','event');show('market')}
 function counterCarOffer(id){let o=(state.marketOffers||[]).find(x=>x.id===id&&!x.closed);if(!o)return;let target=Math.round(o.amount*1.10/50)*50;if(Math.random()<(.35+Math.min(.2,(state.respect||0)*.004))){o.amount=target;o.message+=' Counter accepted.';log('Counter offer accepted: '+fmt(target)+'.','money');}else{o.closed=true;log('Counter offer rejected. Buyer walked away.','event',[`Counter ${fmt(target)}`]);}show('market')}
-function processMarketDay(){normaliseState();if(state.pendingSale&&!hasEventSession()){completePendingSale(state.pendingSale.amount,state.pendingSale.buyer);return;}if(state.car&&state.car.listedForSale){makeMarketOffer('classified',1)}}
+function processMarketDay(){normaliseState();normaliseGarageState();if(state.pendingSale&&!hasEventSession()){completePendingSale(state.pendingSale.amount,state.pendingSale.buyer,state.pendingSale.vehicleId);return;}let c=listedCar();if(c){let previous=state.activeCarId;state.activeCarId=c.uid;state.car=c;makeMarketOffer('classified',1);if(previous&&findOwnedCar(previous)){state.activeCarId=previous;state.car=findOwnedCar(previous)}}}
 
 function upgrades(){if(!state.car)return `<section class="card"><h2>Upgrades</h2><p>Buy a car first.</p></section>`;normaliseState();let c=state.car;calculateBuildEffects(c);let used=workshopUsedToday();let atEvent=workshopBlockedByEvent();let options=currentUpgradeOptions(c);let tuneStatus=tuneSensitiveCount(c)>0?(c.tuneFresh&&c.tuneSignature===buildSignature(c)?'<span class="goodText">Fresh dyno tune</span>':'<span class="warning">Tune-sensitive build needs dyno time</span>'):'<span class="muted">No tune-sensitive mods yet</span>';return `<section class="card"><h2>Upgrade Shop</h2><p class="muted">Phase A upgrade paths are now staged. Tune-sensitive intake, exhaust and ECU mods can have slightly unpredictable results until a full-day dyno tune resolves them. Same-day jobs still use the single daily workshop slot.</p>${workshopStatusText()}<div class="listing"><h3>Current build</h3><p>${installedUpgradeSummary(c).join('<br>')}</p><p>Build tags: ${c.buildTags&&c.buildTags.length?c.buildTags.map(t=>`<span class="issue">${t}</span>`).join(''):'<span class="muted">Stock / unproven</span>'}</p><p>Tune state: ${tuneStatus}</p></div><div class="hr"></div><div class="grid">${options.map(u=>{let blockedSameDay=u.day===0&&used;let disabled=state.money<u.cost||blockedSameDay||atEvent;let reason=atEvent?'At event':state.money<u.cost?'Not enough money':blockedSameDay?'Workshop used today':u.tuneService?'Book dyno tune':'Install';let time=u.day?u.day+' day'+(u.day===1?'':'s'):'same-day / uses today\'s workshop slot';return `<div class="listing"><div class="row"><h3>${u.name}</h3><span class="pill"><b>${u.pathLabel}</b></span></div><p>${u.desc}</p><p class="price">${fmt(u.cost)}</p><p class="small muted">Time: ${time}</p>${u.tuneSensitive?'<p class="small warning">Tune-sensitive: result can vary until dyno tuned.</p>':''}${u.blockedBrands?'<p class="small muted">Platform rule: not available to Toyota/Lexus where listed.</p>':''}${blockedSameDay?'<p class="small warning">Come back tomorrow for another same-day job.</p>':''}${atEvent?'<p class="small warning">Finish the current event before buying mods.</p>':''}<button class="btn" onclick="buyUpgrade('${u.id}')" ${disabled?'disabled':''}>${reason}</button></div>`}).join('')}</div></section>`}
 function buyUpgrade(id){normaliseState();let c=state.car;if(!c)return;let u=currentUpgradeOptions(c).find(x=>x.id===id);if(!u||state.money<u.cost)return;if(workshopBlockedByEvent()){log('You are still at an event. Finish or leave the event before buying or fitting mods.','event',['Upgrade blocked while participating in event']);return;}if(u.day===0&&workshopUsedToday()){log('The workshop slot has already been used today. Wait until tomorrow before fitting another same-day mod.','event',['Same-day mod blocked']);return;}if(u.tuneService){renderDynoTune(u);return;}let before=snapshot();state.money-=u.cost;applyUpgradeToCar(c,u);c.performanceModified=true;let extra=[];if(u.tuneSensitive&&!u.tuneService)extra.push(`Tune variance ${(c.tuneVariance*100).toFixed(1)}% until dyno tuned`);if(u.day===0){state.workshopDayUsed=state.day;checkRelevantBadges('power_changed',badgeCarContext(c,{car:c}));logChange('Installed '+u.name+' on '+c.name+'. That used your workshop slot for today.',before,'money',[`Upgrade ${u.name}`,`Time same-day`,...extra]);}else{advanceGameDays(u.day);checkRelevantBadges('power_changed',badgeCarContext(c,{car:c}));logChange('Installed '+u.name+' on '+c.name+' over '+u.day+' day'+(u.day===1?'':'s')+'.',before,'money',[`Upgrade ${u.name}`,`Workshop time ${u.day} day${u.day===1?'':'s'}`,...extra]);processMarketDay();}}
@@ -1310,6 +1335,7 @@ function drawDynoGraph(samples){let canvas=document.getElementById('dynoCanvas')
 function acceptDynoTune(which='best'){if(!dynoSession||!state.car)return;let chosen=which==='last'?dynoSession.last:dynoSession.best;if(!chosen)return;let u=dynoSession.upgrade,c=state.car;if(state.money<u.cost){alert('Not enough money to pay for the dyno tune.');return;}let before=snapshot();state.money-=u.cost;applyUpgradeToCar(c,u,chosen);c.performanceModified=true;advanceGameDays(u.day);checkRelevantBadges('power_changed',badgeCarContext(c,{car:c}));let chosenLabel=which==='last'?'this dyno run':'the best dyno run';logChange('Applied '+chosenLabel+' to '+c.name+'. The tune-sensitive build is now sorted and the curve has been saved.',before,'money',[`Dyno tune ${fmt(u.cost)}`,`Run ${chosen.runNo}${chosen.baseline?' baseline':''}`,`Tune quality ${Math.round((c.dynoQuality||1)*100)}%`,`Peak dyno pull ${Math.round(chosen.peakHp)} hp`,`Workshop time ${u.day} day`]);dynoSession=null;processMarketDay();state.screen='garage';render();}
 
 function normaliseState(){
+  normaliseGarageState();
   if(!state.completedEvents)state.completedEvents={};
   if(!state.bestETs)state.bestETs={};
   if(state.pendingArrival===undefined)state.pendingArrival=null;
@@ -1326,7 +1352,8 @@ function normaliseState(){
   if(!state.guidance.created)state.guidance.created={welcome:false,firstCar:false,firstRace:false};
   createGuidanceNotification('welcome');
   normaliseAccounting();
-  if(state.car)calculateBuildEffects(state.car);
+  for(let c of state.owned)calculateBuildEffects(c);
+  state.car=state.owned.find(c=>c.uid===state.activeCarId)||null;
   if(state.lastEvent){
     if(state.lastEvent.raceHistory===undefined)state.lastEvent.raceHistory={};
     if(state.lastEvent.roundNo===undefined)state.lastEvent.roundNo=0;
@@ -1532,7 +1559,7 @@ function confirmArrival(kind){
   if(state.money<fee)return;
   let before=snapshot();
   state.money-=fee;
-  state.lastEvent={kind,eventId:ev.id,eventName:ev.name,eventDef:ev,busy:a.busy,totalCars:a.totalCars,runsLeft:kind==='race'?a.busy.runs:0,watchesLeft:a.busy.watch,opponents:a.opponents,raceSlots:a.raceSlots,weather:a.weather,story:a.story,missed:0,over:false,dayAdvanced:false,raceHistory:{},roundNo:0,lineup:[],queueIndex:0,selectedOpponentIndex:null,eventStartMoney:before.money,eventStartRespect:before.respect,eventAccounting:[],raceReports:[],bettingLedger:{profit:0,movedIntoProfit:false,wagerAfterProfit:false}};
+  state.lastEvent={kind,vehicleId:state.car?state.car.uid:null,eventId:ev.id,eventName:ev.name,eventDef:ev,busy:a.busy,totalCars:a.totalCars,runsLeft:kind==='race'?a.busy.runs:0,watchesLeft:a.busy.watch,opponents:a.opponents,raceSlots:a.raceSlots,weather:a.weather,story:a.story,missed:0,over:false,dayAdvanced:false,raceHistory:{},roundNo:0,lineup:[],queueIndex:0,selectedOpponentIndex:null,eventStartMoney:before.money,eventStartRespect:before.respect,eventAccounting:[],raceReports:[],bettingLedger:{profit:0,movedIntoProfit:false,wagerAfterProfit:false}};
   if(kind==='race')checkRelevantBadges('racer_event_entered',{entryId:`${ev.id}_${state.day}`,eventId:ev.id,eventName:ev.name,venue:ev.venue});
   if(kind==='spectate')prepareSpectatorRound(false);
   state.pendingArrival=null;
@@ -1555,7 +1582,7 @@ function pickRaceSlots(field,n){
   for(const item of [...matched,...obviouslySlower]){if(!combined.includes(item.i))combined.push(item.i)}
   return combined.sort((a,b)=>a-b);
 }
-function completeEventNight(reason='The event night is over.',kind='event',details=[]){let e=state.lastEvent;if(!e||e.dayAdvanced)return;let summary=finaliseEventSummary(e),ledger=e.bettingLedger||{profit:0,movedIntoProfit:false,wagerAfterProfit:false};let newlyUnlocked=checkRelevantBadges('event_completed',{eventName:e.eventName,venue:e.eventDef&&e.eventDef.venue,bettingProfit:ledger.profit,wagerAfterProfit:ledger.wagerAfterProfit,disqualified:kind==='bad'});let before=snapshot();advanceGameDays(1);e.dayAdvanced=true;e.over=true;if(newlyUnlocked.length)persistBadgeState();let summaryDetails=summary?[`Cash net ${signedMoney(summary.cashNet)}`,`Respect net ${signedNumber(summary.respectNet,1)}`,`Races ${summary.raceCount}`,`Event P/L ${signedMoney(summary.cashNet)}`]:[];logChange(reason+' A new day begins.',before,kind,[...details,...summaryDetails]);if(state.pendingSale){completePendingSale(state.pendingSale.amount,state.pendingSale.buyer);return;}processMarketDay();}
+function completeEventNight(reason='The event night is over.',kind='event',details=[]){let e=state.lastEvent;if(!e||e.dayAdvanced)return;let summary=finaliseEventSummary(e),ledger=e.bettingLedger||{profit:0,movedIntoProfit:false,wagerAfterProfit:false};let newlyUnlocked=checkRelevantBadges('event_completed',{eventName:e.eventName,venue:e.eventDef&&e.eventDef.venue,bettingProfit:ledger.profit,wagerAfterProfit:ledger.wagerAfterProfit,disqualified:kind==='bad'});let before=snapshot();advanceGameDays(1);e.dayAdvanced=true;e.over=true;if(newlyUnlocked.length)persistBadgeState();let summaryDetails=summary?[`Cash net ${signedMoney(summary.cashNet)}`,`Respect net ${signedNumber(summary.respectNet,1)}`,`Races ${summary.raceCount}`,`Event P/L ${signedMoney(summary.cashNet)}`]:[];logChange(reason+' A new day begins.',before,kind,[...details,...summaryDetails]);if(state.pendingSale){completePendingSale(state.pendingSale.amount,state.pendingSale.buyer,state.pendingSale.vehicleId);return;}processMarketDay();}
 function finaliseEventSummary(e){normaliseAccounting();if(!e)return null;if(e.eventSummary)return e.eventSummary;let entries=e.eventAccounting||[];let cashIn=sumAccounting(entries,'cashDelta',x=>x.cashDelta>0);let cashOut=sumAccounting(entries,'cashDelta',x=>x.cashDelta<0);let respectIn=sumAccounting(entries,'respectDelta',x=>x.respectDelta>0);let respectOut=sumAccounting(entries,'respectDelta',x=>x.respectDelta<0);let summary={id:(e.eventId||'event')+'_'+(e.day||state.day)+'_'+Date.now(),season:seasonForDay(e.day||state.day),day:e.day||state.day,eventName:e.eventName||'Event',venue:e.eventDef?e.eventDef.venue:'',tier:e.eventDef?e.eventDef.tier:'',kind:e.kind||'event',startMoney:e.eventStartMoney!==undefined?e.eventStartMoney:state.money,startRespect:e.eventStartRespect!==undefined?e.eventStartRespect:state.respect,endMoney:state.money,endRespect:state.respect,cashIn,cashOut,cashNet:state.money-(e.eventStartMoney!==undefined?e.eventStartMoney:state.money),respectIn,respectOut,respectNet:state.respect-(e.eventStartRespect!==undefined?e.eventStartRespect:state.respect),raceCount:(e.raceReports||[]).length,winCount:(e.raceReports||[]).filter(r=>r.win).length,lossCount:(e.raceReports||[]).filter(r=>!r.win).length,raceReports:(e.raceReports||[]).slice(),entries:entries.slice()};e.eventSummary=summary;state.eventSummaries.push(summary);return summary;}
 function balanceTableRows(entries){if(!entries.length)return '<tr><td colspan="5" class="muted">No balance movements recorded.</td></tr>';return entries.map(x=>`<tr><td>Day ${x.day}</td><td>${x.kind}</td><td>${x.label}</td><td class="${x.cashDelta>=0?'goodText':'badText'}">${x.cashDelta?signedMoney(x.cashDelta):'-'}</td><td class="${x.respectDelta>=0?'goodText':'badText'}">${x.respectDelta?signedNumber(x.respectDelta,1):'-'}</td></tr>`).join('');}
 function eventSummaryHtml(summary){if(!summary)return '<p class="muted">No event summary available.</p>';let raceRows=summary.raceReports.length?summary.raceReports.map(r=>`<tr><td>${r.result}</td><td>${r.opponent}</td><td>${r.yourEt.toFixed(2)} @ ${r.yourTrap.toFixed(0)} km/h</td><td>${r.oppEt.toFixed(2)} @ ${r.oppTrap.toFixed(0)} km/h</td><td class="${r.cashDelta>=0?'goodText':'badText'}">${signedMoney(r.cashDelta)}</td><td class="goodText">${signedNumber(r.respectDelta,1)}</td></tr>`).join(''):'<tr><td colspan="6" class="muted">No personal races recorded.</td></tr>';return `<div class="arrivalBanner"><h3>End of Event Summary</h3><div class="raceHud"><div class="gauge"><div class="muted">Cash start</div><div class="value">${fmt(summary.startMoney)}</div></div><div class="gauge"><div class="muted">Cash finish</div><div class="value">${fmt(summary.endMoney)}</div></div><div class="gauge"><div class="muted">Event cash P/L</div><div class="value ${summary.cashNet>=0?'goodText':'badText'}">${signedMoney(summary.cashNet)}</div></div><div class="gauge"><div class="muted">Respect net</div><div class="value ${summary.respectNet>=0?'goodText':'badText'}">${signedNumber(summary.respectNet,1)}</div></div></div><div class="hr"></div><h3>Cash balance sheet</h3><p class="small muted">Income ${fmt(summary.cashIn)} / Costs ${fmt(Math.abs(summary.cashOut))} / Net <b>${signedMoney(summary.cashNet)}</b></p><h3>Respect balance sheet</h3><p class="small muted">Gained ${summary.respectIn.toFixed(1)} / Lost ${Math.abs(summary.respectOut).toFixed(1)} / Net <b>${signedNumber(summary.respectNet,1)}</b></p><div class="hr"></div><h3>Race report</h3><table style="width:100%;border-collapse:collapse"><thead><tr><th align="left">Result</th><th align="left">Opponent</th><th align="left">Your run</th><th align="left">Opponent run</th><th align="left">Cash</th><th align="left">Respect</th></tr></thead><tbody>${raceRows}</tbody></table></div>`;}
@@ -1922,174 +1949,35 @@ function renderWatchRun(carA,carB,r1,r2,betData){
   }
   requestAnimationFrame(tick);topStats();currentPanel();
 }
-function finishWatchRun(carA, carB, r1, r2, betData) {
-  watchRaceActive = false;
-
-  const winner = r1.et < r2.et ? carA : carB;
-
-  checkRelevantBadges('watched_run', {
-    cars: [carA, carB],
-    results: [r1, r2]
-  });
-
-  let msg =
-    `Watched ${carA.name} run ${r1.et.toFixed(2)} ` +
-    `@ ${r1.trap.toFixed(0)} km/h against ${carB.name} ` +
-    `(${r2.et.toFixed(2)} @ ${r2.trap.toFixed(0)}).`;
-
-  const before = snapshot();
-
-  const details = [
-    `Winner ${winner.name}`,
-    `${carA.name} ${r1.et.toFixed(2)} @ ${r1.trap.toFixed(0)} km/h`,
-    `${carB.name} ${r2.et.toFixed(2)} @ ${r2.trap.toFixed(0)} km/h`
-  ];
-
-  if (betData && betData.bet) {
-    details.push(
-      `Picked ${betData.picked.name}`,
-      `Stake ${fmt(betData.stake)}`
-    );
-
-    if (betData.approach) {
-      details.push(`Approach ${betData.approach}`);
+function finishWatchRun(carA,carB,r1,r2,betData){
+  watchRaceActive=false;
+  let winner=r1.et<r2.et?carA:carB;
+  checkRelevantBadges('watched_run',{cars:[carA,carB],results:[r1,r2]});
+  let msg=`Watched ${carA.name} run ${r1.et.toFixed(2)} @ ${r1.trap.toFixed(0)} km/h against ${carB.name} (${r2.et.toFixed(2)} @ ${r2.trap.toFixed(0)}).`;
+  let before=snapshot();
+  let details=[`Winner ${winner.name}`,`${carA.name} ${r1.et.toFixed(2)} @ ${r1.trap.toFixed(0)} km/h`,`${carB.name} ${r2.et.toFixed(2)} @ ${r2.trap.toFixed(0)} km/h`];
+  if(betData.bet){
+    details.push(`Picked ${betData.picked.name}`,`Stake ${fmt(betData.stake)}`);if(betData.approach)details.push(`Approach ${betData.approach}`);
+    if(betData.picked===winner){state.money+=betData.stake*2;state.respect+=1;if(state.lastEvent&&state.lastEvent.bettingLedger){state.lastEvent.bettingLedger.profit+=betData.stake*2;if(state.lastEvent.bettingLedger.profit>0)state.lastEvent.bettingLedger.movedIntoProfit=true}msg+=' Side bet won: +'+fmt(betData.stake)+'.';details.push('Bet result win');checkRelevantBadges('bet_settled',{won:true,informed:betData.informed===true});}
+    else {msg+=' Side bet lost.';details.push('Bet result loss');checkRelevantBadges('bet_settled',{won:false,informed:betData.informed===true});}
+    let e=state.lastEvent;
+    if(e&&e.kind==='race'&&Math.random()<((betData.approach==='quiet'?.035:.08)+betData.stake/450)){
+      e.runsLeft=Math.max(0,e.runsLeft-1);e.missed++;
+      let loss=e.missed===1?2:e.missed===2?4:8;
+      state.respect=Math.max(-20,state.respect-loss);
+      msg+=' You got distracted and missed a lane call. Respect -'+loss+'.';
+      details.push(`Missed lane call ${e.missed}`,`Runs left ${e.runsLeft}`,`Lane-call penalty -${loss} Respect`);
+      logChange(msg,before,'bad',details);
+      if(e.missed>=3){completeEventNight('You missed too many lane calls and were told to call it a night.','bad');return;}
+      markCurrentLineupRaceComplete();showTimingBoard(carA,carB,r1,r2,winner,msg);return;
     }
-
-    if (betData.picked === winner) {
-      state.money += betData.stake * 2;
-      state.respect += 1;
-
-      if (
-        state.lastEvent &&
-        state.lastEvent.bettingLedger
-      ) {
-        /*
-         * The stake was deducted when the bet was placed.
-         * Receiving 2x stake produces only 1x stake in actual profit.
-         */
-        state.lastEvent.bettingLedger.profit +=
-          betData.stake * 2;
-
-        if (state.lastEvent.bettingLedger.profit > 0) {
-          state.lastEvent.bettingLedger.movedIntoProfit = true;
-        }
-      }
-
-      msg += ` Side bet won: +${fmt(betData.stake)}.`;
-      details.push('Bet result win');
-
-      checkRelevantBadges('bet_settled', {
-        won: true,
-        informed: betData.informed === true
-      });
-    } else {
-      msg += ' Side bet lost.';
-      details.push('Bet result loss');
-
-      checkRelevantBadges('bet_settled', {
-        won: false,
-        informed: betData.informed === true
-      });
-    }
-
-    const e = state.lastEvent;
-
-    const baseMissedCallChance =
-      betData.approach === 'quiet' ? 0.03 :
-      betData.approach === 'discreet' ? 0.05 :
-      0.08;
-
-    const stakeMissedCallChance =
-      Math.min(0.04, Number(betData.stake || 0) / 7500);
-
-    const missedCallChance =
-      baseMissedCallChance + stakeMissedCallChance;
-
-    if (
-      e &&
-      e.kind === 'race' &&
-      Math.random() < missedCallChance
-    ) {
-      e.runsLeft = Math.max(0, e.runsLeft - 1);
-      e.missed = (e.missed || 0) + 1;
-
-      const loss =
-        e.missed === 1 ? 2 :
-        e.missed === 2 ? 4 :
-        8;
-
-      state.respect = Math.max(
-        -20,
-        state.respect - loss
-      );
-
-      msg +=
-        ` You got distracted and missed a lane call. ` +
-        `Respect -${loss}.`;
-
-      details.push(
-        `Missed lane call ${e.missed}`,
-        `Runs left ${e.runsLeft}`,
-        `Lane-call penalty -${loss} Respect`
-      );
-
-      /*
-       * Mark the watched NPC race complete before anything
-       * re-renders the event screen.
-       */
-      markCurrentLineupRaceComplete();
-
-      logChange(msg, before, 'bad', details);
-
-      if (e.missed >= 3) {
-        completeEventNight(
-          'You missed too many lane calls and were told to call it a night.',
-          'bad'
-        );
-        return;
-      }
-
-      showTimingBoard(
-        carA,
-        carB,
-        r1,
-        r2,
-        winner,
-        msg
-      );
-
-      return;
-    }
-
-    /*
-     * Advance the lineup before logChange(), because logChange()
-     * calls render(). This prevents that render from rebuilding
-     * the event screen with the just-watched race still current.
-     */
-    markCurrentLineupRaceComplete();
-    logChange(msg, before, 'bet', details);
-  } else {
-    state.respect += 0.1;
+    logChange(msg,before,'bet',details);
+  }else{
+    state.respect+=.1;
     details.push('Spectating Respect +0.1');
-
-    markCurrentLineupRaceComplete();
-    logChange(msg, before, 'event', details);
+    logChange(msg,before,'event',details);
   }
-
-  if (watchStopAfterCurrent) {
-    watchStopAfterCurrent = false;
-    goToMyRace();
-    return;
-  }
-
-  showTimingBoard(
-    carA,
-    carB,
-    r1,
-    r2,
-    winner,
-    msg
-  );
+  markCurrentLineupRaceComplete();if(watchStopAfterCurrent){watchStopAfterCurrent=false;goToMyRace();return;}showTimingBoard(carA,carB,r1,r2,winner,msg);
 }
 function showTimingBoard(carA,carB,r1,r2,winner,msg){
   document.getElementById('screen').innerHTML=`<section class="card"><h2>Timing Board</h2><div class="timingBoard"><div class="${winner===carA?'winner':''}">${carA.name}: ${r1.et.toFixed(2)} @ ${r1.trap.toFixed(0)} km/h</div><div class="${winner===carB?'winner':''}">${carB.name}: ${r2.et.toFixed(2)} @ ${r2.trap.toFixed(0)} km/h</div></div><p>${msg}</p><div class="hr"></div><div class="btns">${watchAllMode?`<button class="btn secondary" onclick="stopWatchAllBeforeMine()">${watchAllStopLabel()}</button><span class="small muted">The next queued race will start automatically.</span>`:'<button class="btn" onclick="show(\'currentEvent\')">Back to event</button>'}</div></section>`;
@@ -2135,8 +2023,8 @@ async function socialRequest(payload){let recoveryCode=localStorage.getItem(QMB_
 async function initSocial(){let recoveryCode=localStorage.getItem(QMB_RECOVERY_STORAGE),invite=new URLSearchParams(location.search).get('invite');if(!recoveryCode){if(invite){state.screen='social';render()}else renderSocialPanel();return}let data=await socialRequest({action:'getSocial'});if(data){if(state.badgeHistory&&state.badgeHistory.pendingRemoteSync)await cloudSave(false);syncPublicStats(true);if(invite){await socialRequest({action:'acceptInvite',code:invite});history.replaceState({},'',location.pathname)}}}
 async function createAnonymousGarage(){if(localStorage.getItem(QMB_RECOVERY_STORAGE)&&!confirm('This device already has a recovery code. Create a different garage?'))return;socialBusy=true;renderSocialPanel();try{let inviteCode=new URLSearchParams(location.search).get('invite')||'';let data=await callQmbApi({action:'createAccount',inviteCode});localStorage.setItem(QMB_RECOVERY_STORAGE,data.recoveryCode);socialData=data.social;socialError='';history.replaceState({},'',location.pathname);try{await navigator.clipboard.writeText(data.recoveryCode)}catch{}prompt('Your garage is ready. Copy this recovery code now and keep it private:',data.recoveryCode);await cloudSave(false);render()}catch(err){socialError=err&&err.message?err.message:'Could not create a garage.'}finally{socialBusy=false;renderSocialPanel();if(state.screen==='social')document.getElementById('screen').innerHTML=social()}}
 async function recoverGarage(){let code=prompt('Paste your Quarter Mile Builder recovery code:');if(!code)return;code=code.trim().toUpperCase();try{let data=await callQmbApi({action:'login',recoveryCode:code});localStorage.setItem(QMB_RECOVERY_STORAGE,code);socialData=data;socialError='';let invite=new URLSearchParams(location.search).get('invite');if(invite)await socialRequest({action:'acceptInvite',code:invite});history.replaceState({},'',location.pathname);render()}catch(err){alert(err&&err.message?err.message:'That recovery code could not be used.')}}
-async function cloudSave(notify=false){if(socialData&&socialData.save&&socialData.save.state)state=mergeBadgeCareer(state,socialData.save.state);let pending=state.badgeHistory&&state.badgeHistory.pendingRemoteSync,recoveryCode=localStorage.getItem(QMB_RECOVERY_STORAGE);if(!recoveryCode){localStorage.setItem('qmb_mvp_save',JSON.stringify(state));if(notify)alert('Local backup saved. Create an anonymous garage to sync online.');return}if(pending){try{let latest=await callQmbApi({action:'getSocial',recoveryCode});if(latest&&latest.save&&latest.save.state)state=mergeBadgeCareer(state,latest.save.state);if(latest)socialData={...socialData,...latest}}catch{localStorage.setItem('qmb_mvp_save',JSON.stringify(state));if(notify)alert('Local backup saved. Badge sync will retry when the paddock connection returns.');return false}}if(state.badgeHistory)state.badgeHistory.pendingRemoteSync=false;localStorage.setItem('qmb_mvp_save',JSON.stringify(state));let data=await socialRequest({action:'save',state});if(!data&&state.badgeHistory){state.badgeHistory.pendingRemoteSync=pending;localStorage.setItem('qmb_mvp_save',JSON.stringify(state))}if(notify)alert(data?'Career synced to the cloud.':socialError);return !!data}
-async function cloudLoad(){if(!socialData||!socialData.save||!socialData.save.state)return alert('No cloud career found.');if(!confirm('Load your cloud career and replace the current local session?'))return;state=mergeBadgeCareer(clone(socialData.save.state),state);localStorage.setItem('qmb_mvp_save',JSON.stringify(state));log('Cloud career loaded.','event',['Online sync']);render()}
+async function cloudSave(notify=false){if(socialData&&socialData.save&&socialData.save.state)state=migrateGameState(mergeBadgeCareer(state,socialData.save.state));let pending=state.badgeHistory&&state.badgeHistory.pendingRemoteSync,recoveryCode=localStorage.getItem(QMB_RECOVERY_STORAGE);if(!recoveryCode){localStorage.setItem('qmb_mvp_save',JSON.stringify(state));if(notify)alert('Local backup saved. Create an anonymous garage to sync online.');return}if(pending){try{let latest=await callQmbApi({action:'getSocial',recoveryCode});if(latest&&latest.save&&latest.save.state)state=migrateGameState(mergeBadgeCareer(state,latest.save.state));if(latest)socialData={...socialData,...latest}}catch{localStorage.setItem('qmb_mvp_save',JSON.stringify(state));if(notify)alert('Local backup saved. Badge sync will retry when the paddock connection returns.');return false}}if(state.badgeHistory)state.badgeHistory.pendingRemoteSync=false;localStorage.setItem('qmb_mvp_save',JSON.stringify(state));let data=await socialRequest({action:'save',state});if(!data&&state.badgeHistory){state.badgeHistory.pendingRemoteSync=pending;localStorage.setItem('qmb_mvp_save',JSON.stringify(state))}if(notify)alert(data?'Career synced to the cloud.':socialError);return !!data}
+async function cloudLoad(){if(!socialData||!socialData.save||!socialData.save.state)return alert('No cloud career found.');if(!confirm('Load your cloud career and replace the current local session?'))return;state=migrateGameState(mergeBadgeCareer(clone(socialData.save.state),state));localStorage.setItem('qmb_mvp_save',JSON.stringify(state));log('Cloud career loaded.','event',['Online sync']);render()}
 async function addFriend(){let input=document.getElementById('friendCodeInput');let code=input?input.value:'';let data=await socialRequest({action:'addFriend',code});if(data){alert('Friend added. Their progress now appears here.');render()}}
 async function renameDriver(){let current=socialData&&socialData.profile?socialData.profile.displayName:'Driver';let displayName=prompt('Choose a public driver name (2-30 characters):',current);if(displayName===null)return;let data=await socialRequest({action:'profile',displayName});if(data)render()}
 async function copyRecoveryCode(){let code=localStorage.getItem(QMB_RECOVERY_STORAGE)||'';if(!code)return;try{await navigator.clipboard.writeText(code);alert('Recovery code copied. Keep it private.')}catch{prompt('Copy this recovery code and keep it private:',code)}}
@@ -2149,7 +2037,7 @@ async function queueSocialRace(player,won){if(!socialData||!state.car)return;awa
 function season(){normaliseAccounting();let seasons=[...new Set(state.accounting.map(x=>x.season))].sort((a,b)=>a-b);let currentSeason=seasonForDay(state.day);if(!seasons.includes(currentSeason))seasons.push(currentSeason);let selected=state.accountingSeason||'all';let opts=['all',...seasons].map(s=>`<option value="${s}" ${String(selected)===String(s)?'selected':''}>${s==='all'?'All seasons':'Season '+s}</option>`).join('');let entries=state.accounting.filter(x=>selected==='all'||String(x.season)===String(selected));let summaries=(state.eventSummaries||[]).filter(x=>selected==='all'||String(x.season)===String(selected));let cashIn=sumAccounting(entries,'cashDelta',x=>x.cashDelta>0),cashOut=sumAccounting(entries,'cashDelta',x=>x.cashDelta<0),cashNet=sumAccounting(entries,'cashDelta'),respectIn=sumAccounting(entries,'respectDelta',x=>x.respectDelta>0),respectOut=sumAccounting(entries,'respectDelta',x=>x.respectDelta<0),respectNet=sumAccounting(entries,'respectDelta');let eventRows=summaries.length?summaries.slice().reverse().map(x=>`<tr><td>Day ${x.day}</td><td>${x.eventName}</td><td>${x.winCount}-${x.lossCount}</td><td class="${x.cashNet>=0?'goodText':'badText'}">${signedMoney(x.cashNet)}</td><td class="${x.respectNet>=0?'goodText':'badText'}">${signedNumber(x.respectNet,1)}</td></tr>`).join(''):'<tr><td colspan="5" class="muted">No completed events recorded for this selection.</td></tr>';return `<section class="card"><div class="row"><div><h2>Season Balance Sheet</h2><p class="muted">Track earnings, costs, Respect gains and profitability by season. A season is currently 14 in-game days.</p></div><select class="select" onchange="state.accountingSeason=this.value;render()">${opts}</select></div><div class="raceHud"><div class="gauge"><div class="muted">Cash income</div><div class="value goodText">${fmt(cashIn)}</div></div><div class="gauge"><div class="muted">Cash costs</div><div class="value badText">${fmt(Math.abs(cashOut))}</div></div><div class="gauge"><div class="muted">Cash net</div><div class="value ${cashNet>=0?'goodText':'badText'}">${signedMoney(cashNet)}</div></div><div class="gauge"><div class="muted">Respect net</div><div class="value ${respectNet>=0?'goodText':'badText'}">${signedNumber(respectNet,1)}</div></div></div><div class="hr"></div><h3>Completed event statements</h3><table style="width:100%;border-collapse:collapse"><thead><tr><th align="left">Day</th><th align="left">Event</th><th align="left">W-L</th><th align="left">Cash P/L</th><th align="left">Respect</th></tr></thead><tbody>${eventRows}</tbody></table><div class="hr"></div><h3>Cash and Respect ledger</h3><div class="log" style="max-height:420px"><table style="width:100%;border-collapse:collapse"><thead><tr><th align="left">Day</th><th align="left">Type</th><th align="left">Item</th><th align="left">Cash</th><th align="left">Respect</th></tr></thead><tbody>${balanceTableRows(entries.slice().reverse())}</tbody></table></div></section>`}
 function logScreen(){return `<section class="card"><h2>Log</h2><p class="muted">Every money, Respect, event and penalty change is shown here to make testing easier.</p><div class="log">${state.log.length?state.log.map(renderLogEntry).join(''):'<div class="muted">No log entries yet.</div>'}</div></section>`}
 function saveGame(){localStorage.setItem('qmb_mvp_save',JSON.stringify(state));log('Local backup saved.');cloudSave(true);}
-function loadGame(manual=false){if(manual&&socialData&&socialData.save)return cloudLoad();let s=localStorage.getItem('qmb_mvp_save');if(s){state=mergeBadgeCareer(JSON.parse(s),state);if(manual)log('Local backup loaded.')}else if(manual)alert('No local or cloud save found.');render();}
+function loadGame(manual=false){if(manual&&socialData&&socialData.save)return cloudLoad();let s=localStorage.getItem('qmb_mvp_save');if(s){state=migrateGameState(mergeBadgeCareer(JSON.parse(s),state));if(manual)log('Local backup loaded.')}else if(manual)alert('No local or cloud save found.');render();}
 function resetGame(){if(confirm('Reset the game?')){localStorage.removeItem('qmb_mvp_save');state=freshState();refreshListings();render();}}
 document.addEventListener('click',e=>{let button=e.target.closest&&e.target.closest('button');if(button&&!button.disabled&&button.id!=='soundToggle')playSfx('click')});
 window.addEventListener('keydown',e=>{if(e.key==='Escape')closeDriverProfile();if(e.code==='Space'&&!document.getElementById('driverProfileOverlay')){e.preventDefault();handleLiveShift();}});
