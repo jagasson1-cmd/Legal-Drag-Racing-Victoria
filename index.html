@@ -1967,18 +1967,18 @@ function tickLiveRace(now){
   let rpm=currentRpmForRun(liveRun.playerCar,liveRun.gear,elapsed,pEt,liveRun.playerBase.trap,liveRun.playerBase.launchProfile);
   if(!liveRun.playerFinish&&pp>=1)liveRun.playerFinish={at:elapsed,pEt,rpm,trap:liveRun.playerBase.trap};
   if(liveRun.playerFinish)pEt=liveRun.playerFinish.pEt;
-  let coastElapsed=liveRun.playerFinish?Math.max(0,elapsed-liveRun.playerFinish.at):0,braking=coastElapsed>=.8;
-  let displaySpeed=liveRun.playerFinish?Math.max(20,liveRun.playerFinish.trap-(Math.min(.8,coastElapsed)*10)-Math.max(0,coastElapsed-.8)*34):speedForRun(liveRun.playerBase.trap,pp);
-  if(liveRun.playerFinish)rpm=Math.max(idleRpm(liveRun.playerCar),liveRun.playerFinish.rpm*Math.exp(-coastElapsed*(braking?1.05:.48)));
+  let coastElapsed=liveRun.playerFinish?Math.max(0,elapsed-liveRun.playerFinish.at):0,braking=coastElapsed>=1.4;
+  let displaySpeed=liveRun.playerFinish?Math.max(20,liveRun.playerFinish.trap-(Math.min(1.4,coastElapsed)*4)-Math.max(0,coastElapsed-1.4)*14):speedForRun(liveRun.playerBase.trap,pp);
+  if(liveRun.playerFinish)rpm=Math.max(idleRpm(liveRun.playerCar),liveRun.playerFinish.rpm*Math.exp(-coastElapsed*(braking?.48:.22)));
   setLamp('treePre',true,'onPre');setLamp('treeStage',true,'onStage');setLamp('treeAmber1',false,'onAmber');setLamp('treeAmber2',false,'onAmber');setLamp('treeAmber3',false,'onAmber');setLamp('treeGreen',true,'onGreen');setLamp('treeRed',false,'onRed');
   let launchLamp=document.getElementById('launchReadyLamp'); if(launchLamp) launchLamp.className='launchLamp on';
   let label=document.getElementById('launchLampLabel'); if(label) label.textContent='Launch complete';
   if(!liveRun.playerFinish&&liveRun.playerCar.trans==='auto'&&liveRun.playerCar.shiftMode==='D'&&rpm>shiftTarget(liveRun.playerCar)&&liveRun.gear<gearMaxes(liveRun.playerCar).length){let target=shiftTarget(liveRun.playerCar),fromGear=liveRun.gear;liveRun.gear++;liveRun.shiftEvents.push({gear:liveRun.gear,fromGear,rpm,diff:rpm-target,automatic:true});playSfx('shift');engineShiftCut();liveRun.note='Auto shifted near the useful power band.';rpm=currentRpmForRun(liveRun.playerCar,liveRun.gear,elapsed,pEt,liveRun.playerBase.trap,liveRun.playerBase.launchProfile);}
-  updateEngineAudio(rpm,liveRun.playerCar,liveRun.playerFinish?(braking?.04:.12):.9);
+  updateEngineAudio(rpm,liveRun.playerCar,liveRun.playerFinish?(braking?.07:.16):.9);
   if(!liveRun.playerFinish&&liveRun.playerCanShift&&rpm>liveRun.playerCar.red&&liveRun.gear<gearMaxes(liveRun.playerCar).length){liveRun.penalty+=.006;liveRun.limiterTime+=frameSeconds;liveRun.note='On the limiter - shift now.';}
   let target=shiftTarget(liveRun.playerCar);
   let shiftOn=!liveRun.playerFinish&&liveRun.playerCanShift&&rpm>=target-250&&liveRun.gear<gearMaxes(liveRun.playerCar).length;
-  let accel=liveRun.playerFinish?Math.max(0,.22-coastElapsed*.08):Math.max(.1,1.1-(pp*.75)-(liveRun.playerBase.launchMod-1)*.8-(liveRun.penalty*.06));
+  let accel=liveRun.playerFinish?Math.max(0,.28-coastElapsed*.055):Math.max(.1,1.1-(pp*.75)-(liveRun.playerBase.launchMod-1)*.8-(liveRun.penalty*.06));
   liveRun.gVals.push(accel);if(liveRun.gVals.length>20)liveRun.gVals.shift();
   if(liveRun.playerFinish)liveRun.note=braking?'Finish line crossed — braking while the other car completes its pass.':'Finish line crossed — throttle lifted and coasting.';
   document.getElementById('raceTime').textContent=(liveRun.playerFinish?pEt:elapsed).toFixed(2)+'s';
