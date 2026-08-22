@@ -294,6 +294,13 @@ evaluate(`advanceGameDays(${queuedCompletionDay}-state.day)`);
 assert.equal(evaluate(`state.workshopJob`), null, 'workshop job completes when calendar time passes');
 assert.equal(evaluate(`state.car.inWorkshop`), false);
 
+evaluate(`state=freshState();state.car=makeOwned(CARS.find(x=>x.id==='mx5'));state.owned=[state.car];state.activeCarId=state.car.uid;let queuedRegression=currentUpgradeOptions(state.car).find(x=>x.day>0&&!x.tuneService);buyUpgrade(queuedRegression.id);state.day=state.workshopJob.completeDay;globalThis.jobStateWhenLogged='unset';log=()=>{globalThis.jobStateWhenLogged=state.workshopJob};completeWorkshopJob()`);
+assert.equal(evaluate(`globalThis.jobStateWhenLogged`), null, 'workshop job is cleared before completion logging can render recursively');
+assert.match(evaluate(`showScreenBase.toString()`), /if\(yyRun\)/, 'navigation cancels a You Yangs run even before its RAF starts');
+assert.match(evaluate(`showScreenBase.toString()`), /if\(dynoSession\)/, 'navigation cancels an active dyno session');
+assert.match(evaluate(`showScreenBase.toString()`), /cancelWatchRun\(\)/, 'navigation cancels spectator animation state');
+assert.match(evaluate(`renderWatchRun.toString()`), /watchRun!==run/, 'stale spectator callbacks stop before touching removed DOM');
+
 evaluate(`state=freshState();state.car=makeOwned(CARS.find(x=>x.id==='mx5'));let second=makeOwned(CARS.find(x=>x.id==='is200'));state.owned=[state.car,second];state.activeCarId=state.car.uid;state.saleVehicleId=second.uid`);
 assert.equal(evaluate(`selectedSaleCar().uid`), evaluate(`state.owned[1].uid`));
 assert.match(evaluate(`market()`), /Vehicle to sell/);
