@@ -99,7 +99,7 @@ const secondClassifiedIds = evaluate(`state.listings.map(x=>x.id).join('|')`);
 evaluate(`state.day+=3;normaliseState()`);
 assert.equal(evaluate(`state.listingRotationDay`), 5);
 assert.notEqual(evaluate(`state.listings.map(x=>x.id).join('|')`), secondClassifiedIds);
-assert.match(evaluate(`workTyreShopWeek.toString()`), /advanceGameDays\(7\)/);
+assert.match(evaluate(`dailyWorkTyreShopWeekBase.toString()`), /advanceGameDays\(7\)/);
 assert.match(evaluate(`skipCalendarDay.toString()`), /advanceGameDays\(1\)/);
 assert.match(evaluate(`completeEventNight.toString()`), /advanceGameDays\(1\)/);
 
@@ -248,5 +248,51 @@ assert.doesNotMatch(evaluate(`nav.toString()`), /items\.push\('watch'/, 'watch s
 assert.match(evaluate(`notifyMarketOffer.toString()`), /marketOffer/);
 assert.match(evaluate(`cloudSave.toString()`), /action:'save'/);
 assert.match(evaluate(`publicStatsSnapshot.toString()`), /respect/);
+
+evaluate(`render=()=>{};state=freshState();ensureDailyBriefing();state.dailyBriefing.challengeId='inspect';state.dailyBriefing.progress=0;state.dailyBriefing.completed=false;state.dailyBriefing.claimed=false`);
+assert.equal(evaluate(`dailyProgress('inspect');state.dailyBriefing.completed`), true);
+const dailyMoneyBefore = evaluate(`state.money`);
+evaluate(`claimDailyReward()`);
+assert.equal(evaluate(`state.money`), dailyMoneyBefore + 300);
+assert.equal(evaluate(`state.dailyBriefing.claimed`), true);
+evaluate(`claimDailyReward()`);
+assert.equal(evaluate(`state.money`), dailyMoneyBefore + 300, 'daily reward cannot be claimed twice');
+assert.equal(evaluate(`state.dailyBriefing.weeklyDates.length`), 1);
+
+evaluate(`state.dailyBriefing.weeklyDates=['a','b','c','d'];state.dailyBriefing.weeklyBonusClaimed=false`);
+const weeklyMoneyBefore = evaluate(`state.money`);
+const weeklyRespectBefore = evaluate(`state.respect`);
+evaluate(`claimWeeklyBriefingBonus()`);
+assert.equal(evaluate(`state.money`), weeklyMoneyBefore + 1000);
+assert.equal(evaluate(`state.respect`), weeklyRespectBefore + 2);
+evaluate(`claimWeeklyBriefingBonus()`);
+assert.equal(evaluate(`state.money`), weeklyMoneyBefore + 1000, 'weekly reward cannot be claimed twice');
+
+evaluate(`state=freshState();state.dailyBriefing.dateKey='2000-01-01';state.dailyBriefing.completed=true;ensureDailyBriefing()`);
+assert.equal(evaluate(`state.dailyBriefing.dateKey`), evaluate(`realDateKey()`));
+assert.equal(evaluate(`state.dailyBriefing.completed`), false);
+assert.match(evaluate(`dailyBriefingHtml()`), /DAILY GARAGE BRIEFING/);
+assert.match(evaluate(`dailyBriefingHtml()`), /Garage Regular/);
+assert.equal(evaluate(`Object.keys(DAILY_CHALLENGES).length`), 10);
+assert.deepEqual(Array.from(evaluate(`Object.keys(DAILY_CHALLENGES)`)), ['inspect','workshop','race','buy','advertise','switch','win','watch','clean','work']);
+evaluate(`state=freshState();refreshListings();ensureDailyBriefing();state.dailyBriefing.challengeId='inspect';state.dailyBriefing.progress=0;state.dailyBriefing.completed=false;state.dailyBriefing.claimed=false;state.dailyBriefing.rerollUsed=false`);
+assert.match(evaluate(`dailyBriefingHtml()`), /Reroll once/);
+evaluate(`rerollDailyBriefing()`);
+assert.equal(evaluate(`state.dailyBriefing.rerollUsed`), true);
+assert.notEqual(evaluate(`state.dailyBriefing.challengeId`), 'inspect');
+assert.doesNotMatch(evaluate(`dailyBriefingHtml()`), /Reroll once/);
+assert.match(evaluate(`checkRelevantBadges.toString()`), /dailyProgress\('win'\)/);
+assert.match(evaluate(`checkRelevantBadges.toString()`), /dailyProgress\('clean'\)/);
+assert.match(evaluate(`checkRelevantBadges.toString()`), /dailyProgress\('watch'\)/);
+
+evaluate(`state=freshState();ensureDailyBriefing();remindDailyBriefing(true)`);
+assert.equal(evaluate(`state.notifications.filter(x=>x.type==='briefing'&&!x.dismissed).length`), 1);
+assert.equal(evaluate(`pendingGuidanceNotification().type`), 'briefing');
+evaluate(`state.notifications[0].dismissed=true;state.dailyBriefing.lastReminderAt=0;remindDailyBriefing(false)`);
+assert.equal(evaluate(`state.notifications[0].dismissed`), false, 'dismissed reminder returns after the interval');
+evaluate(`openPendingNotification()`);
+assert.equal(evaluate(`state.dailyBriefing.briefingRead`), true);
+assert.equal(evaluate(`state.notifications[0].dismissed`), true);
+assert.equal(evaluate(`remindDailyBriefing(true)`), false, 'read briefing does not remind again');
 
 console.log('Quarter Mile Builder core regression checks passed.');
