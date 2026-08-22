@@ -285,6 +285,29 @@ assert.match(evaluate(`checkRelevantBadges.toString()`), /dailyProgress\('win'\)
 assert.match(evaluate(`checkRelevantBadges.toString()`), /dailyProgress\('clean'\)/);
 assert.match(evaluate(`checkRelevantBadges.toString()`), /dailyProgress\('watch'\)/);
 
+evaluate(`state=freshState();state.car=makeOwned(CARS.find(x=>x.id==='mx5'));state.owned=[state.car];state.activeCarId=state.car.uid;render=()=>{};let queued=currentUpgradeOptions(state.car).find(x=>x.day>0&&!x.tuneService);buyUpgrade(queued.id)`);
+assert.equal(evaluate(`state.day`), 1, 'booking a workshop job does not advance the calendar');
+assert.equal(evaluate(`state.workshopJob!==null`), true);
+assert.equal(evaluate(`state.car.inWorkshop`), true);
+const queuedCompletionDay = evaluate(`state.workshopJob.completeDay`);
+evaluate(`advanceGameDays(${queuedCompletionDay}-state.day)`);
+assert.equal(evaluate(`state.workshopJob`), null, 'workshop job completes when calendar time passes');
+assert.equal(evaluate(`state.car.inWorkshop`), false);
+
+evaluate(`state=freshState();state.car=makeOwned(CARS.find(x=>x.id==='mx5'));let second=makeOwned(CARS.find(x=>x.id==='is200'));state.owned=[state.car,second];state.activeCarId=state.car.uid;state.saleVehicleId=second.uid`);
+assert.equal(evaluate(`selectedSaleCar().uid`), evaluate(`state.owned[1].uid`));
+assert.match(evaluate(`market()`), /Vehicle to sell/);
+evaluate(`state.lastEvent={vehicleId:state.car.uid,dayAdvanced:false,over:false}`);
+assert.equal(evaluate(`carSaleBlocked(state.car)`), true, 'event vehicle is locked from sale');
+assert.equal(evaluate(`carListingBlocked(state.car)`), false, 'event vehicle can still be advertised');
+assert.equal(evaluate(`carSaleBlocked(state.owned[1])`), false, 'other garage cars remain sellable at an event');
+evaluate(`state.saleVehicleId=state.car.uid;listCarForSale('fair')`);
+assert.equal(evaluate(`state.car.listedForSale`), true, 'event vehicle can be listed while still entered');
+assert.match(evaluate(`market()`), /receive pit offers while still racing/);
+const lockedDay = evaluate(`state.day`);
+evaluate(`nextDayListings()`);
+assert.equal(evaluate(`state.day`), lockedDay, 'Trading Post cannot advance time during an event');
+
 evaluate(`state=freshState();ensureDailyBriefing();remindDailyBriefing(true)`);
 assert.equal(evaluate(`state.notifications.filter(x=>x.type==='briefing'&&!x.dismissed).length`), 1);
 assert.equal(evaluate(`pendingGuidanceNotification().type`), 'briefing');
