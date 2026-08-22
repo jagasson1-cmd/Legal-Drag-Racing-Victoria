@@ -84,6 +84,21 @@ assert.equal(evaluate(`state.notifications.length`), 1);
 evaluate(`state={...freshState(),day:4,log:[{msg:'legacy progress'}]};delete state.guidance;delete state.notifications;normaliseState()`);
 assert.equal(evaluate(`state.notifications.length`), 0);
 assert.equal(evaluate(`state.guidance.created.firstRace`), true);
+assert.equal(evaluate(`state.guidance.onboardingDismissed`), true, 'established careers do not receive the beginner walkthrough');
+
+evaluate(`state=freshState();normaliseState()`);
+assert.equal(evaluate(`onboardingStage()`), 1);
+assert.match(evaluate(`onboardingHtml()`), /Start with your first car/);
+evaluate(`state.car=makeOwned(CARS.find(x=>x.id==='mx5'));state.owned=[state.car];state.activeCarId=state.car.uid`);
+assert.equal(evaluate(`onboardingStage()`), 2);
+assert.match(evaluate(`onboardingHtml()`), /Take your car to the strip/);
+evaluate(`state.lastEvent={dayAdvanced:false,over:false}`);
+assert.equal(evaluate(`onboardingStage()`), 3);
+assert.match(evaluate(`onboardingHtml()`), /Join the lanes/);
+evaluate(`state.lastRace={et:14}`);
+assert.equal(evaluate(`onboardingStage()`), 0, 'walkthrough completes after the first pass');
+assert.equal(evaluate(`SPLASH_AWAY_MS`), 4*60*60*1000);
+assert.match(evaluate(`showSplashIfDue.toString()`), /last&&away<SPLASH_AWAY_MS/, 'splash is suppressed for short return visits');
 
 evaluate(`state=freshState();refreshListings()`);
 assert.equal(evaluate(`state.listings.length`), 8);
@@ -239,7 +254,7 @@ assert.match(html, /@media\(max-width:860px\)[\s\S]*\.raceLayout\{grid-template-
 assert.match(html, /@media\(max-width:860px\)[\s\S]*\.nav\{display:flex;overflow-x:auto/);
 assert.match(html, /@media\(max-width:640px\)[\s\S]*\.queueCard\.done\{min-height:0;padding:8px 10px\}/);
 assert.match(evaluate(`lineupQueueList.toString()`), /listing queueCard/);
-assert.match(evaluate(`currentEvent.toString()`), /compactMobileActions/);
+assert.match(evaluate(`onboardingCurrentEventBase.toString()`), /compactMobileActions/);
 assert.match(html, /@media\(max-width:640px\)\{[\s\S]*body\{font-size:14px\}/);
 assert.match(html, /\.badgeCard\{grid-template-columns:40px minmax\(0,1fr\);gap:8px;min-height:96px/, 'mobile badge density');
 assert.match(html, /\.touchShiftBtn\{min-height:52px;font-size:18px\}/, 'mobile shift control');
@@ -300,6 +315,9 @@ assert.match(evaluate(`showScreenBase.toString()`), /if\(yyRun\)/, 'navigation c
 assert.match(evaluate(`showScreenBase.toString()`), /if\(dynoSession\)/, 'navigation cancels an active dyno session');
 assert.match(evaluate(`showScreenBase.toString()`), /cancelWatchRun\(\)/, 'navigation cancels spectator animation state');
 assert.match(evaluate(`renderWatchRun.toString()`), /watchRun!==run/, 'stale spectator callbacks stop before touching removed DOM');
+assert.match(evaluate(`tickLiveRace.toString()`), /playerFinish=\{at:elapsed,pEt,rpm,trap:/, 'live race freezes the official player result at the finish line');
+assert.match(evaluate(`tickLiveRace.toString()`), /braking\?'BRAKING':'COASTING'/, 'a winning player coasts and brakes while waiting for the rival');
+assert.match(evaluate(`handleLiveShift.toString()`), /liveRun\.playerFinish/, 'post-finish shift input cannot alter the official pass');
 
 evaluate(`state=freshState();state.car=makeOwned(CARS.find(x=>x.id==='mx5'));let second=makeOwned(CARS.find(x=>x.id==='is200'));state.owned=[state.car,second];state.activeCarId=state.car.uid;state.saleVehicleId=second.uid`);
 assert.equal(evaluate(`selectedSaleCar().uid`), evaluate(`state.owned[1].uid`));
