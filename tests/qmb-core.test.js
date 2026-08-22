@@ -135,7 +135,7 @@ const shortOnWatchesQueue = evaluate(`(() => {
 assert.match(shortOnWatchesQueue, /watchAllRemainingRaces\(\)" disabled>Watch All Remaining Races/);
 assert.match(shortOnWatchesQueue, /You need 2 Watch chances/);
 
-assert.equal(evaluate(`Object.keys(BADGE_DEFINITIONS).length`), 24);
+assert.equal(evaluate(`Object.keys(BADGE_DEFINITIONS).length`), 29, 'badge catalogue count');
 assert.deepEqual(Array.from(evaluate(`BADGE_CATEGORIES`)), ['Victorian Motoring','Engineering','Racing','Garage and Market','Respect','Punter']);
 assert.equal(evaluate(`Object.values(BADGE_DEFINITIONS).every(x=>x.name&&x.category&&x.icon&&x.description&&x.hint)`), true);
 
@@ -241,10 +241,10 @@ assert.match(html, /@media\(max-width:640px\)[\s\S]*\.queueCard\.done\{min-heigh
 assert.match(evaluate(`lineupQueueList.toString()`), /listing queueCard/);
 assert.match(evaluate(`currentEvent.toString()`), /compactMobileActions/);
 assert.match(html, /@media\(max-width:640px\)\{[\s\S]*body\{font-size:14px\}/);
-assert.match(html, /\.badgeCard\{grid-template-columns:40px minmax\(0,1fr\);gap:8px;min-height:96px/);
-assert.match(html, /\.touchShiftBtn\{min-height:52px;font-size:18px\}/);
-assert.match(html, /@media\(max-width:640px\)\{[\s\S]*\.raceSide \.treeBox\{zoom:\.75\}/);
-assert.doesNotMatch(evaluate(`nav.toString()`), /items\.push\('watch'/);
+assert.match(html, /\.badgeCard\{grid-template-columns:40px minmax\(0,1fr\);gap:8px;min-height:96px/, 'mobile badge density');
+assert.match(html, /\.touchShiftBtn\{min-height:52px;font-size:18px\}/, 'mobile shift control');
+assert.match(html, /@media\(max-width:640px\)\{[\s\S]*\.raceSide \.treeBox\{zoom:\.75\}/, 'mobile drag tree scaling');
+assert.doesNotMatch(evaluate(`nav.toString()`), /items\.push\('watch'/, 'watch screen stays out of navigation');
 assert.match(evaluate(`notifyMarketOffer.toString()`), /marketOffer/);
 assert.match(evaluate(`cloudSave.toString()`), /action:'save'/);
 assert.match(evaluate(`publicStatsSnapshot.toString()`), /respect/);
