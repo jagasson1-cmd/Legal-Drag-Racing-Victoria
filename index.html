@@ -321,6 +321,10 @@
     .svWin{padding:3px 7px;border-radius:4px;background:#67e08a;color:var(--sv-ink);font:900 11px/1 ui-monospace,Consolas,monospace;letter-spacing:.12em}
     .svWin[hidden]{display:none}
     .svStage .svTrack .laneFill{transition:none;background:linear-gradient(90deg,rgba(232,237,242,.03),rgba(232,237,242,.24))}
+    .svStage .svState{font:800 11px/1 ui-monospace,Consolas,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+    .svStage .svState:empty{display:none}
+    .svStage .svTrack .laneFill{transition:opacity .35s ease-out}
+    .svStage .svLane.coasting .svTrack .laneFill{opacity:.38}
     .svStage .svLaneB .svTrack .laneFill{background:repeating-linear-gradient(135deg,rgba(159,176,194,.08) 0 6px,rgba(159,176,194,.22) 6px 12px)}
     .svStage .svCar{top:50%;transform:translate(-100%,-50%);width:30px;height:16px;border-radius:4px 7px 7px 4px;border:2px solid var(--sv-ink);font:900 10px/12px ui-monospace,Consolas,monospace;text-align:center;color:var(--sv-ink);filter:none}
     .svStage .svLaneA .svCar{background:var(--sv-a)}
@@ -2448,7 +2452,7 @@ function tvTripCard(a){let ev=a.eventDef,story=a.story||eventNarrative(ev,a.busy
 function svTreeHtml(){let col=s=>`<div class="svTreeLane">${['pre','stage'].map(k=>`<div class="treeBulb small" data-sv="${k}"></div>`).join('')}${['a1','a2','a3'].map(k=>`<div class="treeBulb" data-sv="${k}"></div>`).join('')}<div class="treeBulb" data-sv="green"></div><span class="svTreeTag">${s}</span></div>`;return `<div class="svTree" aria-hidden="true">${col('L')}${col('R')}</div>`}
 function svLaneMeta(o){return [o.driver,o.label,o.type,o.drive].filter(Boolean).map(esc).join(' · ')}
 function svLane(side,car,pick){let A=side==='A',beams=RN_BEAMS.map(([m],i)=>`<i class="rnBeam${i===RN_BEAMS.length-1?' finish':''}" style="left:${(m/402*100).toFixed(2)}%"></i>`).join('');
-  return `<div class="svLane svLane${side}" id="svLane${side}"><div class="rnLaneId"><span class="svLaneTag"><i class="svMark" aria-hidden="true">${A?'L':'R'}</i>${A?'Left lane':'Right lane'}${pick?'<span class="svPick">Your pick</span>':''}</span><b class="rnCarName" title="${esc(car.name)}">${esc(car.name)}</b><span class="rnLaneMeta">${svLaneMeta(car)}</span></div><div class="svLaneRight"><span class="svWin" id="svWin${side}" hidden>WIN</span><div class="rnLaneDist" id="watch${side}Text">0 m</div></div><div class="laneBar rnTrack svTrack">${beams}<div id="watch${side}Lane" class="laneFill"></div><div id="watch${side}Dot" class="carDot svCar" aria-hidden="true">${A?'L':'R'}</div></div></div>`}
+  return `<div class="svLane svLane${side}" id="svLane${side}"><div class="rnLaneId"><span class="svLaneTag"><i class="svMark" aria-hidden="true">${A?'L':'R'}</i>${A?'Left lane':'Right lane'}${pick?'<span class="svPick">Your pick</span>':''}</span><b class="rnCarName" title="${esc(car.name)}">${esc(car.name)}</b><span class="rnLaneMeta">${svLaneMeta(car)}</span></div><div class="svLaneRight"><span class="svState" id="svState${side}"></span><span class="svWin" id="svWin${side}" hidden>WIN</span><div class="rnLaneDist" id="watch${side}Text">0 m</div></div><div class="laneBar rnTrack svTrack">${beams}<div id="watch${side}Lane" class="laneFill"></div><div id="watch${side}Dot" class="carDot svCar" aria-hidden="true">${A?'L':'R'}</div></div></div>`}
 function svMarkup(carA,carB,betData){let e=state.lastEvent||{},ev=e.eventDef||{},entry=currentLineupEntry(),pick=betData&&betData.bet?betData.picked:null;
   svLastLabel=[ev.venue,e.eventName||ev.name,entry&&e.lineup&&e.lineup.length?`Race ${lineupProgressText(e)}`:''].filter(Boolean).map(esc).join(' · ');
   return `<section class="card svStage" id="svStage" data-phase="prestage" aria-labelledby="svTitle"><div class="rnHead"><div><p class="rnEyebrow">${svLastLabel}</p><h2 class="svTitle" id="svTitle" tabindex="-1">Watching from the fence</h2></div><div class="svPhase" id="svPhase" role="status" aria-live="polite">PRE-STAGE</div></div>`
@@ -2468,7 +2472,9 @@ function svPaint(run,now){let $=id=>document.getElementById(id),stage=$('svStage
   let txt=!run.start?(phase==='prestage'?'Both cars rolling into the beams':phase==='staged'?'Both cars staged':'Ambers coming down'):crossed?`<b>${winA?'Left':'Right'} lane</b> takes the win light`:diff===0?'<b>Level</b> on the track':`<b>${diff>0?'Left':'Right'} lane</b> leads by <b>${Math.abs(diff)} m</b>`;
   if(gap&&gap.innerHTML!==txt)gap.innerHTML=txt;
   let ln=!run.start?'—':diff===0&&!crossed?'Level':(crossed?winA:diff>0)?carA.name:carB.name;if(lead&&lead.textContent!==ln){lead.textContent=ln;lead.title=ln}
-  if(crossed){let w=$(winA?'svWinA':'svWinB');if(w&&w.hidden){w.hidden=false;(winA?la:lb)&&(winA?la:lb).classList.add('won')}}}
+  if(crossed){let w=$(winA?'svWinA':'svWinB');if(w&&w.hidden){w.hidden=false;(winA?la:lb)&&(winA?la:lb).classList.add('won')}}
+  // Each car lifts once it passes its own ET, matching the spectator engine audio.
+  let ts=run.start?(now-run.start)/1000:0;[['A',r1.et,la],['B',r2.et,lb]].forEach(([s,et,el])=>{let c=!!run.start&&ts>=et,txt=!c?'':ts-et>=1.4?'Braking':'Coasting';if(el&&el.classList.contains('coasting')!==c)el.classList.toggle('coasting',c);let st=$('svState'+s);if(st&&st.textContent!==txt)st.textContent=txt})}
 function svSeenLine(o){let h=state.badgeHistory||{},rows=((h.observedRuns||{})[getOpponentRaceKey(o)]||[]).filter(r=>Number.isFinite(Number(r.et)));if(!rows.length)return '';if(rows.length===1)return '<p class="svSeen">First pass you have watched from this car tonight.</p>';return `<p class="svSeen">Passes you have watched tonight: ${rows.map((r,i)=>`<b>${Number(r.et).toFixed(3)}</b>${i===rows.length-1?' (this pass)':''}`).join(' · ')}</p>`}
 function svBoardMarkup(carA,carB,r1,r2,winner,msg,betData){let pick=betData&&betData.bet?betData.picked:null,margin=Math.abs(r1.et-r2.et),lane=(side,o,r)=>{let A=side==='A',won=winner===o;return `<div class="svBoardLane svLane${side}${won?' won':''}"><div class="svBoardTop"><span class="svLaneTag"><i class="svMark" aria-hidden="true">${A?'L':'R'}</i>${A?'Left lane':'Right lane'}</span>${won?'<span class="svWin">WIN</span>':''}${pick===o?'<span class="svPick">Your pick</span>':''}</div><b class="svBoardName">${esc(o.name)}</b><span class="svBoardMeta">${svLaneMeta(o)}</span><div class="svDigits"><div><span>ET</span><b>${r.et.toFixed(3)}</b></div><div><span>Trap km/h</span><b>${r.trap.toFixed(0)}</b></div></div></div>`};
   let scout=o=>`<div class="svScoutCar"><b>${esc(o.name)}</b>${carClueLine(o)}${svSeenLine(o)}</div>`;
@@ -2483,7 +2489,7 @@ function renderWatchRun(carA,carB,r1,r2,betData){
   function tick(now){
     if(run.cancelled||watchRun!==run)return;
     if(!run.start){let countdown=document.getElementById('watchCountdown');if(!countdown)return cancelWatchRun();let left=3-((now-run.countStart)/1000);countdown.textContent=left>0?Math.ceil(left):'GO';if(left<=-.25){run.start=now;countdown.textContent='GO';}if(run.sv)svPaint(run,now);run.raf=requestAnimationFrame(tick);return;}
-    let elapsed=(now-run.start)/1000, pa=progressForRun(elapsed,r1.et), pb=progressForRun(elapsed,r2.et);updateSpectatorAudio(pa,pb);
+    let elapsed=(now-run.start)/1000, pa=progressForRun(elapsed,r1.et), pb=progressForRun(elapsed,r2.et);updateSpectatorAudio(elapsed,r1.et,r2.et);
     document.getElementById('watchTime').textContent=elapsed.toFixed(2)+'s';
     document.getElementById('watchALane').style.width=(pa*100)+'%';document.getElementById('watchADot').style.left=(pa*100)+'%';document.getElementById('watchAText').textContent=Math.round(distanceForRun(pa))+' m';
     document.getElementById('watchBLane').style.width=(pb*100)+'%';document.getElementById('watchBDot').style.left=(pb*100)+'%';document.getElementById('watchBText').textContent=Math.round(distanceForRun(pb))+' m';
@@ -2494,7 +2500,7 @@ function renderWatchRun(carA,carB,r1,r2,betData){
   startSpectatorAudio(carA,carB);run.raf=requestAnimationFrame(tick);topStats();currentPanel();
 }
 function finishWatchRun(carA,carB,r1,r2,betData){
-  stopSpectatorAudio();
+  stopSpectatorAudio(true);
   watchRun=null;
   watchRaceActive=false;
   let winner=r1.et<r2.et?carA:carB;
@@ -2523,7 +2529,7 @@ function finishWatchRun(carA,carB,r1,r2,betData){
     details.push('Spectating Respect +0.1');
     logChange(msg,before,'event',details);
   }
-  markCurrentLineupRaceComplete();if(watchStopAfterCurrent){watchStopAfterCurrent=false;goToMyRace();return;}showTimingBoard(carA,carB,r1,r2,winner,msg,betData);
+  markCurrentLineupRaceComplete();if(watchStopAfterCurrent){watchStopAfterCurrent=false;spectatorTailCut();goToMyRace();return;}showTimingBoard(carA,carB,r1,r2,winner,msg,betData);
 }
 function showTimingBoard(carA,carB,r1,r2,winner,msg,betData){
   if(RACE_NIGHT_PROTO){document.getElementById('screen').innerHTML=svBoardMarkup(carA,carB,r1,r2,winner,msg,betData);evReveal('svBoardTitle','svResult')}
@@ -2568,9 +2574,24 @@ async function startEngineAudio(car,rpm=900){if(!soundEnabled)return;stopEngineA
 function updateEngineAudio(rpm,car=engineAudio&&engineAudio.car,throttle=.75){if(!engineAudio||!car)return;let now=engineAudio.ctx.currentTime,cylinders=Math.max(3,Number(car.cylinders)||6),capacity=Math.max(1,Number(car.disp)||2.5),capacityTone=Math.max(.72,Math.min(1.25,Math.sqrt(2.5/capacity))),base=Math.max(45,Math.min(420,rpm/60*cylinders/2*capacityTone));engineAudio.body.frequency.setTargetAtTime(base,now,.035);engineAudio.pulse.frequency.setTargetAtTime(base*2.01,now,.035);engineAudio.filter.frequency.setTargetAtTime(550+Math.min(2200,rpm*.24)+throttle*500,now,.06);engineAudio.master.gain.setTargetAtTime(.035+Math.max(0,throttle)*.055,now,.05)}
 function engineShiftCut(){if(!engineAudio)return;let now=engineAudio.ctx.currentTime;engineAudio.master.gain.cancelScheduledValues(now);engineAudio.master.gain.setValueAtTime(Math.max(.001,engineAudio.master.gain.value),now);engineAudio.master.gain.exponentialRampToValueAtTime(.012,now+.025);engineAudio.master.gain.exponentialRampToValueAtTime(.07,now+.16)}
 function stopEngineAudio(resumeMusic=true){engineAudioRequest++;let e=engineAudio;if(!e){if(resumeMusic)updateAreaMusic();return}engineAudio=null;let now=e.ctx.currentTime;e.master.gain.cancelScheduledValues(now);e.master.gain.setValueAtTime(Math.max(.001,e.master.gain.value),now);e.master.gain.exponentialRampToValueAtTime(.0001,now+.16);try{e.body.stop(now+.18);e.pulse.stop(now+.18)}catch{}if(resumeMusic)setTimeout(updateAreaMusic,220)}
-async function startSpectatorAudio(carA,carB){if(!soundEnabled)return;stopAreaMusic();let request=++spectatorAudioRequest,ctx=await getAudioContext();if(!ctx||request!==spectatorAudioRequest)return;let master=ctx.createGain(),filter=ctx.createBiquadFilter(),a=ctx.createOscillator(),b=ctx.createOscillator();master.gain.value=.032;filter.type='lowpass';filter.frequency.value=620;a.type='sawtooth';b.type='triangle';a.connect(filter);b.connect(filter);filter.connect(master);master.connect(ctx.destination);a.start();b.start();spectatorAudio={ctx,master,filter,a,b,carA,carB};updateSpectatorAudio(0,0)}
-function updateSpectatorAudio(progressA,progressB){let s=spectatorAudio;if(!s)return;let now=s.ctx.currentTime,tone=(car,p)=>{let capacity=Math.max(1,Number(car.disp)||2.5),red=Number(car.red)||6500,rpm=1200+p*(red*.82-1200),capacityTone=Math.max(.72,Math.min(1.25,Math.sqrt(2.5/capacity)));return Math.max(48,Math.min(260,rpm/60*3*capacityTone))};s.a.frequency.setTargetAtTime(tone(s.carA,progressA),now,.08);s.b.frequency.setTargetAtTime(tone(s.carB,progressB)*1.025,now,.08);s.filter.frequency.setTargetAtTime(520+Math.max(progressA,progressB)*520,now,.1)}
-function stopSpectatorAudio(){spectatorAudioRequest++;let s=spectatorAudio;if(!s){updateAreaMusic();return}spectatorAudio=null;let now=s.ctx.currentTime;s.master.gain.exponentialRampToValueAtTime(.0001,now+.18);try{s.a.stop(now+.2);s.b.stop(now+.2)}catch{}setTimeout(updateAreaMusic,230)}
+// Spectator engines (NPC races). Racing rpm climbs with each car's own progress, as before. Once a car passes its own ET it
+// lifts and coasts toward idle using the player Race Night decay (.22/s, then .48/s once braking from 1.4 s), made continuous.
+// Audio and lane styling only: results, timers and lane positions never read these values.
+let spectatorTail=null;
+function spectatorEngineRpm(car,elapsed,et){let top=(Number(car.red)||6500)*.82;if(!(et>0)||elapsed<et)return 1200+progressForRun(Math.max(0,elapsed),et>0?et:1)*(top-1200);let c=elapsed-et;return Math.max(idleRpm(car),top*Math.exp(-(Math.min(c,1.4)*.22+Math.max(0,c-1.4)*.48)))}
+function spectatorVoice(car,elapsed,et){let capacity=Math.max(1,Number(car.disp)||2.5),capacityTone=Math.max(.72,Math.min(1.25,Math.sqrt(2.5/capacity))),tone=r=>Math.max(48,Math.min(260,r/60*3*capacityTone)),top=(Number(car.red)||6500)*.82,rpm=spectatorEngineRpm(car,elapsed,et),coasting=et>0&&elapsed>=et;
+  // While coasting the pitch follows rpm down from the finish pitch, so a car whose top pitch hits the 260 Hz cap does not hold it.
+  return {rpm,coasting,braking:coasting&&elapsed-et>=1.4,progress:progressForRun(Math.max(0,elapsed),et>0?et:1),freq:coasting?Math.max(40,tone(top)*rpm/top):tone(rpm)}}
+async function startSpectatorAudio(carA,carB){if(!soundEnabled)return;stopAreaMusic();spectatorTailCut();let request=++spectatorAudioRequest,ctx=await getAudioContext();if(!ctx||request!==spectatorAudioRequest)return;let master=ctx.createGain(),filter=ctx.createBiquadFilter(),a=ctx.createOscillator(),b=ctx.createOscillator(),ga=ctx.createGain(),gb=ctx.createGain();master.gain.value=.032;ga.gain.value=1;gb.gain.value=1;filter.type='lowpass';filter.frequency.value=620;a.type='sawtooth';b.type='triangle';a.connect(ga);b.connect(gb);ga.connect(filter);gb.connect(filter);filter.connect(master);master.connect(ctx.destination);a.start();b.start();spectatorAudio={ctx,master,filter,a,b,ga,gb,carA,carB};updateSpectatorAudio(0,Infinity,Infinity)}
+function updateSpectatorAudio(elapsed,etA,etB){let s=spectatorAudio;if(!s)return;if(!soundEnabled){stopSpectatorAudio();return}let now=s.ctx.currentTime,va=spectatorVoice(s.carA,elapsed,etA),vb=spectatorVoice(s.carB,elapsed,etB),lift=v=>v.braking?.3:v.coasting?.45:1;
+  s.a.frequency.setTargetAtTime(va.freq,now,.08);s.b.frequency.setTargetAtTime(vb.freq*1.025,now,.08);s.ga.gain.setTargetAtTime(lift(va),now,.12);s.gb.gain.setTargetAtTime(lift(vb),now,.12);
+  s.filter.frequency.setTargetAtTime(520+Math.max(va.coasting?0:va.progress,vb.coasting?0:vb.progress)*520,now,.1)}
+function spectatorTailCut(){let t=spectatorTail;if(!t)return;spectatorTail=null;let now=t.ctx.currentTime;t.master.gain.cancelScheduledValues(now);t.master.gain.setValueAtTime(Math.max(.0002,t.master.gain.value),now);t.master.gain.exponentialRampToValueAtTime(.0001,now+.05);try{t.a.stop(now+.06);t.b.stop(now+.06)}catch{}}
+// coast=true (a race finishing normally) lets both engines fall toward idle over a short self-stopping tail; exits stop quickly.
+function stopSpectatorAudio(coast=false){spectatorAudioRequest++;spectatorTailCut();let s=spectatorAudio;if(!s){updateAreaMusic();return}spectatorAudio=null;let now=s.ctx.currentTime,len=coast&&soundEnabled?.6:.18;
+  if(len>.18){[[s.a,s.ga,s.carA,1],[s.b,s.gb,s.carB,1.025]].forEach(([o,g,c,k])=>{o.frequency.setTargetAtTime(spectatorVoice(c,60,1).freq*k,now,.22);g.gain.setTargetAtTime(.3,now,.12)});s.filter.frequency.setTargetAtTime(520,now,.12);spectatorTail=s}
+  s.master.gain.cancelScheduledValues(now);s.master.gain.setValueAtTime(Math.max(.0002,s.master.gain.value),now);s.master.gain.exponentialRampToValueAtTime(.0001,now+len);try{s.a.stop(now+len+.02);s.b.stop(now+len+.02)}catch{}
+  setTimeout(()=>{if(spectatorTail===s)spectatorTail=null;updateAreaMusic()},Math.round(len*1000)+50)}
 function updateSoundToggle(){let effects=document.getElementById('soundToggle'),music=document.getElementById('musicToggle');if(effects){effects.textContent=soundEnabled?'Effects On':'Effects Off';effects.setAttribute('aria-pressed',String(soundEnabled));effects.title=soundEnabled?'Sound effects are enabled.':'Sound effects are muted.'}if(music){music.textContent=musicEnabled?'Music On':'Music Off';music.setAttribute('aria-pressed',String(musicEnabled));music.title=musicEnabled?'Area music is enabled.':'Area music is muted.'}}
 function toggleSound(){if(soundEnabled)playSfx('mute');soundEnabled=!soundEnabled;localStorage.setItem(SOUND_STORAGE,String(soundEnabled));updateSoundToggle();if(soundEnabled)playSfx('toggle')}
 function toggleMusic(){musicEnabled=!musicEnabled;localStorage.setItem(MUSIC_STORAGE,String(musicEnabled));updateSoundToggle();if(musicEnabled){getAudioContext();updateAreaMusic()}else stopAreaMusic()}

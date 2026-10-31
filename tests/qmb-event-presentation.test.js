@@ -17,15 +17,24 @@ function seededMath(seed) {
   return m;
 }
 
-function makeContext(seed, search = '') {
-  const storage = new Map([['qmb_sound_enabled', 'false'], ['qmb_music_enabled', 'false']]);
+// Minimal Web Audio stand-in: records the values the game schedules and when oscillators are told to stop.
+function fakeAudio() {
+  const made = { contexts: 0, oscillators: [] };
+  class Param { constructor(v) { this.value = v; this.targets = []; } setTargetAtTime(v) { this.targets.push(v); this.value = v; } setValueAtTime(v) { this.value = v; } exponentialRampToValueAtTime(v, t) { this.ramp = { v, t }; } linearRampToValueAtTime(v, t) { this.ramp = { v, t }; } cancelScheduledValues() {} }
+  class Node { constructor() { this.gain = new Param(1); this.frequency = new Param(0); this.Q = new Param(1); this.stopAt = null; } connect() {} disconnect() {} start() { this.started = true; } stop(t) { this.stopAt = t; } }
+  class Ctx { constructor() { made.contexts++; this.state = 'running'; this.currentTime = 0; this.destination = {}; } createGain() { return new Node(); } createBiquadFilter() { return new Node(); } createOscillator() { const o = new Node(); made.oscillators.push(o); return o; } createBufferSource() { return new Node(); } createBuffer() { return { getChannelData: () => new Float32Array(1) }; } resume() {} }
+  return { Ctx, made };
+}
+
+function makeContext(seed, search = '', opts = {}) {
+  const storage = new Map([['qmb_sound_enabled', opts.sound ? 'true' : 'false'], ['qmb_music_enabled', 'false']]);
   const elements = new Map();
   const element = id => {
     if (!elements.has(id)) {
       const el = {
         id, innerHTML: '', textContent: '', value: '', disabled: false, hidden: true, title: '', style: {}, className: '', dataset: {}, focused: false,
         setAttribute: () => {}, focus() { this.focused = true; }, querySelector: () => null, querySelectorAll: () => [],
-        classList: { add: () => {}, remove: () => {}, contains: () => false, toggle: () => {} }
+        classList: (() => { const s = new Set(); return { add: c => s.add(c), remove: c => s.delete(c), contains: c => s.has(c), toggle: (c, on) => { const v = on === undefined ? !s.has(c) : !!on; v ? s.add(c) : s.delete(c); return v; } }; })()
       };
       elements.set(id, el);
     }
@@ -43,7 +52,7 @@ function makeContext(seed, search = '') {
     performance: { now: () => clock.t }, innerHeight: 900,
     localStorage: { getItem: k => storage.has(k) ? storage.get(k) : null, setItem: (k, v) => storage.set(k, String(v)), removeItem: k => storage.delete(k) },
     document: { hidden: false, addEventListener: () => {}, getElementById: id => id === 'driverProfileOverlay' ? null : element(id), querySelector: () => null, querySelectorAll: () => [] },
-    window: { addEventListener: () => {} },
+    window: { addEventListener: () => {}, AudioContext: opts.audio ? opts.audio.Ctx : undefined },
     location: { search, origin: 'http://localhost', pathname: '/' },
     history: { replaceState: () => {} }
   });
@@ -51,7 +60,8 @@ function makeContext(seed, search = '') {
   const evaluate = source => vm.runInContext(source, context);
   // Run animation frames until the current spectator run has finished.
   const drainFrames = () => { let n = 0; while (frame && n < 5000) { const f = frame; frame = null; clock.t += 16; f(clock.t); n++; } return n; };
-  return { evaluate, element, elements, clock, timers, drainFrames };
+  const stepFrame = () => { if (!frame) return false; const f = frame; frame = null; clock.t += 16; f(clock.t); return true; };
+  return { evaluate, element, elements, clock, timers, drainFrames, stepFrame };
 }
 
 function setup(ctx, eventId, respect = 24) {
@@ -197,4 +207,137 @@ function spectatorFlow(search) {
   }
 }
 
-console.log('Quarter Mile Builder event presentation checks passed.');
+// ---------- Spectator post-finish coasting (audio and lane state only) ----------
+{
+  // Engine model: unchanged before the stripe, then falls from the finish rpm toward idle and never holds.
+  const ctx = makeContext(3);
+  const cars = JSON.parse(ctx.evaluate(`JSON.stringify([...CARS].sort((a,b)=>a.red-b.red).filter((c,i,a)=>i===0||i===a.length-1||i===Math.floor(a.length/2)).map(c=>c.id))`));
+  for (const id of cars) {
+    const car = `makeOwned(CARS.find(x=>x.id==='${id}'),'auto','D')`;
+    const rpm = t => ctx.evaluate(`spectatorEngineRpm(${car},${t},12)`);
+    const top = ctx.evaluate(`CARS.find(x=>x.id==='${id}').red*.82`), idle = ctx.evaluate(`idleRpm(${car})`);
+    for (const t of [0, 3, 6, 11.99]) assert.ok(Math.abs(rpm(t) - (1200 + Math.min(1, t / 12) * (top - 1200))) < 1e-9, `${id}: racing rpm unchanged before the stripe`);
+    assert.ok(Math.abs(rpm(12) - top) < 1e-9, `${id}: coasting starts from the finish rpm`);
+    let prev = rpm(12);
+    for (let t = 12.1; t < 15; t += 0.1) { const r = rpm(t); assert.ok(r < prev && r >= idle, `${id}: rpm falls after the stripe (t=${t.toFixed(1)})`); prev = r; }
+    assert.ok(Math.abs(rpm(13.4 - 1e-7) - rpm(13.4 + 1e-7)) < 1, `${id}: no step when braking starts`);
+    assert.equal(rpm(30), idle, `${id}: settles at idle`);
+    const f = t => ctx.evaluate(`spectatorVoice(${car},${t},12).freq`);
+    assert.ok(f(12.2) < f(12) && f(12.6) < f(12.2), `${id}: pitch falls straight away, even at the 260 Hz cap`);
+  }
+}
+(async () => {
+  const settle = () => new Promise(r => setImmediate(r));
+  const voices = ctx => JSON.parse(ctx.evaluate('JSON.stringify({a:spectatorAudio.a.frequency.value,b:spectatorAudio.b.frequency.value,ga:spectatorAudio.ga.gain.value,gb:spectatorAudio.gb.gain.value})'));
+  {
+    // Both engines coast independently: whichever car crosses first lifts while the other is still on the throttle.
+    for (const [etA, etB] of [[10, 11], [11, 10]]) {
+      const audio = fakeAudio(), ctx = makeContext(3, '', { sound: true, audio });
+      ctx.evaluate(`globalThis.__a=makeOwned(CARS.find(x=>x.id==='is200'),'auto','D');globalThis.__b=makeOwned(CARS.filter(x=>x.price<34000).slice(-1)[0],'auto','D')`);
+      await ctx.evaluate('startSpectatorAudio(__a,__b)');
+      const read = t => { ctx.evaluate(`updateSpectatorAudio(${t},${etA},${etB})`); return voices(ctx); };
+      const first = Math.min(etA, etB), aFirst = etA < etB;
+      const atCross = read(first), soon = read(first + 0.5), both = read(Math.max(etA, etB) + 0.5), later = read(Math.max(etA, etB) + 1);
+      const [lead, trail, gLead, gTrail] = aFirst ? ['a', 'b', 'ga', 'gb'] : ['b', 'a', 'gb', 'ga'];
+      assert.ok(soon[lead] < atCross[lead], 'the first car to cross falls in pitch');
+      assert.ok(soon[gLead] < 1, 'the first car lifts off the throttle');
+      assert.ok(soon[trail] >= atCross[trail] && soon[gTrail] === 1, 'the other car is still on the throttle (pitch not falling; it may sit at the 260 Hz cap)');
+      assert.ok(later[trail] < both[trail] && later[lead] < both[lead], 'both cars coast once both have crossed');
+    }
+  }
+  {
+    // Through the real watched race: lane state and audio follow each car's own crossing; results and timing match sound-off.
+    const flow = async sound => {
+      const audio = fakeAudio(), ctx = makeContext(21, '', { sound, audio }); setup(ctx, 'heathcote_legal');
+      ctx.evaluate(`travelToEvent('heathcote_legal');finishTravel();confirmArrival('spectate');watchNextLineupRace(false)`);
+      await settle();
+      const et = JSON.parse(ctx.evaluate('JSON.stringify([watchRun.sv.r1.et,watchRun.sv.r2.et])'));
+      const rows = []; let frames = 0;
+      while (ctx.stepFrame()) {
+        frames++;
+        if (!ctx.evaluate('!!(watchRun&&watchRun.start)')) continue;
+        const t = ctx.evaluate('(performance.now()-watchRun.start)/1000');
+        rows.push({ t, la: ctx.element('svLaneA').classList.contains('coasting'), lb: ctx.element('svLaneB').classList.contains('coasting'), sa: ctx.element('svStateA').textContent, sb: ctx.element('svStateB').textContent, audio: sound ? voices(ctx) : null });
+      }
+      return { ctx, audio, et, rows, frames, state: stateJson(ctx), log: ctx.evaluate('JSON.stringify(state.log)') };
+    };
+    const on = await flow(true), off = await flow(false);
+    assert.equal(on.state, off.state, 'race results, bet state and rewards unchanged by spectator audio');
+    assert.equal(on.log, off.log, 'identical log');
+    assert.equal(on.frames, off.frames, 'race takes the same number of frames');
+    assert.deepEqual(on.et, off.et, 'identical ETs');
+    assert.ok(on.rows.some(r => r.la !== r.lb), 'one car coasts while the other is still racing');
+    for (const r of on.rows) {
+      assert.equal(r.la, r.t >= on.et[0], 'left lane coasts only after its own ET');
+      assert.equal(r.lb, r.t >= on.et[1], 'right lane coasts only after its own ET');
+      assert.equal(r.sa, r.t >= on.et[0] ? (r.t - on.et[0] >= 1.4 ? 'Braking' : 'Coasting') : '');
+      assert.equal(r.sb, r.t >= on.et[1] ? (r.t - on.et[1] >= 1.4 ? 'Braking' : 'Coasting') : '');
+      assert.equal(r.audio.ga < 1, r.t >= on.et[0], 'left engine lifts only after its ET');
+      assert.equal(r.audio.gb < 1, r.t >= on.et[1], 'right engine lifts only after its ET');
+    }
+    const first = on.et[0] < on.et[1] ? 'a' : 'b', firstEt = Math.min(...on.et), after = on.rows.filter(r => r.t > firstEt);
+    for (let i = 1; i < after.length; i++) assert.ok(after[i].audio[first] < after[i - 1].audio[first], "the winner's pitch keeps falling until the other car finishes");
+    // Finish: the engines get a short self-stopping coast tail; leaving the board cuts it at once.
+    assert.equal(on.ctx.evaluate('spectatorAudio'), null);
+    assert.ok(on.ctx.evaluate('spectatorTail!==null'), 'finish keeps a short coast tail');
+    const spec = on.audio.made.oscillators.filter(o => o.frequency.targets.length > 3);
+    assert.equal(spec.length, 2, 'one oscillator per car');
+    assert.ok(spec.every(o => Math.abs(o.stopAt - 0.62) < 1e-9), 'tail stops itself after 0.6 s');
+    on.ctx.evaluate(`show('event')`);
+    assert.equal(on.ctx.evaluate('spectatorTail'), null);
+    assert.ok(spec.every(o => o.stopAt <= 0.06 + 1e-9), 'leaving the screen stops the tail immediately');
+    assert.equal(off.audio.made.contexts, 0, 'sound off creates no audio');
+  }
+  {
+    // Exiting mid-race stops spectator audio and the animation frame.
+    const audio = fakeAudio(), ctx = makeContext(21, '', { sound: true, audio }); setup(ctx, 'heathcote_legal');
+    ctx.evaluate(`travelToEvent('heathcote_legal');finishTravel();confirmArrival('spectate');watchNextLineupRace(false)`);
+    await settle();
+    for (let i = 0; i < 300; i++) ctx.stepFrame();
+    assert.ok(ctx.evaluate('!!(watchRun&&watchRun.start)') && ctx.evaluate('spectatorAudio!==null'), 'mid-race with audio running');
+    ctx.evaluate(`show('event')`);
+    assert.equal(ctx.evaluate('spectatorAudio'), null);
+    assert.equal(ctx.evaluate('spectatorTail'), null);
+    assert.ok(audio.made.oscillators.filter(o => o.frequency.targets.length > 3).every(o => o.stopAt !== null && o.stopAt <= 0.2 + 1e-9), 'engines stopped on exit');
+    assert.equal(ctx.stepFrame(), false, 'no animation frame left running');
+    // Turning sound off mid-race stops the engines on the next frame.
+    ctx.evaluate(`show('currentEvent');watchNextLineupRace(false)`); await settle();
+    for (let i = 0; i < 250; i++) ctx.stepFrame();
+    assert.ok(ctx.evaluate('spectatorAudio!==null'));
+    ctx.evaluate('soundEnabled=false'); ctx.stepFrame();
+    assert.equal(ctx.evaluate('spectatorAudio'), null, 'sound-off mid-race stops spectator audio');
+  }
+  {
+    // Watch All with sound: same timing and state as sound-off; Stop lands on my race with no audio left.
+    const run = async sound => {
+      const audio = fakeAudio(), ctx = makeContext(33, '', { sound, audio }); setup(ctx, 'heathcote_legal', 30);
+      ctx.evaluate(`travelToEvent('heathcote_legal');finishTravel();confirmArrival('race');chooseRoundOpponent(state.lastEvent.raceSlots[0])`);
+      ctx.evaluate('watchAllBeforeMine()'); await settle();
+      const delays = []; let guard = 0;
+      while (ctx.evaluate('watchAllMode') && guard++ < 20) {
+        ctx.drainFrames();
+        if (!ctx.evaluate('watchAllMode')) break;
+        const t = ctx.timers.filter(x => x.fn.name === 'continueWatchAllBeforeMine').at(-1); delays.push(t.ms); t.fn(); await settle();
+      }
+      return { ctx, audio, delays, state: stateJson(ctx) };
+    };
+    const on = await run(true), off = await run(false);
+    assert.equal(on.state, off.state, 'Watch All results and queue unchanged with sound on');
+    assert.deepEqual(on.delays, off.delays, 'Watch All auto-continue timing unchanged');
+    assert.ok(on.delays.every(d => d === 1400));
+    on.ctx.evaluate(`show('currentEvent')`);
+    assert.equal(on.ctx.evaluate('spectatorAudio'), null); assert.equal(on.ctx.evaluate('spectatorTail'), null);
+    assert.ok(on.audio.made.oscillators.filter(o => o.frequency.targets.length > 3).every(o => o.stopAt !== null), 'no spectator engine left running after Watch All');
+    const audio = fakeAudio(), stop = makeContext(33, '', { sound: true, audio }); setup(stop, 'heathcote_legal', 30);
+    stop.evaluate(`travelToEvent('heathcote_legal');finishTravel();confirmArrival('race');chooseRoundOpponent(state.lastEvent.raceSlots[0])`);
+    if (stop.evaluate('racesBeforePlayer(state.lastEvent)') >= 1) {
+      stop.evaluate('watchAllBeforeMine()'); await settle();
+      for (let i = 0; i < 300; i++) stop.stepFrame();
+      stop.evaluate('stopWatchAllBeforeMine()'); stop.drainFrames();
+      assert.equal(stop.evaluate('currentLineupEntry().type'), 'player', 'Stop still lands on the player race');
+      assert.equal(stop.evaluate('spectatorAudio'), null); assert.equal(stop.evaluate('spectatorTail'), null, 'going to my race cuts the coast tail');
+      assert.ok(audio.made.oscillators.filter(o => o.frequency.targets.length > 3).every(o => o.stopAt !== null), 'no spectator audio left after Stop');
+    }
+  }
+  console.log('Quarter Mile Builder event presentation checks passed.');
+})().catch(e => { console.error(e); process.exit(1); });
