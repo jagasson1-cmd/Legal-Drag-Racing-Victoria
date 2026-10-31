@@ -20,8 +20,8 @@ function seededMath(seed) {
 // Minimal Web Audio stand-in: records the values the game schedules and when oscillators are told to stop.
 function fakeAudio() {
   const made = { contexts: 0, oscillators: [] };
-  class Param { constructor(v) { this.value = v; this.targets = []; } setTargetAtTime(v) { this.targets.push(v); this.value = v; } setValueAtTime(v) { this.value = v; } exponentialRampToValueAtTime(v, t) { this.ramp = { v, t }; } linearRampToValueAtTime(v, t) { this.ramp = { v, t }; } cancelScheduledValues() {} }
-  class Node { constructor() { this.gain = new Param(1); this.frequency = new Param(0); this.Q = new Param(1); this.stopAt = null; } connect() {} disconnect() {} start() { this.started = true; } stop(t) { this.stopAt = t; } }
+  class Param { constructor(v) { this.value = v; this.targets = []; } setTargetAtTime(v, t, c) { this.targets.push(v); this.tc = c; this.value = v; } setValueAtTime(v) { this.value = v; this.setTo = v; } exponentialRampToValueAtTime(v, t) { this.ramp = { v, t }; } linearRampToValueAtTime(v, t) { this.ramp = { v, t }; } cancelScheduledValues() {} }
+  class Node { constructor() { this.gain = new Param(1); this.frequency = new Param(0); this.Q = new Param(1); this.stopAt = null; this.started = false; } connect() {} disconnect() {} start() { this.started = true; } stop(t) { if (this.stopAt === null || t < this.stopAt) this.stopAt = t; } }
   class Ctx { constructor() { made.contexts++; this.state = 'running'; this.currentTime = 0; this.destination = {}; } createGain() { return new Node(); } createBiquadFilter() { return new Node(); } createOscillator() { const o = new Node(); made.oscillators.push(o); return o; } createBufferSource() { return new Node(); } createBuffer() { return { getChannelData: () => new Float32Array(1) }; } resume() {} }
   return { Ctx, made };
 }
@@ -42,12 +42,13 @@ function makeContext(seed, search = '', opts = {}) {
   };
   const clock = { t: 1000 };
   const timers = [];
+  const intervals = new Map(); let intervalId = 0;
   let frame = null;
   class FixedDate extends Date { constructor(...a) { if (a.length) super(...a); else super(FIXED_NOW); } static now() { return FIXED_NOW; } }
   const context = vm.createContext({
     console, Math: seededMath(seed), Date: FixedDate, JSON, URL, URLSearchParams,
     alert: () => {}, confirm: () => true, prompt: () => null,
-    setTimeout: (fn, ms) => { timers.push({ fn, ms }); return timers.length; }, clearTimeout: () => {}, setInterval: () => 0, clearInterval: () => {},
+    setTimeout: (fn, ms) => { timers.push({ fn, ms }); return timers.length; }, clearTimeout: () => {}, setInterval: fn => { intervals.set(++intervalId, fn); return intervalId; }, clearInterval: id => { intervals.delete(id); },
     requestAnimationFrame: fn => { frame = fn; return 1; }, cancelAnimationFrame: () => { frame = null; },
     performance: { now: () => clock.t }, innerHeight: 900,
     localStorage: { getItem: k => storage.has(k) ? storage.get(k) : null, setItem: (k, v) => storage.set(k, String(v)), removeItem: k => storage.delete(k) },
@@ -61,7 +62,7 @@ function makeContext(seed, search = '', opts = {}) {
   // Run animation frames until the current spectator run has finished.
   const drainFrames = () => { let n = 0; while (frame && n < 5000) { const f = frame; frame = null; clock.t += 16; f(clock.t); n++; } return n; };
   const stepFrame = () => { if (!frame) return false; const f = frame; frame = null; clock.t += 16; f(clock.t); return true; };
-  return { evaluate, element, elements, clock, timers, drainFrames, stepFrame };
+  return { evaluate, element, elements, clock, timers, intervals, storage, drainFrames, stepFrame };
 }
 
 function setup(ctx, eventId, respect = 24) {
@@ -70,58 +71,109 @@ function setup(ctx, eventId, respect = 24) {
 }
 const stateJson = ctx => ctx.evaluate('JSON.stringify(state)');
 
-// ---------- Travel: duration, controls and state are unchanged ----------
-for (const eventId of ['heathcote_legal', 'calder_test', 'mildura_regional', 'bend_open']) {
+// ---------- Travel: venue pacing, controls and state ----------
+const EXPECTED_MS = { calder_test: 4000, heathcote_legal: 7000, mildura_regional: 11000, state_grudge: 6000, bend_open: 8000, sydney_challenge: 8000 };
+{
+  const ctx = makeContext(5);
+  const ids = JSON.parse(ctx.evaluate('JSON.stringify(EVENT_CALENDAR.map(e=>e.id))'));
+  assert.deepEqual(ids.slice().sort(), Object.keys(EXPECTED_MS).sort(), 'every calendar event has an expected travel pacing');
+  assert.equal(ctx.evaluate('travelProfile(SPECIAL_EVENTS.youYangs.id).ms'), 7000, 'first You Yangs journey about 7 s');
+  // Destinations without a profile fall back to 5-8 s from travel cost.
+  assert.equal(ctx.evaluate(`travelProfile('nowhere',{travelCost:0,region:'VIC',tier:'Local'}).ms`), 5000);
+  assert.equal(ctx.evaluate(`travelProfile('nowhere',{travelCost:5000,region:'SA',tier:'Interstate'}).ms`), 8000);
+  // Profiles never show distances or times.
+  const profiles = ctx.evaluate('JSON.stringify(TRAVEL_PROFILES)');
+  assert.doesNotMatch(profiles, /\bkm\b|kilomet|\bhours?\b|\bminutes?\b/i, 'no invented distances or journey times');
+}
+for (const eventId of Object.keys(EXPECTED_MS)) {
   const out = {};
   for (const search of ['', '?racenight=0']) {
     const ctx = makeContext(5, search); setup(ctx, eventId, 60);
+    const moneyBefore = ctx.evaluate('state.money');
     ctx.evaluate(`travelToEvent('${eventId}')`);
     const ev = ctx.evaluate(`eventById('${eventId}')`);
     const delay = ctx.timers.at(-1).ms;
-    assert.equal(delay, 2200 + Math.min(1200, Math.round((ev.travelCost || 0) * 0.8)), 'travel duration unchanged');
+    assert.equal(delay, EXPECTED_MS[eventId], `${eventId}: travel pacing from the profile`);
+    assert.equal(ctx.evaluate('travelClock.ms'), delay, 'route progress uses the same duration as the timer');
+    assert.equal(ctx.evaluate('state.money'), moneyBefore, 'travelling charges nothing');
     const markup = ctx.evaluate('travel()');
     assert.match(markup, /onclick="finishTravel\(\)">Arrive now</);
     assert.match(markup, /onclick="cancelArrival\(\)">Turn back</);
     if (!search) {
-      assert.equal(ctx.evaluate('travelClock.ms'), delay, 'route progress uses the same duration as the timer');
-      assert.match(markup, /class="card tvTrip"/);
+      const scene = ctx.evaluate(`travelProfile('${eventId}').scene`), legs = ctx.evaluate(`travelProfile('${eventId}').legs.length`);
+      assert.match(markup, new RegExp(`class="tvScene tvScene-${scene}"`), 'destination scene');
+      assert.equal((markup.match(/class="tvTick"/g) || []).length, legs - 1, 'one route tick per leg boundary');
+      assert.match(markup, /Leg 1 of \d+ · Out of the shed/);
+      assert.doesNotMatch(markup, /\d+(\.\d+)?\s?s\b[^a-z]|takes about|\bkm\b/, 'no journey time or distance shown');
       assert.ok(markup.includes(ev.venue) && markup.includes(ev.tier), 'venue and tier shown');
-      assert.ok(markup.includes(ctx.evaluate(`fmt(${ev.travelCost || 0})`)), 'travel cost shown');
       assert.ok(markup.includes(ctx.evaluate(`fmt(${ev.winPayout})`)), 'payout shown');
-      assert.match(markup, /Respect to race/);
       assert.match(markup, /Lexus IS200/, 'current car shown');
+      // Leg text advances with the ticker and ends on the last leg.
+      const tick = [...ctx.intervals.values()][0];
+      assert.ok(tick, 'travel ticker running');
+      ctx.clock.t += delay - 1; tick();
+      assert.match(ctx.element('tvStatus').textContent, new RegExp(`Leg ${legs} of ${legs}`));
     } else {
       assert.match(markup, /<h2>On the road<\/h2>/, '?racenight=0 keeps the classic travel screen');
     }
     out[search] = stateJson(ctx);
     ctx.timers.at(-1).fn();
     assert.equal(ctx.evaluate('state.screen'), 'arrival', 'timer still arrives');
+    assert.equal(ctx.intervals.size, 0, 'ticker stopped on natural arrival');
+    assert.equal(ctx.evaluate('travelClock'), null);
   }
   assert.equal(out[''], out['?racenight=0'], 'travel leaves identical state in both presentations');
 }
+for (const eventId of Object.keys(EXPECTED_MS)) {
+  // Arrive now and Turn back at every destination.
+  const ctx = makeContext(5); setup(ctx, eventId, 60);
+  ctx.evaluate(`travelToEvent('${eventId}')`); ctx.evaluate('finishTravel()');
+  assert.equal(ctx.evaluate('state.screen'), 'arrival', `${eventId}: Arrive now`);
+  assert.equal(ctx.evaluate('travelTimer'), null); assert.equal(ctx.intervals.size, 0);
+  assert.equal(ctx.evaluate('state.pendingArrival.eventId'), eventId, 'arrival keeps the trip');
+  const back = makeContext(5); setup(back, eventId, 60);
+  back.evaluate(`state.screen='event';render()`);
+  const before = stateJson(back);
+  back.evaluate(`travelToEvent('${eventId}')`); back.evaluate('cancelArrival()');
+  assert.equal(stateJson(back), before, `${eventId}: Turn back leaves state exactly as before the trip`);
+  assert.equal(back.evaluate('travelTimer'), null); assert.equal(back.intervals.size, 0);
+}
 {
-  // Arrive now and Turn back.
-  const ctx = makeContext(5); setup(ctx, 'mildura_regional');
-  ctx.evaluate(`travelToEvent('mildura_regional')`); ctx.evaluate('finishTravel()');
-  assert.equal(ctx.evaluate('state.screen'), 'arrival');
-  assert.equal(ctx.evaluate('travelTimer'), null);
-  const back = makeContext(5); setup(back, 'mildura_regional');
-  back.evaluate(`travelToEvent('mildura_regional')`); back.evaluate('cancelArrival()');
-  assert.equal(back.evaluate('state.pendingArrival'), null);
-  assert.equal(back.evaluate('state.screen'), 'event');
   // Re-render mid-trip continues the same progress rather than restarting it.
   const mid = makeContext(5); setup(mid, 'mildura_regional');
   mid.evaluate(`travelToEvent('mildura_regional')`); mid.clock.t += 1000;
   assert.match(mid.evaluate('travel()'), /--tv-delay:-1000ms/);
-  // A trip restored without its timer (e.g. after a reload) shows a held route, not a fake countdown.
-  mid.evaluate('travelClock=null');
-  assert.match(mid.evaluate('travel()'), /tvRouteHeld[\s\S]*Trip paused/);
+  // Navigating away pauses the trip: timer, ticker and clock cleared, nothing charged; returning shows a held route.
+  const money = mid.evaluate('state.money');
+  mid.evaluate(`show('garage')`);
+  assert.equal(mid.evaluate('travelTimer'), null); assert.equal(mid.intervals.size, 0); assert.equal(mid.evaluate('travelClock'), null);
+  assert.equal(mid.evaluate('state.money'), money);
+  assert.match(mid.evaluate('travel()'), /tvRouteHeld[\s\S]*Trip paused[\s\S]*Arrive now/);
+  // Reload mid-trip: the saved trip restores as paused, with no timer, no charge; Arrive now still works.
+  const saved = mid.evaluate('JSON.stringify(state)');
+  const re = makeContext(9); re.evaluate(`state=migrateGameState(mergeBadgeCareer(JSON.parse(${JSON.stringify(saved)}),state));state.screen='travel';render()`);
+  const timersBefore = re.timers.length;
+  assert.match(re.element('screen').innerHTML, /Trip paused/);
+  assert.equal(re.timers.length, timersBefore); assert.equal(re.intervals.size, 0);
+  assert.equal(re.evaluate('state.money'), money);
+  re.evaluate('finishTravel()'); assert.equal(re.evaluate('state.screen'), 'arrival');
   // Long and unusual names are escaped; no active car is handled.
   const odd = makeContext(5); setup(odd, 'heathcote_legal');
   odd.evaluate(`state.car.name='Holden <VN> "Berlina" & Co';travelToEvent('heathcote_legal')`);
   assert.match(odd.evaluate('travel()'), /Holden &lt;VN&gt; &quot;Berlina&quot; &amp; Co/);
   odd.evaluate('state.car=null');
   assert.match(odd.evaluate('travel()'), /No active car/);
+}
+{
+  // Mobile and reduced motion: both controls stay full width on phones; scene motion stops with reduced motion.
+  const css = html.match(/<style>([\s\S]*?)<\/style>/)[1];
+  const phone = css.slice(css.indexOf('@media(max-width:640px){\n      .tvTrip'));
+  assert.match(phone.slice(0, 1500), /\.tvActions \.btn\{flex:1 1 0;min-width:0\}/);
+  assert.match(phone.slice(0, 1500), /\.tvScene\{height:62px/);
+  const reduced = css.slice(css.lastIndexOf('@media(prefers-reduced-motion:reduce)'));
+  assert.match(reduced, /\.tvScene::after\{animation:none\}/);
+  assert.match(reduced, /\.tvFill,\.tvMark\{animation-timing-function:steps\(4,end\)\}/);
+  assert.match(css, /\.tvSceneHeld::after\{animation:none\}/, 'paused trips do not animate');
 }
 
 // ---------- Spectator: same simulation, betting, queue and rewards in both presentations ----------
@@ -338,6 +390,183 @@ function spectatorFlow(search) {
       assert.equal(stop.evaluate('spectatorAudio'), null); assert.equal(stop.evaluate('spectatorTail'), null, 'going to my race cuts the coast tail');
       assert.ok(audio.made.oscillators.filter(o => o.frequency.targets.length > 3).every(o => o.stopAt !== null), 'no spectator audio left after Stop');
     }
+  }
+  // ---------- Travel cruising audio ----------
+  const engineVoices = audio => audio.made.oscillators.filter(o => o.type === 'sawtooth' || o.type === 'square');
+  const running = audio => engineVoices(audio).filter(o => o.started && o.stopAt === null).length;
+  {
+    // Cruise rpm is a believable cruising range for slow, middle and high-revving cars, and it varies.
+    const ctx = makeContext(3);
+    for (const id of JSON.parse(ctx.evaluate(`JSON.stringify([...CARS].sort((a,b)=>a.red-b.red).filter((c,i,a)=>i===0||i===a.length-1||i===Math.floor(a.length/2)).map(c=>c.id))`))) {
+      const car = `makeOwned(CARS.find(x=>x.id==='${id}'),'auto','D')`;
+      const rpms = [0, 1.3, 2.7, 4.1, 6.6, 9.2].map(t => ctx.evaluate(`cruiseRpm(${car},${t})`));
+      assert.ok(rpms.every(r => r >= 1500 && r <= 2700), `${id}: cruise rpm ${rpms} in a cruising range`);
+      assert.ok(new Set(rpms).size > 3, `${id}: cruise rpm varies`);
+      assert.ok(Math.max(...rpms) / Math.min(...rpms) < 1.12, `${id}: variation stays subtle`);
+    }
+    const g0 = ctx.evaluate('cruiseVoice(0).gain'), g10 = ctx.evaluate('cruiseVoice(10).gain');
+    assert.ok(g0 <= 0.03 && g10 < g0, 'restrained, and settles quieter on long trips');
+  }
+  for (const [label, exit, expectScreen] of [['Arrive now', 'finishTravel()', 'arrival'], ['Turn back', 'cancelArrival()', 'event'], ['navigation away', `show('garage')`, 'garage'], ['natural arrival', null, 'arrival']]) {
+    const audio = fakeAudio(), ctx = makeContext(5, '', { sound: true, audio }); setup(ctx, 'mildura_regional');
+    ctx.evaluate('render()'); const carBefore = ctx.evaluate('JSON.stringify(state.car)');
+    ctx.evaluate(`travelToEvent('mildura_regional')`); await settle();
+    assert.equal(ctx.evaluate('!!(engineAudio&&engineAudio.cruise)'), true, `${label}: cruise voice running`);
+    assert.equal(running(audio), 2, 'one engine voice (two oscillators)');
+    const body = ctx.evaluate('engineAudio.body'), gain = ctx.evaluate('engineAudio.master.gain');
+    assert.ok(gain.setTo <= 0.0001 && gain.tc >= 0.5, 'fades in slowly from silence');
+    const tick = [...ctx.intervals.values()][0], freqs = [];
+    for (let i = 0; i < 30; i++) { ctx.clock.t += 200; tick(); freqs.push(body.frequency.value); }
+    assert.ok(new Set(freqs.map(f => f.toFixed(2))).size > 10, 'pitch drifts naturally');
+    assert.ok(gain.value > 0 && gain.value <= 0.03, 'quiet cruising level');
+    if (exit) ctx.evaluate(exit); else ctx.timers.filter(t => t.fn.name === 'finishTravel').at(-1).fn();
+    assert.equal(ctx.evaluate('state.screen'), expectScreen);
+    assert.equal(ctx.evaluate('engineAudio'), null, `${label}: engine voice released`);
+    assert.equal(ctx.evaluate('cruiseAudio'), null);
+    assert.equal(running(audio), 0, `${label}: oscillators stopped`);
+    assert.ok(gain.ramp && gain.ramp.v <= 0.0001 && gain.ramp.t <= 0.16 + 1e-9, `${label}: quick fade out`);
+    assert.equal(ctx.intervals.size, 0, `${label}: ticker stopped`);
+    assert.equal(ctx.evaluate('JSON.stringify(state.car)'), carBefore, 'cruising never changes the car');
+  }
+  {
+    // No overlap: travelling again replaces the voice; turning sound off mid-trip stops it; another engine is left alone.
+    const audio = fakeAudio(), ctx = makeContext(5, '', { sound: true, audio }); setup(ctx, 'heathcote_legal');
+    ctx.evaluate(`travelToEvent('heathcote_legal')`); await settle();
+    ctx.evaluate(`cancelArrival();travelToEvent('heathcote_legal')`); await settle();
+    assert.equal(running(audio), 2, 'only one engine voice after re-travelling');
+    assert.equal(ctx.intervals.size, 1, 'only one ticker');
+    ctx.evaluate('soundEnabled=false'); ctx.clock.t += 200; [...ctx.intervals.values()][0]();
+    assert.equal(running(audio), 0, 'sound off mid-trip stops the cruise');
+    assert.equal(ctx.intervals.size, 1, 'the leg ticker keeps running without sound');
+    ctx.evaluate('soundEnabled=true;finishTravel()');
+    // Another engine taking over (e.g. a race) is not touched by the cruise or by stopping travel.
+    const a2 = fakeAudio(), c2 = makeContext(5, '', { sound: true, audio: a2 }); setup(c2, 'heathcote_legal');
+    c2.evaluate(`travelToEvent('heathcote_legal')`); await settle();
+    await c2.evaluate('startEngineAudio(state.car,3000)');
+    const other = c2.evaluate('engineAudio'), otherGain = other.master.gain.targets.slice();
+    c2.clock.t += 200; [...c2.intervals.values()][0]();
+    assert.deepEqual(other.master.gain.targets, otherGain, 'cruise ticker does not drive another engine');
+    c2.evaluate('stopTravelFx()');
+    assert.equal(c2.evaluate('engineAudio'), other, 'stopping travel leaves another engine running');
+    assert.equal(running(a2), 2, 'old cruise voice was replaced, not left running');
+  }
+  {
+    // Arriving before the engine voice has started leaves nothing behind.
+    const a3 = fakeAudio(), c3 = makeContext(5, '', { sound: true, audio: a3 }); setup(c3, 'calder_test');
+    c3.evaluate("travelToEvent('calder_test');finishTravel()"); await settle();
+    assert.equal(c3.evaluate('engineAudio'), null); assert.equal(running(a3), 0, 'no late-starting cruise');
+  }
+  {
+    // Sound disabled: no audio is created during the whole trip.
+    const audio = fakeAudio(), ctx = makeContext(5, '', { sound: false, audio }); setup(ctx, 'mildura_regional');
+    ctx.evaluate(`travelToEvent('mildura_regional')`); await settle();
+    for (let i = 0; i < 10; i++) { ctx.clock.t += 200; [...ctx.intervals.values()][0](); }
+    ctx.timers.filter(t => t.fn.name === 'finishTravel').at(-1).fn();
+    assert.equal(audio.made.contexts, 0, 'sound off creates no audio context');
+  }
+
+  // ---------- First You Yangs invitation journey ----------
+  const yyInvite = (ctx, money = 9000) => ctx.evaluate(`(()=>{state=freshState();state.money=${money};state.respect=130;let c=makeOwned(CARS.find(x=>x.id==='is200'),'auto','D');state.owned=[c];state.car=c;state.activeCarId=c.uid;checkYouYangsInvitation();render()})()`);
+  const yy = ctx => JSON.parse(ctx.evaluate('JSON.stringify(youYangsState())'));
+  {
+    // Accepting the invitation opens the journey, not the hub; nothing is charged.
+    const audio = fakeAudio(), ctx = makeContext(7, '', { sound: true, audio }); yyInvite(ctx);
+    assert.equal(yy(ctx).invited, true);
+    ctx.evaluate('openPendingNotification()'); await settle();
+    assert.equal(ctx.evaluate('state.screen'), 'yyTravel');
+    assert.equal(ctx.timers.filter(t => t.fn.name === 'yyArriveJourney').at(-1).ms, 7000);
+    const m = ctx.element('screen').innerHTML;
+    assert.match(m, /tvScene-proving/); assert.match(m, /Invitation only/);
+    assert.match(m, /onclick="yyArriveJourney\(\)">Arrive now</); assert.match(m, /onclick="yyTurnBack\(\)">Turn back</);
+    assert.match(m, /\$3,000/); assert.match(m, /\$2,000/);
+    assert.equal(ctx.evaluate('state.money'), 9000, 'no travel fee');
+    assert.equal(yy(ctx).introJourneyDone, false, 'not complete until arrival');
+    assert.equal(ctx.evaluate('!!(engineAudio&&engineAudio.cruise)'), true, 'cruise plays on the journey');
+    // Natural arrival opens the existing hub; entry payment and car selection are unchanged.
+    ctx.timers.filter(t => t.fn.name === 'yyArriveJourney').at(-1).fn();
+    assert.equal(ctx.evaluate('state.screen'), 'youYangs');
+    assert.equal(yy(ctx).introJourneyDone, true);
+    assert.equal(running(audio), 0, 'journey audio stopped on arrival');
+    assert.match(ctx.element('screen').innerHTML, /Pay entry and begin session/);
+    assert.equal(JSON.parse(ctx.storage.get('qmb_mvp_save')).specialEventPrestige.youYangs.introJourneyDone, true, 'arrival is saved');
+    ctx.evaluate('yyPayEntry()');
+    assert.equal(ctx.evaluate('state.money'), 6000, 'standard entry fee only');
+    assert.equal(yy(ctx).entered, true);
+    // Later visits go straight to the hub.
+    ctx.evaluate(`show('garage');show('youYangs')`);
+    assert.equal(ctx.evaluate('state.screen'), 'youYangs');
+  }
+  {
+    // Arrive now skips the journey; the nav entry point starts the journey the same way.
+    const ctx = makeContext(7); yyInvite(ctx);
+    ctx.evaluate(`show('youYangs')`);
+    assert.equal(ctx.evaluate('state.screen'), 'yyTravel');
+    ctx.evaluate('yyArriveJourney()');
+    assert.equal(ctx.evaluate('state.screen'), 'youYangs'); assert.equal(yy(ctx).introJourneyDone, true);
+    assert.equal(ctx.evaluate('travelTimer'), null); assert.equal(ctx.intervals.size, 0);
+  }
+  {
+    // Turning back keeps the invitation and charges nothing; the next acceptance starts the journey again.
+    const ctx = makeContext(7); yyInvite(ctx);
+    ctx.evaluate('openPendingNotification()');
+    const before = yy(ctx);
+    ctx.evaluate('yyTurnBack()');
+    assert.equal(ctx.evaluate('state.screen'), 'home');
+    assert.deepEqual(yy(ctx), before, 'You Yangs state untouched');
+    assert.equal(ctx.evaluate('state.money'), 9000);
+    assert.equal(ctx.evaluate('travelTimer'), null); assert.equal(ctx.intervals.size, 0);
+    assert.match(ctx.element('nav').innerHTML, /show\('youYangs'\)">Private Invitation</, 'invitation still available');
+    ctx.evaluate(`show('youYangs')`);
+    assert.equal(ctx.evaluate('state.screen'), 'yyTravel');
+    // Navigating away mid-journey stops it without completing it.
+    ctx.evaluate(`show('garage')`);
+    assert.equal(yy(ctx).introJourneyDone, false); assert.equal(ctx.intervals.size, 0); assert.equal(ctx.evaluate('travelTimer'), null);
+  }
+  {
+    // Reload mid-journey: restores as a paused journey; nothing consumed; Arrive now completes it.
+    const ctx = makeContext(7); yyInvite(ctx);
+    ctx.evaluate("show('youYangs')");
+    const saved = ctx.storage.get('qmb_mvp_save');
+    assert.equal(JSON.parse(saved).screen, 'yyTravel');
+    const re = makeContext(8); re.evaluate(`state=migrateGameState(mergeBadgeCareer(JSON.parse(${JSON.stringify(saved)}),state));render()`);
+    assert.match(re.element('screen').innerHTML, /Trip paused[\s\S]*yyArriveJourney/);
+    assert.equal(re.intervals.size, 0); assert.equal(re.evaluate('state.money'), 9000);
+    assert.equal(yy(re).invited, true); assert.equal(yy(re).introJourneyDone, false);
+    re.evaluate('yyArriveJourney()');
+    assert.equal(re.evaluate('state.screen'), 'youYangs'); assert.equal(yy(re).introJourneyDone, true);
+  }
+  {
+    // Existing saves: players who have entered before, or are mid-session, are never sent on the journey.
+    for (const patch of ['y.visits=2;y.nextEligibleDay=state.day+5', 'y.visits=1;y.entered=true;y.entryCarId=state.car.uid;y.attempts.highSpeed=1', 'y.visits=3']) {
+      const ctx = makeContext(7); yyInvite(ctx);
+      ctx.evaluate(`(()=>{let y=youYangsState();${patch};y.best.highSpeed={peakSpeed:211};y.tiers.highSpeed='bronze';delete y.introJourneyDone})()`);
+      const legacy = ctx.evaluate('JSON.stringify(state)');
+      const re = makeContext(8); re.evaluate(`state=migrateGameState(mergeBadgeCareer(JSON.parse(${JSON.stringify(legacy)}),state));show('youYangs')`);
+      assert.equal(re.evaluate('state.screen'), 'youYangs', `${patch}: straight to the hub`);
+      const a = JSON.parse(legacy).specialEventPrestige.youYangs, b = yy(re);
+      for (const k of ['visits', 'entered', 'nextEligibleDay', 'attempts', 'best', 'tiers', 'carRecords', 'entryCarId', 'overallTitle']) { if (k === 'entryCarId' && a[k] === null) continue; assert.deepEqual(b[k], a[k], `${k} preserved`); } // the hub pre-selects a car when none is chosen (existing behaviour)
+    }
+    // An old save with an accepted-but-unused invitation (no new field) gets the journey once, with safe defaults.
+    const ctx = makeContext(7); yyInvite(ctx);
+    ctx.evaluate('(()=>{let y=youYangsState();y.invitationShown=true;delete y.introJourneyDone})()');
+    const old = ctx.evaluate('JSON.stringify(state)');
+    const re = makeContext(8); re.evaluate(`state=migrateGameState(mergeBadgeCareer(JSON.parse(${JSON.stringify(old)}),state));show('youYangs')`);
+    assert.equal(re.evaluate('state.screen'), 'yyTravel');
+    assert.equal(yy(re).introJourneyDone, false);
+  }
+  {
+    // Local and cloud round trips keep the new optional field (both load paths use migrateGameState(mergeBadgeCareer(...))).
+    const ctx = makeContext(7); yyInvite(ctx);
+    ctx.evaluate(`show('youYangs');yyArriveJourney()`);
+    const local = ctx.storage.get('qmb_mvp_save');
+    const re = makeContext(8); re.evaluate(`state=migrateGameState(mergeBadgeCareer(JSON.parse(${JSON.stringify(local)}),state))`);
+    assert.equal(yy(re).introJourneyDone, true, 'local load keeps the field');
+    // Cloud load (cloud copy replaces local) and cloud save (local merged with the cloud copy).
+    const cloud = makeContext(9); cloud.evaluate(`state=migrateGameState(mergeBadgeCareer(JSON.parse(${JSON.stringify(local)}),freshState()))`);
+    assert.equal(yy(cloud).introJourneyDone, true, 'cloud load keeps the field');
+    cloud.evaluate(`state=migrateGameState(mergeBadgeCareer(state,JSON.parse(${JSON.stringify(local)})))`);
+    assert.equal(yy(cloud).introJourneyDone, true, 'cloud save merge keeps the field');
+    assert.equal(JSON.parse(cloud.evaluate('JSON.stringify(state)')).specialEventPrestige.youYangs.introJourneyDone, true, 'serialised payload carries it');
   }
   console.log('Quarter Mile Builder event presentation checks passed.');
 })().catch(e => { console.error(e); process.exit(1); });
