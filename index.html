@@ -259,6 +259,119 @@
       .rnStage *,.rnSlip{animation:none!important;transition:none!important}
       .rnStage .touchShiftBtn.ready{filter:none}
     }
+    /* EVENT PRESENTATION (feature/event-presentation-polish): travel trip card (.tvTrip) and spectator tower (.svStage/.svResult).
+       Presentation only. Spectator lanes use neutral chalk (left, solid) and steel (right, striped) so neither NPC takes the
+       player's amber or the opponent blue. Motion only shows trip or race progress. */
+    .tvTrip,.svStage,.svResult{--sv-a:#e8edf2;--sv-b:#9fb0c2;--sv-ink:#05070a;scroll-margin-top:92px;background:radial-gradient(circle at 70% 0%,#1d2633,#0b0e13 62%);padding:16px}
+    .tvTitle:focus,.svTitle:focus{outline:none}
+    .tvTrip :focus-visible,.svStage :focus-visible,.svResult :focus-visible{outline:3px solid var(--text);outline-offset:3px}
+    .tvHead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+    .tvHeadText{min-width:0}
+    .tvTitle{margin:0!important;font-size:24px;line-height:1.15;text-wrap:balance;overflow-wrap:anywhere}
+    .tvVenue{margin:4px 0 0;color:var(--muted);overflow-wrap:anywhere}
+    .tvTier{flex:none;font:800 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#0b0e13}
+    .tvRoute{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;margin:16px 0 8px;padding:14px 12px;background:#07090d;border:1px solid var(--line);border-radius:14px}
+    .tvNode{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--muted);text-align:center;max-width:150px;overflow-wrap:anywhere}
+    .tvNodeTo{color:var(--text);font-weight:700}
+    .tvPin{display:block;width:14px;height:14px;border-radius:50%;border:2px solid var(--muted);background:#0b0e13}
+    .tvPinTo{border-radius:3px;border-color:var(--text);background:repeating-conic-gradient(var(--text) 0 25%,#05070a 0 50%) 0 0/7px 7px}
+    .tvRoad{position:relative;height:16px;border-radius:8px;background:#151b23;overflow:hidden}
+    .tvRoad::before{content:'';position:absolute;left:8px;right:8px;top:7px;height:2px;background:repeating-linear-gradient(90deg,rgba(255,209,102,.55) 0 14px,transparent 14px 26px)}
+    .tvFill{position:absolute;inset:0;transform-origin:left center;transform:scaleX(0);background:linear-gradient(90deg,rgba(255,176,46,.06),rgba(255,176,46,.32));animation:tvFill var(--tv-ms) linear var(--tv-delay) forwards}
+    .tvMark{position:absolute;top:2px;left:0;width:22px;height:12px;margin-left:-22px;border-radius:3px 6px 6px 3px;background:var(--accent);border:2px solid var(--sv-ink);animation:tvMark var(--tv-ms) linear var(--tv-delay) forwards}
+    .tvRouteHeld .tvFill,.tvRouteHeld .tvMark{animation:none}.tvRouteHeld .tvMark{margin-left:0}
+    @keyframes tvFill{to{transform:scaleX(1)}}
+    @keyframes tvMark{from{left:0;margin-left:0}to{left:100%;margin-left:-22px}}
+    .tvStatus{margin:0 0 10px;font:700 13px/1.3 ui-monospace,Consolas,monospace;color:var(--muted)}
+    .tvActions .btn{min-width:130px}
+    .tvStory{margin:14px 0 12px;color:var(--muted);max-width:70ch}
+    .tvGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .tvPanel{background:#0b0e13;border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+    .tvNight{grid-column:1/-1}
+    .card .tvLabel{margin:0 0 6px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+    .tvCarName,.tvWeather{display:block;font-size:16px;overflow-wrap:anywhere}
+    .tvWeather{color:var(--blue)}
+    .tvMeta{margin:4px 0 0;font-size:13px;color:var(--muted)}
+    .tvFacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:10px 0 0}
+    .tvFacts div{border-top:1px solid var(--line);padding-top:6px;min-width:0}
+    .tvFacts dt{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+    .tvFacts dd{margin:2px 0 0;font:800 17px/1.2 ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}
+    .tvFacts dd small{font:400 12px system-ui,Segoe UI,Arial,sans-serif;color:var(--muted)}
+    .tvEntry{margin:10px 0 0;font-size:13px;font-weight:700}
+    .tvEntry b{display:inline-grid;place-items:center;width:18px;height:18px;margin-right:4px;border-radius:50%;font-size:12px;color:var(--sv-ink)}
+    .tvEntryOk{color:var(--good)}.tvEntryOk b{background:var(--good)}
+    .tvEntryNo{color:var(--warn)}.tvEntryNo b{background:var(--warn)}
+    .svPhase{font:800 13px/1 ui-monospace,Consolas,monospace;letter-spacing:.14em;padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:#0b0e13;color:var(--text);min-width:130px;text-align:center}
+    .svStage[data-phase="ambers"] .svPhase{border-color:#ffbf47;color:#ffbf47}
+    .svStage[data-phase="green"] .svPhase{background:#67e08a;border-color:#67e08a;color:var(--sv-ink)}
+    .svStage[data-phase="finish"] .svPhase,.svFinal{background:var(--text);border-color:var(--text);color:var(--sv-ink)}
+    .svAllBar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;padding:8px 10px;border:1px dashed var(--line);border-radius:10px}
+    .svTower{display:grid;grid-template-columns:96px minmax(0,1fr);gap:14px;align-items:stretch;background:#07090d;border:1px solid var(--line);border-radius:14px;padding:12px}
+    .svTree{display:flex;justify-content:center;gap:6px;align-self:center;padding:8px 6px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#2a2f38,#12161d)}
+    .svTreeLane{display:flex;flex-direction:column;align-items:center}
+    .svStage .treeBulb{width:22px;height:22px;margin:4px auto}.svStage .treeBulb.small{width:14px;height:14px;margin:3px auto}
+    .svTreeTag{margin-top:4px;font:800 11px ui-monospace,Consolas,monospace;color:var(--muted)}
+    .svLane{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:end}
+    .svLaneTag{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+    .svMark{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:4px;font:900 11px/1 ui-monospace,Consolas,monospace;font-style:normal;letter-spacing:0;color:var(--sv-ink)}
+    .svLaneA .svMark{background:var(--sv-a)}
+    .svLaneB .svMark{background:repeating-linear-gradient(135deg,var(--sv-b) 0 4px,#c9d3de 4px 8px)}
+    .svPick{padding:2px 6px;border-radius:4px;border:1px solid var(--text);color:var(--text);font:800 11px/1.2 system-ui,Segoe UI,Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase}
+    .svLaneRight{display:flex;align-items:center;gap:8px}
+    .svWin{padding:3px 7px;border-radius:4px;background:#67e08a;color:var(--sv-ink);font:900 11px/1 ui-monospace,Consolas,monospace;letter-spacing:.12em}
+    .svWin[hidden]{display:none}
+    .svStage .svTrack .laneFill{transition:none;background:linear-gradient(90deg,rgba(232,237,242,.03),rgba(232,237,242,.24))}
+    .svStage .svLaneB .svTrack .laneFill{background:repeating-linear-gradient(135deg,rgba(159,176,194,.08) 0 6px,rgba(159,176,194,.22) 6px 12px)}
+    .svStage .svCar{top:50%;transform:translate(-100%,-50%);width:30px;height:16px;border-radius:4px 7px 7px 4px;border:2px solid var(--sv-ink);font:900 10px/12px ui-monospace,Consolas,monospace;text-align:center;color:var(--sv-ink);filter:none}
+    .svStage .svLaneA .svCar{background:var(--sv-a)}
+    .svStage .svLaneB .svCar{background:repeating-linear-gradient(135deg,var(--sv-b) 0 4px,#c9d3de 4px 8px)}
+    .svLane.leading .rnCarName,.svLane.won .rnCarName{color:#fff}
+    .svLane.won .svTrack{box-shadow:inset 0 0 0 2px #67e08a}
+    .svGap{min-height:1.2em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .svStrip{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:8px;margin-top:10px}
+    .svNote{margin:10px 0 0}
+    .svBoard{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:12px;border-radius:14px;background:#050608;border:1px solid var(--line);animation:svBoardIn .3s ease-out}
+    @keyframes svBoardIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+    .svBoardLane{min-width:0;padding:10px;border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;gap:4px}
+    .svBoardLane.won{border-color:#67e08a;box-shadow:inset 0 0 0 1px #67e08a}
+    .svBoardTop{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+    .svBoardName{font-size:15px;overflow-wrap:anywhere}
+    .svBoardMeta{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+    .svDigits{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:6px;margin-top:6px}
+    .svDigits div{background:#0b0e13;border-radius:8px;padding:6px 8px;min-width:0}
+    .svDigits span{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+    .svDigits b{display:block;font:900 26px/1.1 ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums;color:#f4f1e8;white-space:nowrap}
+    .svMargin{grid-column:1/-1;margin:2px 0 0;font:700 13px/1.3 ui-monospace,Consolas,monospace;color:var(--muted)}
+    .svMargin b{color:var(--text)}
+    .svMsg{margin:12px 0 0}
+    .svScout{margin-top:12px}
+    .svScoutGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .svScoutCar{background:#0b0e13;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0;overflow-wrap:anywhere}
+    .svScoutCar p{margin:4px 0 0}
+    .svSeen{font-size:13px;color:var(--muted)}.svSeen b{color:var(--text);font-family:ui-monospace,Consolas,monospace}
+    .svAuto{height:4px;margin-top:10px;border-radius:2px;background:#151b23;overflow:hidden}
+    .svAuto i{display:block;height:100%;background:var(--muted);transform-origin:left center;animation:tvFill var(--sv-ms) linear forwards;transform:scaleX(0)}
+    @media(max-width:860px){.tvTrip,.svStage,.svResult{scroll-margin-top:10px}}
+    @media(max-width:640px){
+      .tvTrip,.svStage,.svResult{padding:10px}
+      .tvHead{flex-direction:column;gap:8px}
+      .tvTitle{font-size:20px}
+      .tvRoute{gap:8px;padding:10px 8px}.tvNode{max-width:84px;font-size:11px}
+      .tvActions .btn{flex:1 1 0;min-width:0}
+      .tvGrid,.svScoutGrid{grid-template-columns:minmax(0,1fr)}
+      .tvFacts{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .svPhase{min-width:0;font-size:12px;padding:8px 9px}
+      .svTower{grid-template-columns:62px minmax(0,1fr);gap:10px;padding:9px}
+      .svTree{gap:3px;padding:6px 4px;border-radius:12px}
+      .svStage .treeBulb{width:16px;height:16px;margin:3px auto}.svStage .treeBulb.small{width:11px;height:11px}
+      .svBoard{grid-template-columns:minmax(0,1fr);padding:8px}
+      .svDigits b{font-size:22px}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .tvFill,.tvMark{animation-timing-function:steps(4,end)}
+      .svBoard,.svAuto i{animation:none}.svAuto{display:none}
+      .svStage *{transition:none!important}
+    }
 </style>
 </head>
 <body>
@@ -1779,14 +1892,17 @@ function travelToEvent(eventId='heathcote_legal'){
   let story=eventNarrative(ev,busy,state.day);
   state.pendingArrival={eventId:ev.id,eventName:ev.name,eventDef:ev,busy,totalCars:field.length,opponents:field,raceSlots,story,weather:story.weather};
   state.screen='travel';
-  render();
-  if(travelTimer){clearTimeout(travelTimer);}
   let delay=2200+Math.min(1200,Math.round((ev.travelCost||0)*.8));
+  travelClock={eventId:ev.id,start:performance.now(),ms:delay};
+  render();
+  if(RACE_NIGHT_PROTO)evReveal('tvTitle','tvTrip');
+  if(travelTimer){clearTimeout(travelTimer);}
   travelTimer=setTimeout(finishTravel,delay);
 }
 function travel(){
   let a=state.pendingArrival;
   if(!a)return `<section class="card"><h2>Travel</h2><p class="muted">No trip is currently in progress.</p><button class="btn" onclick="show('event')">Back to calendar</button></section>`;
+  if(RACE_NIGHT_PROTO)return tvTripCard(a);
   let ev=a.eventDef, story=a.story||eventNarrative(ev,a.busy,state.day), weather=a.weather||story.weather;
   return `<section class="card"><h2>On the road</h2><p class="muted">You head out for <b>${ev.name}</b> at ${ev.venue}. ${story.travel}</p><div class="travelScene"><div class="travelGlow"></div><div class="travelInfo"><h3>${ev.tier} event</h3><p>${ev.desc}</p><p class="weatherLine">Conditions expected on arrival: ${weather.label}, about ${weather.temp}°C.</p><p class="small muted">${weather.sky} ${weather.track}</p><div class="travelStatLine"><span class="pill">Travel/logistics <b>${fmt(ev.travelCost||0)}</b></span><span class="pill">Potential win <b>${fmt(ev.winPayout)}</b></span><span class="pill">Racer respect <b>${ev.reqRespect}</b></span></div><p class="small muted" style="margin-top:12px">You will choose whether to drive or spectate once you arrive.</p></div><div class="travelDust">. . .</div><div class="travelCar">`+String.fromCodePoint(0x1F697)+`</div><div class="travelRoad"><div class="roadStripe"></div></div></div><div class="hr"></div><div class="btns"><button class="btn" onclick="finishTravel()">Arrive now</button><button class="btn secondary" onclick="cancelArrival()">Turn back</button></div></section>`;
 }
@@ -2311,17 +2427,67 @@ function finishLiveRace(pEt){
   state.lastRace=player;createGuidanceNotification('firstRace');checkRelevantBadges('race_completed',badgeCarContext(car,{car,run:player,previous:previousBadge,win:wonRace,wonRace,cleanWin,foul:!!liveRun.foul,raceStartPower,opponentStartPower,noShiftRequired,allRequiredShiftsInTolerance,cleanPass,majorFailure:false,historicEligible:Number.isFinite(Number(car.modelYear))&&BADGE_REFERENCE_YEAR-Number(car.modelYear)>=25,eventId:state.lastEvent&&state.lastEvent.eventId,eventName:state.lastEvent&&state.lastEvent.eventName,venue:ev.venue}));logChange(summary,before,'race',details);if(car.listedForSale)makeMarketOffer('pit',win?1.7:.75);markCurrentLineupRaceComplete();renderRace(player,rival,win,summary);queueSocialRace(player,win);
 }
 function renderRace(player,rival,win,summary){let report=player.report||{result:win?'WIN':'LOSS',cashDelta:0,respectDelta:0,notes:[]},technique=report.technique||{launch:{headline:'Launch data unavailable',detail:'No detailed launch telemetry was recorded for this pass.'},shifting:{title:'Shifting',lines:['No detailed shift telemetry was recorded for this pass.']},diagnosis:'No engineering diagnosis is available for this older report.',personalBest:''},notes=report.notes&&report.notes.length?`<p class="small warning">Reward notes: ${report.notes.join(', ')}</p>`:'',shiftLines=(technique.shifting.lines||[]).map(x=>`<li>${x}</li>`).join('');document.getElementById('screen').innerHTML=`<section class="card${RACE_NIGHT_PROTO?' rnReport':''}"><h2>Race Report</h2>${RACE_NIGHT_PROTO?raceNightSlip(player,rival,win,report,summary):''}<h3>Overall result</h3><p>${summary}</p><div class="raceHud"><div class="gauge"><div class="muted">Result</div><div class="value ${win?'goodText':'badText'}">${report.result}</div></div><div class="gauge"><div class="muted">ET</div><div class="value">${player.et.toFixed(2)}s</div></div><div class="gauge"><div class="muted">Trap</div><div class="value">${player.trap.toFixed(0)} km/h</div></div><div class="gauge"><div class="muted">60 foot</div><div class="value">${player.sixty.toFixed(2)}s</div></div><div class="gauge"><div class="muted">1/8 mile</div><div class="value">${player.eighth.toFixed(2)}s</div></div><div class="gauge"><div class="muted">Opponent</div><div class="value" style="font-size:16px">${report.opponent||'-'}<br>${rival.et.toFixed(2)}s @ ${rival.trap.toFixed(0)}</div></div></div><p class="${technique.personalBest.startsWith('New')?'goodText':'muted'}"><b>${technique.personalBest}</b></p>${notes}${rtReactionSection(report)}<div class="hr"></div><h3>Launch (car)</h3><div class="listing"><p><b>${technique.launch.headline}</b></p><p class="muted">${technique.launch.detail}</p></div><div class="hr"></div><h3>${technique.shifting.title}</h3><div class="listing"><ul>${shiftLines}</ul></div><div class="hr"></div><h3>Engineering diagnosis</h3><div class="arrivalBanner"><p><b>${technique.diagnosis}</b></p></div><div class="hr"></div><h3>G-Meter Sparkline</h3><div class="spark">${player.gs.spark}</div><p class="muted">Last acceleration sample: ${player.accel.toFixed(2)} g. Falling bars suggest the car was no longer accelerating as hard.</p><div class="track"><div class="trackFill" style="width:100%"></div></div><div class="hr"></div><div class="raceHud"><div class="gauge"><div class="muted">Cash</div><div class="value ${report.cashDelta>=0?'goodText':'badText'}">${signedMoney(report.cashDelta||0)}</div></div><div class="gauge"><div class="muted">Respect</div><div class="value goodText">${signedNumber(report.respectDelta||0,1)}</div></div></div><div class="hr"></div><button class="btn" onclick="show('currentEvent')">Back to event</button></section>`;topStats();currentPanel();updateGuidanceNotification();}
+/* EVENT PRESENTATION (feature/event-presentation-polish): travel trip card and spectator timing tower.
+   Presentation only. Travel duration, simulation, queue, Watch All, betting and rewards are unchanged; the spectator
+   view keeps the existing element IDs the watch tick writes to. ?racenight=0 keeps the classic screens. */
+let travelClock=null,svLastLabel='';
+const SV_AUTO_MS=1400;
+function evReveal(focusId,scrollId){let box=document.getElementById(scrollId);if(box&&box.getBoundingClientRect&&box.scrollIntoView){let r=box.getBoundingClientRect();if(r.top<0||r.top>innerHeight*.6)box.scrollIntoView({block:'start'})}let f=document.getElementById(focusId);if(f&&f.focus)try{f.focus({preventScroll:true})}catch(e){}}
+function tvTripCard(a){let ev=a.eventDef,story=a.story||eventNarrative(ev,a.busy,state.day),weather=a.weather||story.weather,c=state.car,blockers=raceEntryBlockers(ev),
+    live=travelClock&&travelClock.eventId===ev.id,elapsed=live?Math.min(travelClock.ms,Math.max(0,performance.now()-travelClock.start)):0,
+    trans=c?(c.trans==='manual'?'Manual':'Auto'):'',carHtml=c?`<b class="tvCarName">${esc(c.name)}</b><p class="tvMeta">${Math.round(Number(c.power)||0)} hp · ${Math.round(Number(c.weight)||0)} kg · ${esc(c.drive||'')} · ${trans}</p>`:'<b class="tvCarName">No active car</b><p class="tvMeta">You can still spectate when you arrive.</p>',
+    fact=(k,v)=>`<div><dt>${k}</dt><dd>${v}</dd></div>`;
+  return `<section class="card tvTrip" id="tvTrip" aria-labelledby="tvTitle"><div class="tvHead"><div class="tvHeadText"><p class="rnEyebrow">On the road · Day ${state.day}</p><h2 class="tvTitle" id="tvTitle" tabindex="-1">${esc(ev.name)}</h2><p class="tvVenue">${esc(ev.venue)} · ${esc(ev.region||'')}</p></div><span class="tvTier">${esc(ev.tier)} event</span></div>`
+  +`<div class="tvRoute${live?'':' tvRouteHeld'}" style="--tv-ms:${live?travelClock.ms:0}ms;--tv-delay:-${Math.round(elapsed)}ms"><div class="tvNode"><i class="tvPin tvPinFrom" aria-hidden="true"></i><span>Your shed</span></div><div class="tvRoad" aria-hidden="true"><div class="tvFill"></div><div class="tvMark"></div></div><div class="tvNode tvNodeTo"><i class="tvPin tvPinTo" aria-hidden="true"></i><span>${esc(ev.venue)}</span></div></div>`
+  +`<p class="tvStatus" role="status">${live?`On the road. This drive takes about ${(travelClock.ms/1000).toFixed(1)} s; arrive now to skip it.`:'Trip paused. Arrive when you are ready.'}</p>`
+  +`<div class="btns tvActions"><button class="btn" id="tvArriveBtn" onclick="finishTravel()">Arrive now</button><button class="btn secondary" onclick="cancelArrival()">Turn back</button></div>`
+  +`<p class="tvStory">${story.travel}</p>`
+  +`<div class="tvGrid"><div class="tvPanel"><h3 class="tvLabel">Your car</h3>${carHtml}</div><div class="tvPanel"><h3 class="tvLabel">Conditions on arrival</h3><b class="tvWeather">${esc(weather.label)}, about ${weather.temp}°C</b><p class="tvMeta">${weather.sky} ${weather.track}</p></div>`
+  +`<div class="tvPanel tvNight"><h3 class="tvLabel">The night ahead</h3><p class="tvMeta">${ev.desc}</p><dl class="tvFacts">${fact('Travel/logistics',fmt(ev.travelCost||0))}${fact('Racer entry',fmt(ev.entryFee))}${fact('Spectator ticket',fmt(ev.spectatorFee))}${fact('Win payout',fmt(ev.winPayout))}${fact('Respect to race',`${ev.reqRespect} <small>(you have ${Math.floor(Number(state.respect)||0)})</small>`)}</dl>`
+  +`${blockers.length?`<p class="tvEntry tvEntryNo"><b aria-hidden="true">!</b> ${esc(blockers[0])}</p>`:'<p class="tvEntry tvEntryOk"><b aria-hidden="true">✓</b> Racer entry is open for your car tonight.</p>'}<p class="tvMeta">You choose whether to drive or spectate when you arrive.</p></div></div></section>`}
+function svTreeHtml(){let col=s=>`<div class="svTreeLane">${['pre','stage'].map(k=>`<div class="treeBulb small" data-sv="${k}"></div>`).join('')}${['a1','a2','a3'].map(k=>`<div class="treeBulb" data-sv="${k}"></div>`).join('')}<div class="treeBulb" data-sv="green"></div><span class="svTreeTag">${s}</span></div>`;return `<div class="svTree" aria-hidden="true">${col('L')}${col('R')}</div>`}
+function svLaneMeta(o){return [o.driver,o.label,o.type,o.drive].filter(Boolean).map(esc).join(' · ')}
+function svLane(side,car,pick){let A=side==='A',beams=RN_BEAMS.map(([m],i)=>`<i class="rnBeam${i===RN_BEAMS.length-1?' finish':''}" style="left:${(m/402*100).toFixed(2)}%"></i>`).join('');
+  return `<div class="svLane svLane${side}" id="svLane${side}"><div class="rnLaneId"><span class="svLaneTag"><i class="svMark" aria-hidden="true">${A?'L':'R'}</i>${A?'Left lane':'Right lane'}${pick?'<span class="svPick">Your pick</span>':''}</span><b class="rnCarName" title="${esc(car.name)}">${esc(car.name)}</b><span class="rnLaneMeta">${svLaneMeta(car)}</span></div><div class="svLaneRight"><span class="svWin" id="svWin${side}" hidden>WIN</span><div class="rnLaneDist" id="watch${side}Text">0 m</div></div><div class="laneBar rnTrack svTrack">${beams}<div id="watch${side}Lane" class="laneFill"></div><div id="watch${side}Dot" class="carDot svCar" aria-hidden="true">${A?'L':'R'}</div></div></div>`}
+function svMarkup(carA,carB,betData){let e=state.lastEvent||{},ev=e.eventDef||{},entry=currentLineupEntry(),pick=betData&&betData.bet?betData.picked:null;
+  svLastLabel=[ev.venue,e.eventName||ev.name,entry&&e.lineup&&e.lineup.length?`Race ${lineupProgressText(e)}`:''].filter(Boolean).map(esc).join(' · ');
+  return `<section class="card svStage" id="svStage" data-phase="prestage" aria-labelledby="svTitle"><div class="rnHead"><div><p class="rnEyebrow">${svLastLabel}</p><h2 class="svTitle" id="svTitle" tabindex="-1">Watching from the fence</h2></div><div class="svPhase" id="svPhase" role="status" aria-live="polite">PRE-STAGE</div></div>`
+  +`${watchAllMode?`<div class="svAllBar"><span class="small muted">Watch All is running.</span><button class="btn secondary" onclick="stopWatchAllBeforeMine()">${watchAllStopLabel()}</button></div>`:''}`
+  +`<div class="svTower">${svTreeHtml()}<div class="rnLanes">${svLane('A',carA,pick===carA)}${svLane('B',carB,pick===carB)}<div class="rnBeamLabels" aria-hidden="true">${RN_BEAMS.map(([m,l])=>`<span style="left:${(m/402*100).toFixed(2)}%">${l}</span>`).join('')}</div><div class="rnGap svGap" id="svGap">Both cars rolling into the beams</div></div></div>`
+  +`<div class="svStrip"><div class="rnCell"><div class="value" id="watchTime">0.00s</div><span>Elapsed</span></div><div class="rnCell"><div class="value" id="svLeader">—</div><span>Leader</span></div></div>`
+  +`<div hidden><span id="watchCountdown">3</span><span id="watchLeader">-</span><span id="watchBoard">WAIT</span></div><p class="svNote small muted">Spectator view. Times go up on the board once both cars cross the stripe.</p></section>`}
+function svPaint(run,now){let $=id=>document.getElementById(id),stage=$('svStage');if(!stage||!run.sv)return;let {carA,carB,r1,r2}=run.sv,left=3-((now-run.countStart)/1000),phase,label,lamps={};
+  let pa=0,pb=0;if(run.start){let t=(now-run.start)/1000;pa=progressForRun(t,r1.et);pb=progressForRun(t,r2.et)}
+  let winA=r1.et<r2.et,crossed=run.start&&(winA?pa:pb)>=1;
+  if(!run.start){lamps.pre=1;if(left<=2.25)lamps.stage=1;if(left<=1.25)lamps.a1=1;if(left<=.75)lamps.a2=1;if(left<=.25)lamps.a3=1;phase=lamps.a1?'ambers':lamps.stage?'staged':'prestage';label=lamps.a1?'AMBERS':lamps.stage?'STAGED':'PRE-STAGE'}
+  else{lamps.pre=1;lamps.stage=1;lamps.green=1;if(crossed){phase='finish';label='WIN LIGHT'}else if((now-run.start)/1000<.7){phase='green';label='GREEN'}else{phase='racing';label='RACING'}}
+  stage.querySelectorAll('.treeBulb[data-sv]').forEach(b=>{let k=b.dataset.sv,on=!!lamps[k],cls=k==='green'?'onGreen':k==='pre'?'onPre':k==='stage'?'onStage':'onAmber';if(b.classList.contains(cls)!==on)b.classList.toggle(cls,on)});
+  if(stage.dataset.phase!==phase)stage.dataset.phase=phase;let chip=$('svPhase');if(chip&&chip.textContent!==label)chip.textContent=label;
+  let diff=Math.round(distanceForRun(pa)-distanceForRun(pb)),gap=$('svGap'),lead=$('svLeader'),la=$('svLaneA'),lb=$('svLaneB');
+  if(la)la.classList.toggle('leading',run.start&&diff>0);if(lb)lb.classList.toggle('leading',run.start&&diff<0);
+  let txt=!run.start?(phase==='prestage'?'Both cars rolling into the beams':phase==='staged'?'Both cars staged':'Ambers coming down'):crossed?`<b>${winA?'Left':'Right'} lane</b> takes the win light`:diff===0?'<b>Level</b> on the track':`<b>${diff>0?'Left':'Right'} lane</b> leads by <b>${Math.abs(diff)} m</b>`;
+  if(gap&&gap.innerHTML!==txt)gap.innerHTML=txt;
+  let ln=!run.start?'—':diff===0&&!crossed?'Level':(crossed?winA:diff>0)?carA.name:carB.name;if(lead&&lead.textContent!==ln){lead.textContent=ln;lead.title=ln}
+  if(crossed){let w=$(winA?'svWinA':'svWinB');if(w&&w.hidden){w.hidden=false;(winA?la:lb)&&(winA?la:lb).classList.add('won')}}}
+function svSeenLine(o){let h=state.badgeHistory||{},rows=((h.observedRuns||{})[getOpponentRaceKey(o)]||[]).filter(r=>Number.isFinite(Number(r.et)));if(!rows.length)return '';if(rows.length===1)return '<p class="svSeen">First pass you have watched from this car tonight.</p>';return `<p class="svSeen">Passes you have watched tonight: ${rows.map((r,i)=>`<b>${Number(r.et).toFixed(3)}</b>${i===rows.length-1?' (this pass)':''}`).join(' · ')}</p>`}
+function svBoardMarkup(carA,carB,r1,r2,winner,msg,betData){let pick=betData&&betData.bet?betData.picked:null,margin=Math.abs(r1.et-r2.et),lane=(side,o,r)=>{let A=side==='A',won=winner===o;return `<div class="svBoardLane svLane${side}${won?' won':''}"><div class="svBoardTop"><span class="svLaneTag"><i class="svMark" aria-hidden="true">${A?'L':'R'}</i>${A?'Left lane':'Right lane'}</span>${won?'<span class="svWin">WIN</span>':''}${pick===o?'<span class="svPick">Your pick</span>':''}</div><b class="svBoardName">${esc(o.name)}</b><span class="svBoardMeta">${svLaneMeta(o)}</span><div class="svDigits"><div><span>ET</span><b>${r.et.toFixed(3)}</b></div><div><span>Trap km/h</span><b>${r.trap.toFixed(0)}</b></div></div></div>`};
+  let scout=o=>`<div class="svScoutCar"><b>${esc(o.name)}</b>${carClueLine(o)}${svSeenLine(o)}</div>`;
+  return `<section class="card svResult" id="svResult" aria-labelledby="svBoardTitle"><div class="rnHead"><div><p class="rnEyebrow">${svLastLabel}</p><h2 class="svTitle" id="svBoardTitle" tabindex="-1">Timing Board</h2></div><div class="svPhase svFinal">FINAL</div></div>`
+  +`<div class="svBoard">${lane('A',carA,r1)}${lane('B',carB,r2)}<p class="svMargin"><b>${esc(winner.name)}</b> wins by <b>${margin.toFixed(3)} s</b> on ET.</p></div>`
+  +`<p class="svMsg">${msg}</p><div class="svScout"><h3 class="tvLabel">Scouting notes</h3><div class="svScoutGrid">${scout(carA)}${scout(carB)}</div></div><div class="hr"></div>`
+  +`<div class="btns">${watchAllMode?`<button class="btn secondary" onclick="stopWatchAllBeforeMine()">${watchAllStopLabel()}</button><span class="small muted">The next queued race will start automatically.</span>`:'<button class="btn" onclick="show(\'currentEvent\')">Back to event</button>'}</div>${watchAllMode?`<div class="svAuto" style="--sv-ms:${SV_AUTO_MS}ms" aria-hidden="true"><i></i></div>`:''}</section>`}
 function renderWatchRun(carA,carB,r1,r2,betData){
   let run={start:null,countStart:performance.now(),raf:null,cancelled:false};watchRun=run;watchRaceActive=true;
-  document.getElementById('screen').innerHTML=`<section class="card"><div class="row"><div><h2>Watching a pass</h2><p class="muted">The timing boards come up after the cars complete the quarter mile.</p></div>${watchAllMode?`<button class="btn secondary" onclick="stopWatchAllBeforeMine()">${watchAllStopLabel()}</button>`:''}</div><div class="raceStage"><div id="watchCountdown" class="bigCountdown">3</div><div class="lane"><div class="laneTop"><b>${carA.name}</b><span id="watchAText">0 m</span></div><div class="laneBar"><div id="watchALane" class="laneFill"></div><div id="watchADot" class="carDot">🚗</div></div></div><div class="lane"><div class="laneTop"><b>${carB.name}</b><span id="watchBText">0 m</span></div><div class="laneBar"><div id="watchBLane" class="laneFill rival"></div><div id="watchBDot" class="carDot">🚙</div></div></div><div class="raceHud"><div class="gauge"><div class="muted">Elapsed</div><div class="value" id="watchTime">0.00s</div></div><div class="gauge"><div class="muted">Leader</div><div class="value" id="watchLeader">-</div></div><div class="gauge"><div class="muted">Board</div><div class="value" id="watchBoard">WAIT</div></div></div></div></section>`;
+  if(RACE_NIGHT_PROTO){run.sv={carA,carB,r1,r2};document.getElementById('screen').innerHTML=svMarkup(carA,carB,betData);evReveal('svTitle','svStage')}
+  else document.getElementById('screen').innerHTML=`<section class="card"><div class="row"><div><h2>Watching a pass</h2><p class="muted">The timing boards come up after the cars complete the quarter mile.</p></div>${watchAllMode?`<button class="btn secondary" onclick="stopWatchAllBeforeMine()">${watchAllStopLabel()}</button>`:''}</div><div class="raceStage"><div id="watchCountdown" class="bigCountdown">3</div><div class="lane"><div class="laneTop"><b>${carA.name}</b><span id="watchAText">0 m</span></div><div class="laneBar"><div id="watchALane" class="laneFill"></div><div id="watchADot" class="carDot">🚗</div></div></div><div class="lane"><div class="laneTop"><b>${carB.name}</b><span id="watchBText">0 m</span></div><div class="laneBar"><div id="watchBLane" class="laneFill rival"></div><div id="watchBDot" class="carDot">🚙</div></div></div><div class="raceHud"><div class="gauge"><div class="muted">Elapsed</div><div class="value" id="watchTime">0.00s</div></div><div class="gauge"><div class="muted">Leader</div><div class="value" id="watchLeader">-</div></div><div class="gauge"><div class="muted">Board</div><div class="value" id="watchBoard">WAIT</div></div></div></div></section>`;
   function tick(now){
     if(run.cancelled||watchRun!==run)return;
-    if(!run.start){let countdown=document.getElementById('watchCountdown');if(!countdown)return cancelWatchRun();let left=3-((now-run.countStart)/1000);countdown.textContent=left>0?Math.ceil(left):'GO';if(left<=-.25){run.start=now;countdown.textContent='GO';}run.raf=requestAnimationFrame(tick);return;}
+    if(!run.start){let countdown=document.getElementById('watchCountdown');if(!countdown)return cancelWatchRun();let left=3-((now-run.countStart)/1000);countdown.textContent=left>0?Math.ceil(left):'GO';if(left<=-.25){run.start=now;countdown.textContent='GO';}if(run.sv)svPaint(run,now);run.raf=requestAnimationFrame(tick);return;}
     let elapsed=(now-run.start)/1000, pa=progressForRun(elapsed,r1.et), pb=progressForRun(elapsed,r2.et);updateSpectatorAudio(pa,pb);
     document.getElementById('watchTime').textContent=elapsed.toFixed(2)+'s';
     document.getElementById('watchALane').style.width=(pa*100)+'%';document.getElementById('watchADot').style.left=(pa*100)+'%';document.getElementById('watchAText').textContent=Math.round(distanceForRun(pa))+' m';
     document.getElementById('watchBLane').style.width=(pb*100)+'%';document.getElementById('watchBDot').style.left=(pb*100)+'%';document.getElementById('watchBText').textContent=Math.round(distanceForRun(pb))+' m';
-    document.getElementById('watchLeader').textContent=pa>=pb?carA.name:carB.name;
+    document.getElementById('watchLeader').textContent=pa>=pb?carA.name:carB.name;if(run.sv)svPaint(run,now);
     if(pa>=1&&pb>=1){finishWatchRun(carA,carB,r1,r2,betData);return;}
     run.raf=requestAnimationFrame(tick);
   }
@@ -2349,7 +2515,7 @@ function finishWatchRun(carA,carB,r1,r2,betData){
       details.push(`Missed lane call ${e.missed}`,`Runs left ${e.runsLeft}`,`Lane-call penalty -${loss} Respect`);
       logChange(msg,before,'bad',details);
       if(e.missed>=3){completeEventNight('You missed too many lane calls and were told to call it a night.','bad');return;}
-      markCurrentLineupRaceComplete();showTimingBoard(carA,carB,r1,r2,winner,msg);return;
+      markCurrentLineupRaceComplete();showTimingBoard(carA,carB,r1,r2,winner,msg,betData);return;
     }
     logChange(msg,before,'bet',details);
   }else{
@@ -2357,12 +2523,13 @@ function finishWatchRun(carA,carB,r1,r2,betData){
     details.push('Spectating Respect +0.1');
     logChange(msg,before,'event',details);
   }
-  markCurrentLineupRaceComplete();if(watchStopAfterCurrent){watchStopAfterCurrent=false;goToMyRace();return;}showTimingBoard(carA,carB,r1,r2,winner,msg);
+  markCurrentLineupRaceComplete();if(watchStopAfterCurrent){watchStopAfterCurrent=false;goToMyRace();return;}showTimingBoard(carA,carB,r1,r2,winner,msg,betData);
 }
-function showTimingBoard(carA,carB,r1,r2,winner,msg){
-  document.getElementById('screen').innerHTML=`<section class="card"><h2>Timing Board</h2><div class="timingBoard"><div class="${winner===carA?'winner':''}">${carA.name}: ${r1.et.toFixed(2)} @ ${r1.trap.toFixed(0)} km/h</div><div class="${winner===carB?'winner':''}">${carB.name}: ${r2.et.toFixed(2)} @ ${r2.trap.toFixed(0)} km/h</div></div><p>${msg}</p><div class="hr"></div><div class="btns">${watchAllMode?`<button class="btn secondary" onclick="stopWatchAllBeforeMine()">${watchAllStopLabel()}</button><span class="small muted">The next queued race will start automatically.</span>`:'<button class="btn" onclick="show(\'currentEvent\')">Back to event</button>'}</div></section>`;
+function showTimingBoard(carA,carB,r1,r2,winner,msg,betData){
+  if(RACE_NIGHT_PROTO){document.getElementById('screen').innerHTML=svBoardMarkup(carA,carB,r1,r2,winner,msg,betData);evReveal('svBoardTitle','svResult')}
+  else document.getElementById('screen').innerHTML=`<section class="card"><h2>Timing Board</h2><div class="timingBoard"><div class="${winner===carA?'winner':''}">${carA.name}: ${r1.et.toFixed(2)} @ ${r1.trap.toFixed(0)} km/h</div><div class="${winner===carB?'winner':''}">${carB.name}: ${r2.et.toFixed(2)} @ ${r2.trap.toFixed(0)} km/h</div></div><p>${msg}</p><div class="hr"></div><div class="btns">${watchAllMode?`<button class="btn secondary" onclick="stopWatchAllBeforeMine()">${watchAllStopLabel()}</button><span class="small muted">The next queued race will start automatically.</span>`:'<button class="btn" onclick="show(\'currentEvent\')">Back to event</button>'}</div></section>`;
   topStats();currentPanel();
-  if(watchAllMode){if(watchAllTimer)clearTimeout(watchAllTimer);watchAllTimer=setTimeout(continueWatchAllBeforeMine,1400)}
+  if(watchAllMode){if(watchAllTimer)clearTimeout(watchAllTimer);watchAllTimer=setTimeout(continueWatchAllBeforeMine,SV_AUTO_MS)}
 }
 function watch(){return `<section class="card"><h2>Watch List</h2><p class="muted">Capacity ${state.watch.length}/${state.watchCap}. Starts at 5.</p><div class="grid">${state.watch.length?state.watch.map(w=>`<div class="listing"><h3>${w.name}</h3><p>${w.type}</p><p class="muted">${w.last}</p></div>`).join(''):'<p>No watched opponents yet.</p>'}</div></section>`}
 const SOUND_STORAGE='qmb_sound_enabled',MUSIC_STORAGE='qmb_music_enabled';
