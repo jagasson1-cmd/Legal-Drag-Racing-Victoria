@@ -1,0 +1,69 @@
+{
+ "result": true,
+ "requests": [
+  {
+   "toGameApi": true,
+   "method": "POST",
+   "contentType": "application/json",
+   "usesPublishableKey": true,
+   "bodyKeys": [
+    "action",
+    "recoveryCode"
+   ],
+   "action": "getSocial",
+   "recoveryCode": "TEST-RECOVERY-CODE",
+   "stateKeys": null,
+   "stateMatchesLocalSave": null
+  },
+  {
+   "toGameApi": true,
+   "method": "POST",
+   "contentType": "application/json",
+   "usesPublishableKey": true,
+   "bodyKeys": [
+    "action",
+    "state",
+    "recoveryCode"
+   ],
+   "action": "save",
+   "recoveryCode": "TEST-RECOVERY-CODE",
+   "stateKeys": [
+    "saveVersion",
+    "money",
+    "respect",
+    "day",
+    "car",
+    "activeCarId",
+    "saleVehicleId",
+    "owned",
+    "garageCapacity",
+    "listings",
+    "listingRotationDay",
+    "log",
+    "screen",
+    "watch",
+    "watchCap",
+    "lastEvent",
+    "pendingArrival",
+    "bettingUnlocked",
+    "completedEvents",
+    "bestETs",
+    "workshopDayUsed",
+    "workshopJob",
+    "lastTyreWorkDay",
+    "accounting",
+    "eventSummaries",
+    "accountingSeason",
+    "marketOffers",
+    "pendingSale",
+    "notifications",
+    "guidance",
+    "badges",
+    "badgeHistory",
+    "specialEventPrestige",
+    "dailyBriefing"
+   ],
+   "stateMatchesLocalSave": true
+  }
+ ]
+}

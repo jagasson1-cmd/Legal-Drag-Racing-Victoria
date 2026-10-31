@@ -1,0 +1,561 @@
+{
+ "saveVersion": 2,
+ "money": 17000,
+ "respect": 131,
+ "day": 40,
+ "car": {
+  "id": "is200",
+  "name": "Lexus IS200",
+  "cat": "Japanese Performance",
+  "type": "Underdog Platform",
+  "price": 8200,
+  "weight": 1380,
+  "power": 153,
+  "torque": 195,
+  "drive": "RWD",
+  "aero": 0.31,
+  "manual": true,
+  "auto": true,
+  "gears": 6,
+  "red": 6500,
+  "peak": 6200,
+  "band": [
+   4400,
+   6400
+  ],
+  "asp": "NA",
+  "baseGrip": 0.84,
+  "upgradeMult": 1,
+  "reliability": 90,
+  "engine": "1G-FE",
+  "disp": 2,
+  "tyreDia": 24.9,
+  "manualMax": [
+   47,
+   84,
+   122,
+   150,
+   182,
+   209
+  ],
+  "autoMax": [
+   62,
+   112,
+   170,
+   225
+  ],
+  "shiftBuffer": 220,
+  "stallRpm": 2100,
+  "uid": "is200_1767225600000_ac18fa11",
+  "trans": "auto",
+  "shiftMode": "D",
+  "grip": 0.84,
+  "mods": [],
+  "installed": [],
+  "issueNames": [],
+  "launchBonus": 0,
+  "sceneValueBase": 0,
+  "basePower": 153,
+  "baseWeight": 1380,
+  "basePeak": 6200,
+  "baseReliability": 90,
+  "upgradeStages": {
+   "intake": 0,
+   "exhaust": 0,
+   "tyres": 0,
+   "diff": 0,
+   "ecu": 0,
+   "transmission": 0,
+   "weight": 0
+  },
+  "tuneFresh": false,
+  "tuneVariance": 0,
+  "tuneSignature": "",
+  "dynoQuality": 0,
+  "dynoCurve": null,
+  "buildTags": [],
+  "stallBonus": 0,
+  "modSpend": 0,
+  "modMarketValue": 0,
+  "sceneValue": 0,
+  "listedForSale": false,
+  "wins": 0,
+  "bestET": null,
+  "notableEvents": [],
+  "acquisitionPower": 153,
+  "modelYear": 2001,
+  "performanceModified": false,
+  "firstPassET": null,
+  "firstSixty": null,
+  "bestSixty": null,
+  "bestRunSnapshot": null,
+  "raceCount": 0
+ },
+ "activeCarId": "is200_1767225600000_ac18fa11",
+ "saleVehicleId": null,
+ "owned": [
+  {
+   "id": "is200",
+   "name": "Lexus IS200",
+   "cat": "Japanese Performance",
+   "type": "Underdog Platform",
+   "price": 8200,
+   "weight": 1380,
+   "power": 153,
+   "torque": 195,
+   "drive": "RWD",
+   "aero": 0.31,
+   "manual": true,
+   "auto": true,
+   "gears": 6,
+   "red": 6500,
+   "peak": 6200,
+   "band": [
+    4400,
+    6400
+   ],
+   "asp": "NA",
+   "baseGrip": 0.84,
+   "upgradeMult": 1,
+   "reliability": 90,
+   "engine": "1G-FE",
+   "disp": 2,
+   "tyreDia": 24.9,
+   "manualMax": [
+    47,
+    84,
+    122,
+    150,
+    182,
+    209
+   ],
+   "autoMax": [
+    62,
+    112,
+    170,
+    225
+   ],
+   "shiftBuffer": 220,
+   "stallRpm": 2100,
+   "uid": "is200_1767225600000_ac18fa11",
+   "trans": "auto",
+   "shiftMode": "D",
+   "grip": 0.84,
+   "mods": [],
+   "installed": [],
+   "issueNames": [],
+   "launchBonus": 0,
+   "sceneValueBase": 0,
+   "basePower": 153,
+   "baseWeight": 1380,
+   "basePeak": 6200,
+   "baseReliability": 90,
+   "upgradeStages": {
+    "intake": 0,
+    "exhaust": 0,
+    "tyres": 0,
+    "diff": 0,
+    "ecu": 0,
+    "transmission": 0,
+    "weight": 0
+   },
+   "tuneFresh": false,
+   "tuneVariance": 0,
+   "tuneSignature": "",
+   "dynoQuality": 0,
+   "dynoCurve": null,
+   "buildTags": [],
+   "stallBonus": 0,
+   "modSpend": 0,
+   "modMarketValue": 0,
+   "sceneValue": 0,
+   "listedForSale": false,
+   "wins": 0,
+   "bestET": null,
+   "notableEvents": [],
+   "acquisitionPower": 153,
+   "modelYear": 2001,
+   "performanceModified": false,
+   "firstPassET": null,
+   "firstSixty": null,
+   "bestSixty": null,
+   "bestRunSnapshot": null,
+   "raceCount": 0
+  }
+ ],
+ "garageCapacity": 3,
+ "listings": [
+  {
+   "id": "lancer_74a3e1d7",
+   "carId": "lancer",
+   "trans": "auto",
+   "issues": [
+    {
+     "name": "Minor body damage",
+     "discount": 350,
+     "effect": {},
+     "note": "Mostly cosmetic."
+    },
+    {
+     "name": "Rough idle",
+     "discount": 500,
+     "effect": {
+      "power": -0.02
+     },
+     "note": "Slight power consistency issue."
+    }
+   ],
+   "price": 6357,
+   "inspected": false
+  },
+  {
+   "id": "corolla_57d09fb5",
+   "carId": "corolla",
+   "trans": "auto",
+   "issues": [
+    {
+     "name": "Poor service history",
+     "discount": 650,
+     "effect": {
+      "reliability": -6
+     },
+     "note": "Reliability uncertainty."
+    },
+    {
+     "name": "Tired clutch",
+     "discount": 850,
+     "effect": {
+      "shift": -0.03,
+      "launch": -0.05
+     },
+     "manualOnly": true,
+     "note": "Manual launches are less consistent."
+    }
+   ],
+   "price": 3604,
+   "inspected": false
+  },
+  {
+   "id": "aufalconxr6_aafc4d08",
+   "carId": "aufalconxr6",
+   "trans": "manual",
+   "issues": [
+    {
+     "name": "Worn tyres",
+     "discount": 450,
+     "effect": {
+      "grip": -0.08
+     },
+     "note": "Immediate traction penalty."
+    }
+   ],
+   "price": 7081,
+   "inspected": false
+  },
+  {
+   "id": "commodoresho_7ca6d4e6",
+   "carId": "commodoresho",
+   "trans": "manual",
+   "issues": [],
+   "price": 17130,
+   "inspected": false
+  },
+  {
+   "id": "bmw335i_494267b",
+   "carId": "bmw335i",
+   "trans": "manual",
+   "issues": [
+    {
+     "name": "Minor body damage",
+     "discount": 350,
+     "effect": {},
+     "note": "Mostly cosmetic."
+    }
+   ],
+   "price": 16585,
+   "inspected": false
+  },
+  {
+   "id": "silvia_2c4ed019",
+   "carId": "silvia",
+   "trans": "auto",
+   "issues": [],
+   "price": 18372,
+   "inspected": false
+  },
+  {
+   "id": "m5_43d8b24b",
+   "carId": "m5",
+   "trans": "auto",
+   "issues": [
+    {
+     "name": "Cheap previous mods",
+     "discount": 500,
+     "effect": {
+      "power": 0.02,
+      "reliability": -4
+     },
+     "note": "A tiny gain with a reliability question."
+    }
+   ],
+   "price": 33300,
+   "inspected": false
+  },
+  {
+   "id": "toranaslr5000_98ea9e7a",
+   "carId": "toranaslr5000",
+   "trans": "auto",
+   "issues": [],
+   "price": 89743,
+   "inspected": false
+  }
+ ],
+ "listingRotationDay": 40,
+ "log": [
+  {
+   "day": 40,
+   "kind": "money",
+   "msg": "Entered You Yangs Proving Ground Open Day with Lexus IS200.",
+   "details": [
+    "Entry fee $3,000",
+    "Standard vehicle entry",
+    "Two attempts in each challenge",
+    "Next entry available Day 47",
+    "Money $-3,000"
+   ]
+  }
+ ],
+ "screen": "youYangs",
+ "watch": [],
+ "watchCap": 5,
+ "lastEvent": null,
+ "pendingArrival": null,
+ "bettingUnlocked": false,
+ "completedEvents": {},
+ "bestETs": {},
+ "workshopDayUsed": null,
+ "workshopJob": null,
+ "lastTyreWorkDay": null,
+ "accounting": [
+  {
+   "day": 40,
+   "season": 3,
+   "kind": "money",
+   "label": "Entered You Yangs Proving Ground Open Day with Lexus IS200.",
+   "cashDelta": -3000,
+   "respectDelta": 0,
+   "moneyAfter": 17000,
+   "respectAfter": 131,
+   "details": [
+    "Entry fee $3,000",
+    "Standard vehicle entry",
+    "Two attempts in each challenge",
+    "Next entry available Day 47"
+   ]
+  }
+ ],
+ "eventSummaries": [],
+ "accountingSeason": "all",
+ "marketOffers": [],
+ "pendingSale": null,
+ "notifications": [
+  {
+   "id": "you_yangs_invite",
+   "type": "special",
+   "title": "PRIVATE INVITATION",
+   "message": "You have been invited to a closed proving-ground event at You Yangs. Standing Kilometre, High-Speed Run and Acceleration Benchmark. Standard entry $3,000; Ford entry $2,000.",
+   "icon": "✉",
+   "createdDay": 40,
+   "dismissed": true
+  },
+  {
+   "id": "guidance_welcome",
+   "type": "guidance",
+   "title": "Welcome to the Victorian drag-racing scene",
+   "message": "You can browse the classifieds for your first project or attend an event as a spectator before choosing a car.",
+   "createdDay": 40,
+   "dismissed": false
+  },
+  {
+   "id": "badges_known_around_the_pits",
+   "type": "badge",
+   "title": "Badge unlocked: Known Around the Pits",
+   "message": "People have started recognising both you and the car.",
+   "icon": "👥",
+   "createdDay": 40,
+   "dismissed": false,
+   "badgeIds": [
+    "known_around_the_pits"
+   ]
+  },
+  {
+   "id": "badges_proving_ground_160",
+   "type": "badge",
+   "title": "Badge unlocked: Does It Do the Ton?",
+   "message": "One hundred miles per hour, near enough. Question answered.",
+   "icon": "💨",
+   "createdDay": 40,
+   "dismissed": false,
+   "badgeIds": [
+    "proving_ground_160"
+   ]
+  }
+ ],
+ "guidance": {
+  "version": 2,
+  "created": {
+   "welcome": true,
+   "firstCar": false,
+   "firstRace": false
+  },
+  "onboardingDismissed": false
+ },
+ "badges": {
+  "known_around_the_pits": {
+   "unlockedAt": "2026-01-01T00:00:00.000Z",
+   "gameDay": 40,
+   "carId": null,
+   "context": {}
+  },
+  "proving_ground_160": {
+   "unlockedAt": "2026-01-01T00:00:00.000Z",
+   "gameDay": 40,
+   "carId": "is200_1767225600000_ac18fa11",
+   "context": {
+    "carName": "Lexus IS200",
+    "detail": "You Yangs peak 178 km/h"
+   }
+  }
+ },
+ "badgeHistory": {
+  "version": 1,
+  "migrationDone": true,
+  "transfers": [],
+  "inspectedListingIds": [],
+  "racerEntries": [],
+  "racedVenueIds": [],
+  "observedRuns": {},
+  "sequence": 0,
+  "pendingRemoteSync": true
+ },
+ "specialEventPrestige": {
+  "youYangs": {
+   "invited": true,
+   "invitationShown": true,
+   "introJourneyDone": true,
+   "entered": true,
+   "entryCarId": "is200_1767225600000_ac18fa11",
+   "entryPaid": 3000,
+   "sessionStartDay": 40,
+   "nextEligibleDay": 47,
+   "visits": 1,
+   "attempts": {
+    "standingKilometre": 1,
+    "highSpeed": 2,
+    "acceleration": 2
+   },
+   "best": {
+    "standingKilometre": {
+     "time": 31.42,
+     "terminalSpeed": 176.9,
+     "zeroTo100": 9.81,
+     "zeroTo160": null,
+     "quarter": 17.33,
+     "fiveHundred": 20.11
+    },
+    "highSpeed": null,
+    "acceleration": {
+     "zeroTo100": null,
+     "zeroTo160": null,
+     "zeroTo200": null,
+     "bestAttempt": null
+    }
+   },
+   "tiers": {
+    "standingKilometre": "bronze",
+    "highSpeed": "unranked",
+    "acceleration": "unranked"
+   },
+   "carRecords": {
+    "is200_1767225600000_ac18fa11": {
+     "vehicleId": "is200_1767225600000_ac18fa11",
+     "carId": "is200",
+     "name": "Lexus IS200",
+     "firstTestDay": 40,
+     "lastTestDay": 40,
+     "sessionKeys": [
+      "1:40"
+     ],
+     "runs": 1,
+     "best": {
+      "standingKilometre": {
+       "time": 31.42,
+       "terminalSpeed": 176.9,
+       "day": 40,
+       "power": 153,
+       "weight": 1380
+      },
+      "highSpeed": null,
+      "acceleration": null
+     },
+     "snapshot": {
+      "power": 153,
+      "weight": 1380,
+      "drive": "RWD",
+      "trans": "auto",
+      "shiftMode": "D",
+      "day": 40
+     }
+    }
+   },
+   "overallTitle": "You Yangs Entrant",
+   "completionAcknowledged": false,
+   "lastResult": {
+    "challenge": "standingKilometre",
+    "elapsed": 31.42,
+    "distance": 1000,
+    "peakSpeed": 178.4,
+    "finishSpeed": 176.9,
+    "finalGear": 4,
+    "peakG": 0.52,
+    "milestones": {
+     "100": {
+      "time": 9.81,
+      "distance": 148
+     }
+    },
+    "distanceSpeeds": {
+     "402": {
+      "time": 17.33,
+      "speed": 139.2
+     },
+     "500": {
+      "time": 20.11,
+      "speed": 147.8
+     },
+     "1000": {
+      "time": 31.42,
+      "speed": 176.9
+     }
+    },
+    "shutdownDistance": 212,
+    "day": 40,
+    "carId": "is200_1767225600000_ac18fa11"
+   }
+  }
+ },
+ "dailyBriefing": {
+  "version": 1,
+  "dateKey": "2026-01-01",
+  "challengeId": "workshop",
+  "progress": 0,
+  "completed": false,
+  "claimed": false,
+  "rerollUsed": false,
+  "briefingRead": false,
+  "lastReminderAt": 0,
+  "weekKey": "2025-12-29",
+  "weeklyDates": [],
+  "weeklyBonusClaimed": false
+ }
+}

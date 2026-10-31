@@ -1,0 +1,457 @@
+{
+ "saveVersion": 2,
+ "money": 9000,
+ "respect": 126,
+ "day": 33,
+ "car": {
+  "id": "is200",
+  "name": "Lexus IS200",
+  "cat": "Japanese Performance",
+  "type": "Underdog Platform",
+  "price": 8200,
+  "weight": 1380,
+  "power": 153,
+  "torque": 195,
+  "drive": "RWD",
+  "aero": 0.31,
+  "manual": true,
+  "auto": true,
+  "gears": 6,
+  "red": 6500,
+  "peak": 6200,
+  "band": [
+   4400,
+   6400
+  ],
+  "asp": "NA",
+  "baseGrip": 0.84,
+  "upgradeMult": 1,
+  "reliability": 90,
+  "engine": "1G-FE",
+  "disp": 2,
+  "tyreDia": 24.9,
+  "manualMax": [
+   47,
+   84,
+   122,
+   150,
+   182,
+   209
+  ],
+  "autoMax": [
+   62,
+   112,
+   170,
+   225
+  ],
+  "shiftBuffer": 220,
+  "stallRpm": 2100,
+  "uid": "is200_1767225600000_d9dc11d8",
+  "trans": "auto",
+  "shiftMode": "D",
+  "grip": 0.84,
+  "mods": [],
+  "installed": [],
+  "issueNames": [],
+  "launchBonus": 0,
+  "sceneValueBase": 0,
+  "basePower": 153,
+  "baseWeight": 1380,
+  "basePeak": 6200,
+  "baseReliability": 90,
+  "upgradeStages": {
+   "intake": 0,
+   "exhaust": 0,
+   "tyres": 0,
+   "diff": 0,
+   "ecu": 0,
+   "transmission": 0,
+   "weight": 0
+  },
+  "tuneFresh": false,
+  "tuneVariance": 0,
+  "tuneSignature": "",
+  "dynoQuality": 0,
+  "dynoCurve": null,
+  "buildTags": [],
+  "stallBonus": 0,
+  "modSpend": 0,
+  "modMarketValue": 0,
+  "sceneValue": 0,
+  "listedForSale": false,
+  "wins": 0,
+  "bestET": null,
+  "notableEvents": [],
+  "acquisitionPower": 153,
+  "modelYear": 2001,
+  "performanceModified": false,
+  "firstPassET": null,
+  "firstSixty": null,
+  "bestSixty": null,
+  "bestRunSnapshot": null,
+  "raceCount": 0
+ },
+ "activeCarId": "is200_1767225600000_d9dc11d8",
+ "saleVehicleId": null,
+ "owned": [
+  {
+   "id": "is200",
+   "name": "Lexus IS200",
+   "cat": "Japanese Performance",
+   "type": "Underdog Platform",
+   "price": 8200,
+   "weight": 1380,
+   "power": 153,
+   "torque": 195,
+   "drive": "RWD",
+   "aero": 0.31,
+   "manual": true,
+   "auto": true,
+   "gears": 6,
+   "red": 6500,
+   "peak": 6200,
+   "band": [
+    4400,
+    6400
+   ],
+   "asp": "NA",
+   "baseGrip": 0.84,
+   "upgradeMult": 1,
+   "reliability": 90,
+   "engine": "1G-FE",
+   "disp": 2,
+   "tyreDia": 24.9,
+   "manualMax": [
+    47,
+    84,
+    122,
+    150,
+    182,
+    209
+   ],
+   "autoMax": [
+    62,
+    112,
+    170,
+    225
+   ],
+   "shiftBuffer": 220,
+   "stallRpm": 2100,
+   "uid": "is200_1767225600000_d9dc11d8",
+   "trans": "auto",
+   "shiftMode": "D",
+   "grip": 0.84,
+   "mods": [],
+   "installed": [],
+   "issueNames": [],
+   "launchBonus": 0,
+   "sceneValueBase": 0,
+   "basePower": 153,
+   "baseWeight": 1380,
+   "basePeak": 6200,
+   "baseReliability": 90,
+   "upgradeStages": {
+    "intake": 0,
+    "exhaust": 0,
+    "tyres": 0,
+    "diff": 0,
+    "ecu": 0,
+    "transmission": 0,
+    "weight": 0
+   },
+   "tuneFresh": false,
+   "tuneVariance": 0,
+   "tuneSignature": "",
+   "dynoQuality": 0,
+   "dynoCurve": null,
+   "buildTags": [],
+   "stallBonus": 0,
+   "modSpend": 0,
+   "modMarketValue": 0,
+   "sceneValue": 0,
+   "listedForSale": false,
+   "wins": 0,
+   "bestET": null,
+   "notableEvents": [],
+   "acquisitionPower": 153,
+   "modelYear": 2001,
+   "performanceModified": false,
+   "firstPassET": null,
+   "firstSixty": null,
+   "bestSixty": null,
+   "bestRunSnapshot": null,
+   "raceCount": 0
+  }
+ ],
+ "garageCapacity": 3,
+ "listings": [
+  {
+   "id": "volvos60t5_301b4ec6",
+   "carId": "volvos60t5",
+   "trans": "manual",
+   "issues": [
+    {
+     "name": "Old auto fluid",
+     "discount": 450,
+     "effect": {
+      "shift": -0.02
+     },
+     "autoOnly": true,
+     "note": "Auto shifts feel a little lazy."
+    }
+   ],
+   "price": 8185,
+   "inspected": false
+  },
+  {
+   "id": "corolla_4037d5f3",
+   "carId": "corolla",
+   "trans": "auto",
+   "issues": [
+    {
+     "name": "Rough idle",
+     "discount": 500,
+     "effect": {
+      "power": -0.02
+     },
+     "note": "Slight power consistency issue."
+    }
+   ],
+   "price": 5016,
+   "inspected": false
+  },
+  {
+   "id": "effalconxr6_c5d5c553",
+   "carId": "effalconxr6",
+   "trans": "auto",
+   "issues": [
+    {
+     "name": "Old auto fluid",
+     "discount": 450,
+     "effect": {
+      "shift": -0.02
+     },
+     "autoOnly": true,
+     "note": "Auto shifts feel a little lazy."
+    },
+    {
+     "name": "Poor service history",
+     "discount": 650,
+     "effect": {
+      "reliability": -6
+     },
+     "note": "Reliability uncertainty."
+    }
+   ],
+   "price": 6549,
+   "inspected": false
+  },
+  {
+   "id": "gqpatrol_7e222493",
+   "carId": "gqpatrol",
+   "trans": "auto",
+   "issues": [],
+   "price": 11689,
+   "inspected": false
+  },
+  {
+   "id": "silvia_af5b00cf",
+   "carId": "silvia",
+   "trans": "auto",
+   "issues": [
+    {
+     "name": "Old auto fluid",
+     "discount": 450,
+     "effect": {
+      "shift": -0.02
+     },
+     "autoOnly": true,
+     "note": "Auto shifts feel a little lazy."
+    }
+   ],
+   "price": 17939,
+   "inspected": false
+  },
+  {
+   "id": "wrx_b2799f87",
+   "carId": "wrx",
+   "trans": "manual",
+   "issues": [
+    {
+     "name": "Poor service history",
+     "discount": 650,
+     "effect": {
+      "reliability": -6
+     },
+     "note": "Reliability uncertainty."
+    }
+   ],
+   "price": 14207,
+   "inspected": false
+  },
+  {
+   "id": "xyfalcongt_d399bb1f",
+   "carId": "xyfalcongt",
+   "trans": "auto",
+   "issues": [
+    {
+     "name": "Cheap previous mods",
+     "discount": 500,
+     "effect": {
+      "power": 0.02,
+      "reliability": -4
+     },
+     "note": "A tiny gain with a reliability question."
+    }
+   ],
+   "price": 104469,
+   "inspected": false
+  },
+  {
+   "id": "i30n_29f3c2c9",
+   "carId": "i30n",
+   "trans": "auto",
+   "issues": [
+    {
+     "name": "Cheap previous mods",
+     "discount": 500,
+     "effect": {
+      "power": 0.02,
+      "reliability": -4
+     },
+     "note": "A tiny gain with a reliability question."
+    }
+   ],
+   "price": 26433,
+   "inspected": false
+  }
+ ],
+ "listingRotationDay": 33,
+ "log": [],
+ "screen": "yyTravel",
+ "watch": [],
+ "watchCap": 5,
+ "lastEvent": null,
+ "pendingArrival": null,
+ "bettingUnlocked": false,
+ "completedEvents": {},
+ "bestETs": {},
+ "workshopDayUsed": null,
+ "workshopJob": null,
+ "lastTyreWorkDay": null,
+ "accounting": [],
+ "eventSummaries": [],
+ "accountingSeason": "all",
+ "marketOffers": [],
+ "pendingSale": null,
+ "notifications": [
+  {
+   "id": "you_yangs_invite",
+   "type": "special",
+   "title": "PRIVATE INVITATION",
+   "message": "You have been invited to a closed proving-ground event at You Yangs. Standing Kilometre, High-Speed Run and Acceleration Benchmark. Standard entry $3,000; Ford entry $2,000.",
+   "icon": "✉",
+   "createdDay": 33,
+   "dismissed": true
+  },
+  {
+   "id": "guidance_welcome",
+   "type": "guidance",
+   "title": "Welcome to the Victorian drag-racing scene",
+   "message": "You can browse the classifieds for your first project or attend an event as a spectator before choosing a car.",
+   "createdDay": 33,
+   "dismissed": false
+  },
+  {
+   "id": "badges_known_around_the_pits",
+   "type": "badge",
+   "title": "Badge unlocked: Known Around the Pits",
+   "message": "People have started recognising both you and the car.",
+   "icon": "👥",
+   "createdDay": 33,
+   "dismissed": false,
+   "badgeIds": [
+    "known_around_the_pits"
+   ]
+  }
+ ],
+ "guidance": {
+  "version": 2,
+  "created": {
+   "welcome": true,
+   "firstCar": false,
+   "firstRace": false
+  },
+  "onboardingDismissed": false
+ },
+ "badges": {
+  "known_around_the_pits": {
+   "unlockedAt": "2026-01-01T00:00:00.000Z",
+   "gameDay": 33,
+   "carId": null,
+   "context": {}
+  }
+ },
+ "badgeHistory": {
+  "version": 1,
+  "migrationDone": true,
+  "transfers": [],
+  "inspectedListingIds": [],
+  "racerEntries": [],
+  "racedVenueIds": [],
+  "observedRuns": {},
+  "sequence": 0,
+  "pendingRemoteSync": true
+ },
+ "specialEventPrestige": {
+  "youYangs": {
+   "invited": true,
+   "invitationShown": true,
+   "introJourneyDone": false,
+   "entered": false,
+   "entryCarId": null,
+   "entryPaid": 0,
+   "sessionStartDay": null,
+   "nextEligibleDay": 0,
+   "visits": 0,
+   "attempts": {
+    "standingKilometre": 2,
+    "highSpeed": 2,
+    "acceleration": 2
+   },
+   "best": {
+    "standingKilometre": null,
+    "highSpeed": null,
+    "acceleration": {
+     "zeroTo100": null,
+     "zeroTo160": null,
+     "zeroTo200": null,
+     "bestAttempt": null
+    }
+   },
+   "tiers": {
+    "standingKilometre": "unranked",
+    "highSpeed": "unranked",
+    "acceleration": "unranked"
+   },
+   "carRecords": {},
+   "overallTitle": "Not entered",
+   "completionAcknowledged": false,
+   "lastResult": null
+  }
+ },
+ "dailyBriefing": {
+  "version": 1,
+  "dateKey": "2026-01-01",
+  "challengeId": "watch",
+  "progress": 0,
+  "completed": false,
+  "claimed": false,
+  "rerollUsed": false,
+  "briefingRead": false,
+  "lastReminderAt": 0,
+  "weekKey": "2025-12-29",
+  "weeklyDates": [],
+  "weeklyBonusClaimed": false
+ }
+}

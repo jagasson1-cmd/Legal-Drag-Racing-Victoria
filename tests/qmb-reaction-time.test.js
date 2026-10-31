@@ -3,9 +3,8 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 
 // Player reaction time: launch input, red light, no launch, finish order, report fields and save compatibility.
-const html = fs.readFileSync('index.html', 'utf8');
-const script = html.match(/<script>([\s\S]*)<\/script>/)[1];
-const definitions = script.slice(0, script.indexOf('refreshListings();loadGame(false);render();'));
+// index.html plus the stylesheets and classic scripts it references, in document order (tests/helpers/game-source.js).
+const { html, script, css: gameCss, definitions } = require('./helpers/game-source')();
 // Seeds where the natural matchup allows a holeshot win (player ET slower, by less than the reaction gap)
 // and a quicker-ET loss after a late launch. Found by searching seeds 1..400 with the same harness.
 const FOUND = { holeshot: 5, quicker: 38 };
