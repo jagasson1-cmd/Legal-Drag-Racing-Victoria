@@ -115,6 +115,126 @@
     .onboardingCard{border-color:rgba(142,202,230,.68);background:linear-gradient(135deg,#17242e,#171b22)}.onboardingSteps{display:flex;gap:7px;margin:10px 0 14px}.onboardingStep{height:6px;flex:1;border-radius:999px;background:#34404c}.onboardingStep.done{background:var(--good)}.onboardingStep.active{background:var(--blue);box-shadow:0 0 10px rgba(142,202,230,.45)}.onboardingHint{border-left:3px solid var(--blue);padding-left:11px}.onboardingDismiss{border:0;background:transparent;color:var(--muted);cursor:pointer;text-decoration:underline}
     @keyframes yyRoadMove{to{background-position:-90px 0}}
     @media(max-width:700px){.telemetryTop{grid-template-columns:1fr}.digitalSpeed{font-size:82px}.yyTelemetryGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.yyShiftBar{position:sticky;bottom:7px;z-index:7}.yyTach{max-height:220px}}
+
+    /* RACE NIGHT VISUAL PROTOTYPE (feature/race-night-visual-prototype).
+       Presentation only. Every selector is scoped to .rnStage/.rnReport/.rnSlip.
+       Revert: delete this block, the RACE NIGHT PROTOTYPE script block and the RACE_NIGHT_PROTO references. */
+    .rnStage{--rn-you:var(--accent);--rn-opp:var(--blue);--rn-ink:#05070a;background:radial-gradient(circle at 70% 0%,#1d2633,#0b0e13 62%);padding:16px}
+    .rnStage .rnNum,.rnStage .value,.rnSlip td{font-variant-numeric:tabular-nums}
+    .rnHead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
+    .rnHead>div:first-child{min-width:0;flex:1}
+    .rnEyebrow{margin:0 0 3px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    @media(hover:hover) and (pointer:fine){.rnStage .touchShiftBtn:not(:disabled)::after{content:' · SPACE';font-size:.6em;letter-spacing:.12em;opacity:.7}}
+    .rnTitle{margin:0!important;font-size:20px}
+    .rnPhaseBox{display:flex;align-items:center;gap:10px}
+    .rnPhase{font:800 13px/1 ui-monospace,Consolas,monospace;letter-spacing:.14em;padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:#0b0e13;color:var(--text);min-width:150px;text-align:center;transition:background .2s,border-color .2s,color .2s}
+    .rnStage[data-phase="ambers"] .rnPhase{border-color:#ffbf47;color:#ffbf47}
+    .rnStage[data-phase="green"] .rnPhase,.rnStage[data-phase="launch"] .rnPhase{border-color:#67e08a;color:#67e08a}
+    .rnStage[data-phase="finish"] .rnPhase{border-color:var(--text);background:var(--text);color:var(--rn-ink)}
+    .rnCountdown{font:900 28px/1 ui-monospace,Consolas,monospace;color:var(--muted);min-width:1.4em;text-align:center}
+    .rnStage[data-phase="racing"] .rnCountdown,.rnStage[data-phase="finish"] .rnCountdown,.rnStage[data-phase="launch"] .rnCountdown{visibility:hidden}
+
+    .rnTower{display:grid;grid-template-columns:112px minmax(0,1fr);gap:14px;align-items:stretch;background:#07090d;border:1px solid var(--line);border-radius:14px;padding:12px}
+    .rnTreeCol{display:flex;justify-content:center}
+    .rnStage .treeBox{gap:8px}
+    .rnStage .tree{width:64px;padding:8px 6px;border-radius:16px}
+    .rnStage .treeBulb{width:22px;height:22px;margin:5px auto}.rnStage .treeBulb.small{width:16px;height:16px;margin:3px auto}
+    .rnStage .treeText{display:none}
+    .rnStage .launchLamp{width:56px;height:10px;border-radius:3px;background:#1f232b;box-shadow:none}
+    .rnStage .launchLamp.on{background:var(--text);box-shadow:0 0 10px rgba(232,237,242,.55)}
+    .rnStage .launchLampLabel{font-size:11px;max-width:104px;color:var(--muted)}
+    .rnLanes{display:flex;flex-direction:column;justify-content:center;gap:10px;min-width:0}
+    .rnLane{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:end}
+    .rnLaneId{min-width:0}
+    .rnLaneTag{display:block;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+    .rnLaneYou .rnLaneTag{color:var(--rn-you)}.rnLaneOpp .rnLaneTag{color:var(--rn-opp)}
+    .rnCarName{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .rnLaneMeta{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .rnLaneDist{font:800 18px/1 ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums;text-align:right}
+    .rnTrack{grid-column:1/-1;height:30px;border-radius:6px;background:repeating-linear-gradient(90deg,#0d1117 0 24px,#10151c 24px 48px)}
+    .rnStage .rnTrack .laneFill{background:linear-gradient(90deg,rgba(255,176,46,.04),rgba(255,176,46,.35))}
+    .rnStage .rnTrack .laneFill.rival{background:linear-gradient(90deg,rgba(142,202,230,.04),rgba(142,202,230,.35))}
+    .rnBeam{position:absolute;top:0;bottom:0;width:1px;background:rgba(232,237,242,.18)}
+    .rnBeam.finish{width:4px;margin-left:-4px;background:repeating-linear-gradient(180deg,#e8edf2 0 5px,#05070a 5px 10px);opacity:.85}
+    .rnStage .rnCar{top:50%;transform:translate(-100%,-50%);width:30px;height:14px;border-radius:4px 7px 7px 4px;font-size:0;filter:none;border:2px solid var(--rn-ink)}
+    .rnLaneYou .rnCar{background:var(--rn-you)}.rnLaneOpp .rnCar{background:var(--rn-opp)}
+    .rnBeamLabels{position:relative;height:14px;font-size:11px;color:var(--muted)}
+    .rnBeamLabels span{position:absolute;transform:translateX(-50%);white-space:nowrap}.rnBeamLabels span:last-child{transform:translateX(-100%)}
+    .rnGap{font:700 13px/1.2 ui-monospace,Consolas,monospace;color:var(--muted);letter-spacing:.04em}
+    .rnGap b{color:var(--text)}
+
+    .rnCluster{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,300px) minmax(0,.8fr);gap:14px;align-items:center;margin-top:12px}
+    .rnSpeed{text-align:center}
+    .rnSpeedNum{font:900 clamp(64px,9vw,112px)/.85 ui-monospace,Consolas,monospace;letter-spacing:-.06em;font-variant-numeric:tabular-nums}
+    .rnSpeed small,.rnGearBox .rnLabel,.rnCell span{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+    .rnTachBox .yyTachWrap{max-width:300px}.rnTachBox .yyTachReadout span{display:none}.rnTachBox .yyTachReadout b{font:800 20px ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}
+    .rnGearBox{text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+    .rnGearBox #raceGear{font:900 64px/.9 ui-monospace,Consolas,monospace;color:var(--text)}
+    .rnStage .shiftLight{font:900 14px/1 ui-monospace,Consolas,monospace;letter-spacing:.14em;padding:8px 12px;border-radius:8px;border:1px solid var(--line);color:var(--muted)}
+    .rnStage .shiftLight.on{color:var(--rn-ink);background:var(--accent);border-color:var(--accent);text-shadow:none}
+    .rnStrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:12px}
+    .rnStrip .rnDupSpeed,.rnStrip .rnDupRpm{display:none}
+    .rnCell{background:#0b0e13;border:1px solid var(--line);border-radius:10px;padding:9px 10px;min-width:0}
+    .rnCell .value{font:800 20px/1.1 ui-monospace,Consolas,monospace;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .rnCell span{margin:4px 0 0}
+    .rnStage .tachWrap{margin-top:10px}.rnStage .tachLabels,.rnStage .tachBandText{display:none}.rnStage .tach{height:10px}
+    .rnStage .touchShiftBtn.mobileOnly,.rnStage .rnAutoBar{display:block}
+    .rnStage .touchShiftBtn{min-height:64px;font:900 22px/1 ui-monospace,Consolas,monospace;letter-spacing:.18em;border-radius:12px}
+    .rnStage .touchShiftBtn.ready{box-shadow:0 0 0 3px rgba(255,176,46,.35),0 0 22px rgba(255,176,46,.45);animation:rnReady .5s ease-in-out infinite alternate}
+    .rnAutoBar{margin-top:12px;min-height:52px;display:grid!important;place-items:center;border:1px dashed var(--line);border-radius:12px;font:800 15px ui-monospace,Consolas,monospace;letter-spacing:.14em;color:var(--muted)}
+    .rnFoot{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;margin-top:8px}
+    .rnStage .raceNote{margin:0;min-height:20px}
+    .rnStage .rnSpark{font-size:16px;letter-spacing:1px;color:#5f8f75}
+    .rnStage[data-phase="finish"] .rnBeam.finish{opacity:1;box-shadow:0 0 12px rgba(232,237,242,.6)}
+    .rnStage .rnLane.leading .rnLaneDist{color:var(--text)}.rnStage .rnLane:not(.leading) .rnLaneDist{color:var(--muted)}
+    .rnStage :focus-visible,.rnReport :focus-visible{outline:3px solid var(--text);outline-offset:3px}
+    @keyframes rnReady{from{filter:brightness(1)}to{filter:brightness(1.18)}}
+    @keyframes rnSlipIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+
+    .rnReport>.rnSlip+h3,.rnReport>.rnSlip+h3+p,.rnReport>.rnSlip+h3+p+.raceHud{display:none}
+    .rnSlip{background:#f1ede2;color:#16130d;border-radius:6px;padding:14px 16px;margin:4px 0 14px;max-width:560px;font-family:ui-monospace,Consolas,monospace;box-shadow:0 10px 30px rgba(0,0,0,.4);animation:rnSlipIn .35s ease-out}
+    .rnSlipHead{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-bottom:2px dashed #8a8270;padding-bottom:8px;margin-bottom:6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+    .rnSlipHead b{font-size:14px}
+    .rnSlip table{width:100%;border-collapse:collapse;table-layout:fixed}
+    .rnSlip th,.rnSlip td{padding:5px 4px;text-align:right;font-size:14px;border-bottom:1px solid #d4cdbb;overflow-wrap:anywhere}
+    .rnSlip th:first-child{text-align:left;width:30%;font-weight:700;color:#4a4436;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+    .rnSlip thead th{font-size:12px;letter-spacing:.08em;color:#16130d}
+    .rnSlip tr.rnEt td{font-size:20px;font-weight:900}
+    .rnSlip td.rnCarCell{font-size:12px;font-family:system-ui,Segoe UI,Arial,sans-serif;line-height:1.25}
+    .rnWinLamp{display:inline-block;margin-left:6px;padding:2px 6px;border-radius:3px;background:#16130d;color:#f1ede2;font-size:10px;letter-spacing:.1em;vertical-align:middle}
+    .rnSlipFoot{margin:8px 0 0;font-size:12px;color:#4a4436;font-family:system-ui,Segoe UI,Arial,sans-serif}
+    .rnSlipFoot b{color:#16130d}
+
+    @media(max-width:860px){
+      .rnCluster{grid-template-columns:minmax(0,1fr) auto}
+      .rnTachBox{display:none}
+      .rnStrip .rnDupRpm{display:block}
+      .rnStage .tach{height:16px}
+    }
+    @media(max-width:640px){
+      .rnStage{padding:10px}
+      .rnTitle{font-size:17px}
+      .rnPhase{min-width:0;font-size:12px;padding:8px 9px}
+      .rnTower{grid-template-columns:70px minmax(0,1fr);gap:10px;padding:9px}
+      .rnStage .tree{width:48px;padding:6px 4px}
+      .rnStage .treeBulb{width:17px;height:17px;margin:4px auto}.rnStage .treeBulb.small{width:12px;height:12px}
+      .rnStage .raceSide .treeBox,.rnStage .treeBox{zoom:1}
+      .rnStage .launchLamp{width:44px}.rnStage .launchLampLabel{font-size:10px;max-width:68px}
+      .rnCarName{font-size:13px}.rnLaneDist{font-size:15px}.rnTrack{height:24px}
+      .rnPhaseBox{gap:6px}.rnCountdown{font-size:22px}
+      .rnCluster{margin-top:8px;gap:8px}
+      .rnSpeedNum{font-size:64px}.rnGearBox #raceGear{font-size:44px}.rnGearBox{gap:4px}
+      .rnSpeed small,.rnGearBox .rnLabel{margin-top:4px}
+      .rnStrip{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+      .rnCell .value{font-size:17px}
+      .rnFoot{grid-template-columns:1fr}
+      .rnStage .touchShiftBtn{position:sticky;bottom:8px;z-index:5}
+      .rnSlip{padding:12px}.rnSlip th,.rnSlip td{font-size:13px}.rnSlip tr.rnEt td{font-size:17px}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .rnStage *,.rnSlip{animation:none!important;transition:none!important}
+      .rnStage .touchShiftBtn.ready{filter:none}
+    }
 </style>
 </head>
 <body>
@@ -1948,14 +2068,44 @@ function updateTreeAndStageRpm(left,stageElapsed){
 function liveSpark(vals){const chars='▁▂▃▄▅▆▇█';return vals.slice(-14).map(v=>chars[Math.max(0,Math.min(7,Math.floor(v/1.15*8)))]).join('')}
 let liveRun=null;
 let travelTimer=null;
+/* RACE NIGHT PROTOTYPE (presentation only). The race loop (tickLiveRace) is unchanged and still writes the same
+   element IDs; raceNightPaint() only reads those displayed values and liveRun, and never writes game state.
+   Set ?racenight=0 to compare against the original layout. Revert by deleting this block and its three call sites. */
+const RACE_NIGHT_PROTO=!/[?&]racenight=0(&|$)/.test(location.search||'');
+const RN_BEAMS=[[18.288,'60 ft'],[100.584,'330 ft'],[201.168,'1/8'],[304.8,'1000 ft'],[402,'Finish']];
+let rnPaintRaf=null;
+function raceNightLane(kind,car,tag,meta){let you=kind==='you',beams=RN_BEAMS.map(([m,_l],i)=>`<i class="rnBeam${i===RN_BEAMS.length-1?' finish':''}" style="left:${(m/402*100).toFixed(2)}%"></i>`).join('');return `<div class="rnLane ${you?'rnLaneYou':'rnLaneOpp'}" id="${you?'rnLaneYou':'rnLaneOpp'}"><div class="rnLaneId"><span class="rnLaneTag">${tag}</span><b class="rnCarName" title="${esc(car.name)}">${esc(car.name)}</b>${meta?`<span class="rnLaneMeta">${meta}</span>`:''}</div><div class="rnLaneDist" id="${you?'playerLaneText':'rivalLaneText'}">0 m</div><div class="laneBar rnTrack">${beams}<div id="${you?'playerLane':'rivalLane'}" class="laneFill${you?'':' rival'}"></div><div id="${you?'playerDot':'rivalDot'}" class="carDot rnCar" aria-hidden="true"></div></div></div>`}
+function raceNightMarkup(cfg,playerCanShift){let e=state.lastEvent||{},ev=e.eventDef||{},c=cfg.playerCar,o=cfg.rivalCar,trans=c.trans==='manual'?'Manual':c.shiftMode==='Manual'?'Auto · manual mode':'Auto · D',oppMeta=[o.driver,o.label].filter(Boolean).map(esc).join(' · ');
+  return `<section class="card rnStage" id="rnStage" data-phase="prestage" aria-label="Quarter-mile pass"><div class="rnHead"><div><p class="rnEyebrow">${esc(ev.venue||'Drag strip')} · ${esc(e.eventName||ev.name||'Race night')}</p><h2 class="rnTitle">Quarter-mile pass</h2></div><div class="rnPhaseBox"><div id="countdown" class="rnCountdown" aria-hidden="true">3</div><div class="rnPhase" id="rnPhase" role="status" aria-live="polite">PRE-STAGE</div></div></div>`
+  +`<div class="rnTower"><div class="rnTreeCol raceSide">${treeHtml()}</div><div class="rnLanes">${raceNightLane('you',c,'You',esc(trans))}${raceNightLane('opp',o,'Opponent',oppMeta)}<div class="rnBeamLabels" aria-hidden="true">${RN_BEAMS.map(([m,l])=>`<span style="left:${(m/402*100).toFixed(2)}%">${l}</span>`).join('')}</div><div class="rnGap" id="rnGap">Gap shows after the launch</div></div></div>`
+  +`<div class="rnCluster"><div class="rnSpeed"><div class="rnSpeedNum" id="rnSpeedBig">0</div><small>km/h</small></div><div class="rnTachBox" id="rnTachBox">${yyTachSvg(c,0)}</div><div class="rnGearBox"><span class="rnLabel">Gear</span><b id="raceGear">1</b><span class="value shiftLight" id="shiftLight">WAIT</span></div></div>`
+  +`<div class="rnStrip"><div class="rnCell"><div class="value" id="raceTime">0.00s</div><span>Elapsed</span></div><div class="rnCell"><div class="value" id="raceDistance">0 m</div><span>Distance</span></div><div class="rnCell rnDupSpeed"><div class="value" id="raceSpeed">0 km/h</div><span>Speed</span></div><div class="rnCell rnDupRpm"><div class="value" id="raceRpm">0</div><span>RPM</span></div></div>`
+  +`${tachHtml(c)}${playerCanShift?'<button class="btn touchShiftBtn mobileOnly" id="touchShiftBtn" onclick="handleLiveShift()">TAP TO SHIFT</button>':'<div class="rnAutoBar" aria-hidden="true">AUTO D · SHIFTS ITSELF</div>'}`
+  +`<div class="rnFoot"><p class="raceNote" id="raceNote">${playerCanShift?'Press SPACE or tap SHIFT when the light comes on.':'Auto D will shift for you.'}</p><div class="spark rnSpark" id="liveSpark" title="Modelled acceleration trace" aria-hidden="true"></div></div></section>`}
+function raceNightStartPainter(){if(rnPaintRaf)cancelAnimationFrame(rnPaintRaf);let run=liveRun,step=()=>{if(liveRun!==run||!document.getElementById('rnStage')){rnPaintRaf=null;return}raceNightPaint(run);rnPaintRaf=requestAnimationFrame(step)};rnPaintRaf=requestAnimationFrame(step)}
+function raceNightPaint(run){let $=id=>document.getElementById(id),num=id=>{let el=$(id);return el?parseFloat(el.textContent)||0:0},stage=$('rnStage');if(!stage)return;
+  let phase,label;
+  if(!run.start){let lit=id=>{let el=$(id);return !!el&&/\bon(Pre|Stage|Amber|Green)\b/.test(el.className)};if(lit('treeGreen')){phase='green';label='GREEN'}else if(lit('treeAmber1')||lit('treeAmber2')||lit('treeAmber3')){phase='ambers';label='AMBERS'}else if(lit('treeStage')){phase='staged';label='STAGED'}else{phase='prestage';label='PRE-STAGE'}}
+  else if(run.playerFinish){phase='finish';label='FINISH'}
+  else if((performance.now()-run.start)/1000<.8){phase='launch';label='LAUNCH'}
+  else{phase='racing';label='RACING'}
+  if(stage.dataset.phase!==phase)stage.dataset.phase=phase;let chip=$('rnPhase');if(chip&&chip.textContent!==label)chip.textContent=label;
+  let speed=$('rnSpeedBig'),sp=String(Math.round(num('raceSpeed')));if(speed&&speed.textContent!==sp)speed.textContent=sp;
+  let rpm=num('raceRpm'),box=$('rnTachBox'),c=run.playerCar;if(box&&box.offsetParent!==null){let max=Math.ceil((c.red+500)/1000)*1000,angle=150+(Math.min(max,rpm)/max)*240,g=box.querySelector('svg g'),b=box.querySelector('.yyTachReadout b');if(g)g.setAttribute('transform',`rotate(${angle.toFixed(1)} 160 130)`);if(b)b.textContent=Math.round(rpm).toLocaleString()+' RPM'}
+  let pd=num('playerLaneText'),rd=num('rivalLaneText'),diff=Math.round(pd-rd),gap=$('rnGap'),you=$('rnLaneYou'),opp=$('rnLaneOpp');
+  if(you)you.classList.toggle('leading',diff>=0);if(opp)opp.classList.toggle('leading',diff<=0);
+  if(gap){let txt=!run.start?'Gap shows after the launch':diff===0?'<b>Level</b> on the track':diff>0?`You lead by <b>${diff} m</b>`:`Opponent leads by <b>${-diff} m</b>`;if(run.playerFinish)txt=rd<402?'<b>You crossed the stripe first</b>':'<b>Opponent crossed the stripe first</b>';if(gap.innerHTML!==txt)gap.innerHTML=txt}}
+function raceNightSlip(player,rival,win,report,summary){let e=state.lastEvent||{},ev=e.eventDef||{},o=liveRun&&liveRun.rivalCar||{},f=(v,d=2)=>Number.isFinite(Number(v))?Number(v).toFixed(d):'—',margin=Math.abs(rival.et-player.et);
+  return `<div class="rnSlip" role="group" aria-label="Timing slip"><p class="sr-only" style="position:absolute;left:-9999px">${esc(summary)}</p><div class="rnSlipHead"><b>${esc(ev.venue||'Drag strip')}</b><span>${esc(e.eventName||ev.name||'')} · Day ${state.day}</span></div><table><thead><tr><th scope="col"><span style="position:absolute;left:-9999px">Measure</span></th><th scope="col">You${win?'<span class="rnWinLamp">WIN</span>':''}</th><th scope="col">Opponent${win?'':'<span class="rnWinLamp">WIN</span>'}</th></tr></thead><tbody><tr><th scope="row">Car</th><td class="rnCarCell">${esc(state.car?state.car.name:'')}</td><td class="rnCarCell">${esc(report.opponent||o.name||'')}${o.driver?`<br>${esc(o.driver)}`:''}</td></tr><tr><th scope="row">60 ft</th><td>${f(player.sixty)}</td><td>${f(rival.sixty)}</td></tr><tr><th scope="row">1/8 mile</th><td>${f(player.eighth)}</td><td>${f(rival.eighth)}</td></tr><tr class="rnEt"><th scope="row">ET</th><td>${f(player.et)}</td><td>${f(rival.et)}</td></tr><tr><th scope="row">Trap km/h</th><td>${f(player.trap,0)}</td><td>${f(rival.trap,0)}</td></tr></tbody></table><p class="rnSlipFoot"><b>${win?'You':'Opponent'} by ${margin.toFixed(2)} s.</b> Reaction time is not recorded; the launch starts on green.</p></div>`}
 function runLiveRace(cfg){
   let playerCanShift=cfg.playerCar.trans==='manual'||(cfg.playerCar.trans==='auto'&&cfg.playerCar.shiftMode==='Manual');
   let stageTarget=stageTargetRpm(cfg.playerCar,cfg.launch,cfg.style);
   liveRun={...cfg,start:null,countStart:performance.now(),gear:1,penalty:0,shiftEvents:[],lastShiftAt:0,playerCanShift,finished:false,playerFinish:null,gVals:[],note:'Stage up, build your launch rpm and wait for green.',raf:null,stageTargetRpm:stageTarget,lastCountdown:4,limiterTime:0,lastTickAt:null};
-  document.getElementById('screen').innerHTML=`<section class="card"><h2>Quarter Mile Pass</h2><div class="raceStage"><div class="raceLayout"><div class="raceMain"><div id="countdown" class="bigCountdown">3</div><div class="raceHud"><div class="gauge"><div class="muted">Time</div><div class="value" id="raceTime">0.00s</div></div><div class="gauge"><div class="muted">Distance</div><div class="value" id="raceDistance">0 m</div></div><div class="gauge"><div class="muted">Speed</div><div class="value" id="raceSpeed">0 km/h</div></div><div class="gauge"><div class="muted">Gear</div><div class="value" id="raceGear">1</div></div><div class="gauge"><div class="muted">RPM</div><div class="value" id="raceRpm">0</div></div><div class="gauge"><div class="muted">Shift light</div><div class="value shiftLight" id="shiftLight">WAIT</div></div></div><div class="hr"></div><div class="lane"><div class="laneTop"><b>${cfg.playerCar.name}</b><span id="playerLaneText">0 m</span></div><div class="laneBar"><div id="playerLane" class="laneFill"></div><div id="playerDot" class="carDot">🏁</div></div></div><div class="lane"><div class="laneTop"><b>${cfg.rivalCar.name}</b><span id="rivalLaneText">0 m</span></div><div class="laneBar"><div id="rivalLane" class="laneFill rival"></div><div id="rivalDot" class="carDot">🚗</div></div></div><div class="hr"></div>${tachHtml(cfg.playerCar)}<p class="raceNote" id="raceNote">${playerCanShift?'Press SPACE or tap SHIFT when the light comes on.':'Auto D will shift for you.'}</p>${playerCanShift?'<button class="btn touchShiftBtn mobileOnly" id="touchShiftBtn" onclick="handleLiveShift()">TAP TO SHIFT</button>':''}<div class="spark" id="liveSpark"></div></div><div class="raceSide">${treeHtml()}</div></div></div></section>`;
+  document.getElementById('screen').innerHTML=RACE_NIGHT_PROTO?raceNightMarkup(cfg,playerCanShift):`<section class="card"><h2>Quarter Mile Pass</h2><div class="raceStage"><div class="raceLayout"><div class="raceMain"><div id="countdown" class="bigCountdown">3</div><div class="raceHud"><div class="gauge"><div class="muted">Time</div><div class="value" id="raceTime">0.00s</div></div><div class="gauge"><div class="muted">Distance</div><div class="value" id="raceDistance">0 m</div></div><div class="gauge"><div class="muted">Speed</div><div class="value" id="raceSpeed">0 km/h</div></div><div class="gauge"><div class="muted">Gear</div><div class="value" id="raceGear">1</div></div><div class="gauge"><div class="muted">RPM</div><div class="value" id="raceRpm">0</div></div><div class="gauge"><div class="muted">Shift light</div><div class="value shiftLight" id="shiftLight">WAIT</div></div></div><div class="hr"></div><div class="lane"><div class="laneTop"><b>${cfg.playerCar.name}</b><span id="playerLaneText">0 m</span></div><div class="laneBar"><div id="playerLane" class="laneFill"></div><div id="playerDot" class="carDot">🏁</div></div></div><div class="lane"><div class="laneTop"><b>${cfg.rivalCar.name}</b><span id="rivalLaneText">0 m</span></div><div class="laneBar"><div id="rivalLane" class="laneFill rival"></div><div id="rivalDot" class="carDot">🚗</div></div></div><div class="hr"></div>${tachHtml(cfg.playerCar)}<p class="raceNote" id="raceNote">${playerCanShift?'Press SPACE or tap SHIFT when the light comes on.':'Auto D will shift for you.'}</p>${playerCanShift?'<button class="btn touchShiftBtn mobileOnly" id="touchShiftBtn" onclick="handleLiveShift()">TAP TO SHIFT</button>':''}<div class="spark" id="liveSpark"></div></div><div class="raceSide">${treeHtml()}</div></div></div></section>`;
   topStats();currentPanel();
   stopAreaMusic();startEngineAudio(cfg.playerCar,stageTarget);
   liveRun.raf=requestAnimationFrame(tickLiveRace);
+  if(RACE_NIGHT_PROTO)raceNightStartPainter();
 }
 function tickLiveRace(now){
   if(!liveRun||liveRun.finished)return;
@@ -2049,7 +2199,7 @@ function finishLiveRace(pEt){
   let summary=`You raced ${liveRun.rivalCar.name}. You ran ${player.et.toFixed(2)} @ ${player.trap.toFixed(0)} km/h. Opponent ran ${rival.et.toFixed(2)} @ ${rival.trap.toFixed(0)}. ${win?'Win +'+fmt(cash)+'.':'Loss.'} Respect +${respectGain.toFixed(1)}.`;
   state.lastRace=player;createGuidanceNotification('firstRace');checkRelevantBadges('race_completed',badgeCarContext(car,{car,run:player,previous:previousBadge,win,raceStartPower,opponentStartPower,noShiftRequired,allRequiredShiftsInTolerance,cleanPass,majorFailure:false,historicEligible:Number.isFinite(Number(car.modelYear))&&BADGE_REFERENCE_YEAR-Number(car.modelYear)>=25,eventId:state.lastEvent&&state.lastEvent.eventId,eventName:state.lastEvent&&state.lastEvent.eventName,venue:ev.venue}));logChange(summary,before,'race',details);if(car.listedForSale)makeMarketOffer('pit',win?1.7:.75);markCurrentLineupRaceComplete();renderRace(player,rival,win,summary);queueSocialRace(player,win);
 }
-function renderRace(player,rival,win,summary){let report=player.report||{result:win?'WIN':'LOSS',cashDelta:0,respectDelta:0,notes:[]},technique=report.technique||{launch:{headline:'Launch data unavailable',detail:'No detailed launch telemetry was recorded for this pass.'},shifting:{title:'Shifting',lines:['No detailed shift telemetry was recorded for this pass.']},diagnosis:'No engineering diagnosis is available for this older report.',personalBest:''},notes=report.notes&&report.notes.length?`<p class="small warning">Reward notes: ${report.notes.join(', ')}</p>`:'',shiftLines=(technique.shifting.lines||[]).map(x=>`<li>${x}</li>`).join('');document.getElementById('screen').innerHTML=`<section class="card"><h2>Race Report</h2><h3>Overall result</h3><p>${summary}</p><div class="raceHud"><div class="gauge"><div class="muted">Result</div><div class="value ${win?'goodText':'badText'}">${report.result}</div></div><div class="gauge"><div class="muted">ET</div><div class="value">${player.et.toFixed(2)}s</div></div><div class="gauge"><div class="muted">Trap</div><div class="value">${player.trap.toFixed(0)} km/h</div></div><div class="gauge"><div class="muted">60 foot</div><div class="value">${player.sixty.toFixed(2)}s</div></div><div class="gauge"><div class="muted">1/8 mile</div><div class="value">${player.eighth.toFixed(2)}s</div></div><div class="gauge"><div class="muted">Opponent</div><div class="value" style="font-size:16px">${report.opponent||'-'}<br>${rival.et.toFixed(2)}s @ ${rival.trap.toFixed(0)}</div></div></div><p class="${technique.personalBest.startsWith('New')?'goodText':'muted'}"><b>${technique.personalBest}</b></p>${notes}<div class="hr"></div><h3>Launch</h3><div class="listing"><p><b>${technique.launch.headline}</b></p><p class="muted">${technique.launch.detail}</p></div><div class="hr"></div><h3>${technique.shifting.title}</h3><div class="listing"><ul>${shiftLines}</ul></div><div class="hr"></div><h3>Engineering diagnosis</h3><div class="arrivalBanner"><p><b>${technique.diagnosis}</b></p></div><div class="hr"></div><h3>G-Meter Sparkline</h3><div class="spark">${player.gs.spark}</div><p class="muted">Last acceleration sample: ${player.accel.toFixed(2)} g. Falling bars suggest the car was no longer accelerating as hard.</p><div class="track"><div class="trackFill" style="width:100%"></div></div><div class="hr"></div><div class="raceHud"><div class="gauge"><div class="muted">Cash</div><div class="value ${report.cashDelta>=0?'goodText':'badText'}">${signedMoney(report.cashDelta||0)}</div></div><div class="gauge"><div class="muted">Respect</div><div class="value goodText">${signedNumber(report.respectDelta||0,1)}</div></div></div><div class="hr"></div><button class="btn" onclick="show('currentEvent')">Back to event</button></section>`;topStats();currentPanel();updateGuidanceNotification();}
+function renderRace(player,rival,win,summary){let report=player.report||{result:win?'WIN':'LOSS',cashDelta:0,respectDelta:0,notes:[]},technique=report.technique||{launch:{headline:'Launch data unavailable',detail:'No detailed launch telemetry was recorded for this pass.'},shifting:{title:'Shifting',lines:['No detailed shift telemetry was recorded for this pass.']},diagnosis:'No engineering diagnosis is available for this older report.',personalBest:''},notes=report.notes&&report.notes.length?`<p class="small warning">Reward notes: ${report.notes.join(', ')}</p>`:'',shiftLines=(technique.shifting.lines||[]).map(x=>`<li>${x}</li>`).join('');document.getElementById('screen').innerHTML=`<section class="card${RACE_NIGHT_PROTO?' rnReport':''}"><h2>Race Report</h2>${RACE_NIGHT_PROTO?raceNightSlip(player,rival,win,report,summary):''}<h3>Overall result</h3><p>${summary}</p><div class="raceHud"><div class="gauge"><div class="muted">Result</div><div class="value ${win?'goodText':'badText'}">${report.result}</div></div><div class="gauge"><div class="muted">ET</div><div class="value">${player.et.toFixed(2)}s</div></div><div class="gauge"><div class="muted">Trap</div><div class="value">${player.trap.toFixed(0)} km/h</div></div><div class="gauge"><div class="muted">60 foot</div><div class="value">${player.sixty.toFixed(2)}s</div></div><div class="gauge"><div class="muted">1/8 mile</div><div class="value">${player.eighth.toFixed(2)}s</div></div><div class="gauge"><div class="muted">Opponent</div><div class="value" style="font-size:16px">${report.opponent||'-'}<br>${rival.et.toFixed(2)}s @ ${rival.trap.toFixed(0)}</div></div></div><p class="${technique.personalBest.startsWith('New')?'goodText':'muted'}"><b>${technique.personalBest}</b></p>${notes}<div class="hr"></div><h3>Launch</h3><div class="listing"><p><b>${technique.launch.headline}</b></p><p class="muted">${technique.launch.detail}</p></div><div class="hr"></div><h3>${technique.shifting.title}</h3><div class="listing"><ul>${shiftLines}</ul></div><div class="hr"></div><h3>Engineering diagnosis</h3><div class="arrivalBanner"><p><b>${technique.diagnosis}</b></p></div><div class="hr"></div><h3>G-Meter Sparkline</h3><div class="spark">${player.gs.spark}</div><p class="muted">Last acceleration sample: ${player.accel.toFixed(2)} g. Falling bars suggest the car was no longer accelerating as hard.</p><div class="track"><div class="trackFill" style="width:100%"></div></div><div class="hr"></div><div class="raceHud"><div class="gauge"><div class="muted">Cash</div><div class="value ${report.cashDelta>=0?'goodText':'badText'}">${signedMoney(report.cashDelta||0)}</div></div><div class="gauge"><div class="muted">Respect</div><div class="value goodText">${signedNumber(report.respectDelta||0,1)}</div></div></div><div class="hr"></div><button class="btn" onclick="show('currentEvent')">Back to event</button></section>`;topStats();currentPanel();updateGuidanceNotification();}
 function renderWatchRun(carA,carB,r1,r2,betData){
   let run={start:null,countStart:performance.now(),raf:null,cancelled:false};watchRun=run;watchRaceActive=true;
   document.getElementById('screen').innerHTML=`<section class="card"><div class="row"><div><h2>Watching a pass</h2><p class="muted">The timing boards come up after the cars complete the quarter mile.</p></div>${watchAllMode?`<button class="btn secondary" onclick="stopWatchAllBeforeMine()">${watchAllStopLabel()}</button>`:''}</div><div class="raceStage"><div id="watchCountdown" class="bigCountdown">3</div><div class="lane"><div class="laneTop"><b>${carA.name}</b><span id="watchAText">0 m</span></div><div class="laneBar"><div id="watchALane" class="laneFill"></div><div id="watchADot" class="carDot">🚗</div></div></div><div class="lane"><div class="laneTop"><b>${carB.name}</b><span id="watchBText">0 m</span></div><div class="laneBar"><div id="watchBLane" class="laneFill rival"></div><div id="watchBDot" class="carDot">🚙</div></div></div><div class="raceHud"><div class="gauge"><div class="muted">Elapsed</div><div class="value" id="watchTime">0.00s</div></div><div class="gauge"><div class="muted">Leader</div><div class="value" id="watchLeader">-</div></div><div class="gauge"><div class="muted">Board</div><div class="value" id="watchBoard">WAIT</div></div></div></div></section>`;
