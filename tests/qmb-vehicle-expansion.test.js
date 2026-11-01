@@ -2,9 +2,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 
-const html = fs.readFileSync('index.html', 'utf8');
-const script = html.match(/<script>([\s\S]*)<\/script>/)[1];
-const definitions = script.slice(0, script.indexOf('refreshListings();loadGame(false);render();'));
+// index.html plus the stylesheets and classic scripts it references, in document order (tests/helpers/game-source.js).
+const { html, script, css: gameCss, definitions } = require('./helpers/game-source')();
 const storage = new Map();
 const context = vm.createContext({
   console,

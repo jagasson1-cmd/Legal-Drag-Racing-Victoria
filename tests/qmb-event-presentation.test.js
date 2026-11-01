@@ -5,9 +5,8 @@ const vm = require('node:vm');
 // Event presentation: travel trip card and spectator timing tower.
 // The new screens are presentation only, so the same seeded flows must leave identical game state, logs and timers
 // with the new presentation and with the classic screens (?racenight=0).
-const html = fs.readFileSync('index.html', 'utf8');
-const script = html.match(/<script>([\s\S]*)<\/script>/)[1];
-const definitions = script.slice(0, script.indexOf('refreshListings();loadGame(false);render();'));
+// index.html plus the stylesheets and classic scripts it references, in document order (tests/helpers/game-source.js).
+const { html, script, css: gameCss, definitions } = require('./helpers/game-source')();
 const FIXED_NOW = 1767225600000;
 
 function seededMath(seed) {
@@ -166,7 +165,7 @@ for (const eventId of Object.keys(EXPECTED_MS)) {
 }
 {
   // Mobile and reduced motion: both controls stay full width on phones; scene motion stops with reduced motion.
-  const css = html.match(/<style>([\s\S]*?)<\/style>/)[1];
+  const css = gameCss;
   const phone = css.slice(css.indexOf('@media(max-width:640px){\n      .tvTrip'));
   assert.match(phone.slice(0, 1500), /\.tvActions \.btn\{flex:1 1 0;min-width:0\}/);
   assert.match(phone.slice(0, 1500), /\.tvScene\{height:62px/);

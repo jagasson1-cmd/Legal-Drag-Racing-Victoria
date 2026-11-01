@@ -1,0 +1,83 @@
+{
+ "money": 6400,
+ "respect": 7,
+ "day": 12,
+ "car": {
+  "id": "corolla",
+  "name": "Toyota Corolla",
+  "cat": "Small / Lightweight",
+  "type": "Lightweight Starter",
+  "price": 5200,
+  "weight": 1120,
+  "power": 125,
+  "torque": 170,
+  "drive": "FWD",
+  "aero": 0.32,
+  "manual": true,
+  "auto": true,
+  "gears": 5,
+  "red": 6500,
+  "peak": 6000,
+  "band": [
+   4200,
+   6400
+  ],
+  "asp": "NA",
+  "baseGrip": 0.82,
+  "upgradeMult": 0.85,
+  "reliability": 88,
+  "engine": "1ZZ-FE",
+  "disp": 1.8,
+  "tyreDia": 24.2,
+  "manualMax": [
+   50,
+   88,
+   132,
+   178,
+   225
+  ],
+  "autoMax": [
+   58,
+   105,
+   160,
+   220
+  ],
+  "shiftBuffer": 250,
+  "stallRpm": 1900,
+  "uid": "corolla_1735689600000",
+  "trans": "manual",
+  "shiftMode": "D",
+  "grip": 0.74,
+  "mods": [
+   "Cold air intake"
+  ],
+  "installed": [],
+  "issueNames": [
+   "Worn tyres"
+  ],
+  "launchBonus": 0,
+  "sceneValueBase": 0
+ },
+ "owned": [],
+ "listings": [],
+ "listingRotationDay": 12,
+ "log": [
+  {
+   "day": 11,
+   "type": "race",
+   "text": "Raced at Heathcote."
+  }
+ ],
+ "screen": "garage",
+ "watch": [],
+ "watchCap": 5,
+ "lastEvent": null,
+ "pendingArrival": null,
+ "bettingUnlocked": false,
+ "completedEvents": {
+  "heathcote_legal": 2
+ },
+ "bestETs": {
+  "corolla_1735689600000": 15.412
+ }
+}
