@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="css/you-yangs.css?v=2026.11.01-6">
   <link rel="stylesheet" href="css/race-night.css?v=2026.11.01-6">
   <link rel="stylesheet" href="css/event-presentation.css?v=2026.11.01-6">
+  <link rel="stylesheet" href="css/sound-panel.css?v=2026.11.01-6">
 </head>
 <body>
 <header>
@@ -32,9 +33,12 @@
         <button class="btn secondary" onclick="loadGame(true)">Load</button>
         <button class="btn danger" onclick="resetGame()">Reset</button>
       </div>
-      <div class="btns" style="margin-top:10px">
-        <button id="soundToggle" class="btn secondary" style="flex:1" onclick="toggleSound()" aria-pressed="true">Effects On</button>
-        <button id="musicToggle" class="btn secondary" style="flex:1" onclick="toggleMusic()" aria-pressed="true">Music On</button>
+      <div class="soundPanel" id="soundPanel" role="group" aria-labelledby="soundPanelTitle">
+        <div class="soundHead"><span class="soundTitle" id="soundPanelTitle">Sound</span><button id="soundMute" class="btn secondary soundMute" type="button" aria-pressed="false" onclick="toggleAudioMute()">Mute</button></div>
+        <label class="soundRow" for="volMaster"><span>Master</span><input id="volMaster" type="range" min="0" max="100" step="5" value="80" aria-valuetext="80%" oninput="setAudioLevel('master',this.value)"><output id="volMasterOut" for="volMaster">80</output></label>
+        <label class="soundRow" for="volMusic"><span>Music</span><input id="volMusic" type="range" min="0" max="100" step="5" value="60" aria-valuetext="60%" oninput="setAudioLevel('music',this.value)"><output id="volMusicOut" for="volMusic">60</output></label>
+        <label class="soundRow" for="volAmbience"><span>Ambience</span><input id="volAmbience" type="range" min="0" max="100" step="5" value="50" aria-valuetext="50%" oninput="setAudioLevel('ambience',this.value)"><output id="volAmbienceOut" for="volAmbience">50</output></label>
+        <label class="soundRow" for="volEngine"><span>Engine</span><input id="volEngine" type="range" min="0" max="100" step="5" value="80" aria-valuetext="80%" oninput="setAudioLevel('engine',this.value)"><output id="volEngineOut" for="volEngine">80</output></label>
       </div>
       <p class="footerNote">Local backup plus online sync with a recovery code.</p>
     </section>
@@ -261,7 +265,7 @@ function unreadMarketOfferCount(){return (state.marketOffers||[]).filter(o=>!o.c
 function hasEventSession(){return !!(state.lastEvent && !state.lastEvent.dayAdvanced);}
 function nav(){let items=['home','classifieds','garage','badges','event'],yy=youYangsState();if(yy.invited)items.push('youYangs');if(hasEventSession())items.push('currentEvent');items.push('upgrades','work','social','season','log');let labels={home:'Start Line',classifieds:'Trading Post',garage:'Shed',badges:'Trophies',event:'Calendar',youYangs:yy.visits>0?'You Yangs':'Private Invitation',currentEvent:'Race Night',upgrades:'Speed Shop',work:'Earn Cash',social:'Car Club',season:'The Books',log:'Race Journal'};let unread=unreadMarketOfferCount();document.getElementById('nav').innerHTML=items.map(s=>`<button data-screen="${s}" class="${state.screen===s?'active':''}" onclick="show('${s}')">${labels[s]}${s==='classifieds'&&unread?`<span class="marketBadge" aria-label="${unread} unread offer${unread===1?'':'s'}">✉ ${unread}</span>`:''}</button>`).join('')}
 function currentPanel(){let el=document.getElementById('currentCarPanel'); if(!state.car){el.innerHTML='No car yet.<br><span class="small">Buy one or attend as a spectator.</span>';return} let c=state.car;calculateBuildEffects(c);let tune=tuneSensitiveCount(c)>0?(c.tuneFresh&&c.tuneSignature===buildSignature(c)?'Dyno tuned':'Needs dyno tune'):'Stock tune ok';el.innerHTML=`<b>${c.name}</b><br><span class="muted">${c.type} / ${c.drive}</span><br>Power: ${Math.round(c.power)} hp<br>Weight: ${Math.round(c.weight)} kg<br>Tyres/grip: ${Math.round(c.grip*100)}%<br>Trans: ${c.trans.toUpperCase()} ${c.trans==='auto'?'/ '+c.shiftMode:''}<br>Reliability: ${Math.round(c.reliability)}%<br><span class="small muted">${tune}</span><br>Gear max: ${(gearMaxes(c)||[]).map(x=>Math.round(x)).join('/')} km/h`;}
-function render(){normaliseState();if(state.screen==='watch')state.screen='home';if(state.screen==='market'){state.screen='classifieds';tradingPostTab='sell'}if(state.screen==='classifieds'&&tradingPostTab==='sell')(state.marketOffers||[]).forEach(o=>o.unread=false);topStats();nav();currentPanel();let screensMap={home,classifieds,garage,badges,event,youYangs,yyTravel,currentEvent,travel,arrival,upgrades,work,watch,social,season,log:logScreen};let fn=screensMap[state.screen]||home;document.getElementById('screen').innerHTML=fn();renderSocialPanel();updateSoundToggle();updateSoundscape();enhanceSocialGarage();updateGuidanceNotification();}
+function render(){normaliseState();if(state.screen==='watch')state.screen='home';if(state.screen==='market'){state.screen='classifieds';tradingPostTab='sell'}if(state.screen==='classifieds'&&tradingPostTab==='sell')(state.marketOffers||[]).forEach(o=>o.unread=false);topStats();nav();currentPanel();let screensMap={home,classifieds,garage,badges,event,youYangs,yyTravel,currentEvent,travel,arrival,upgrades,work,watch,social,season,log:logScreen};let fn=screensMap[state.screen]||home;document.getElementById('screen').innerHTML=fn();renderSocialPanel();updateSoundPanel();updateSoundscape();enhanceSocialGarage();updateGuidanceNotification();}
 function show(s){if(yyRun){if(yyRun.raf)cancelAnimationFrame(yyRun.raf);yyRun=null;stopEngineAudio()}if(liveRun){if(liveRun.raf)cancelAnimationFrame(liveRun.raf);liveRun=null;stopEngineAudio()}if(dynoSession){if(dynoSession.raf)cancelAnimationFrame(dynoSession.raf);dynoSession=null;stopEngineAudio()}cancelWatchRun();if(travelTimer){clearTimeout(travelTimer);travelTimer=null;}stopTravelFx();travelClock=null;if(s==='market'){s='classifieds';tradingPostTab='sell'}else if(s==='classifieds')tradingPostTab='buy';if(s==='classifieds'&&tradingPostTab==='sell')(state.marketOffers||[]).forEach(o=>o.unread=false);state.screen=s;render();if(s==='social')refreshCompetitiveData()}
 const showScreenBase=show;
 show=function(s){if(s==='home')markDailyBriefingRead();if(s==='youYangs'&&yyNeedsIntroJourney()){showScreenBase('home');return yyStartJourney()}return showScreenBase(s)}
@@ -1295,10 +1299,15 @@ function stopSpectatorAudio(coast=false){spectatorAudioRequest++;spectatorTailCu
   if(len>.18){[[s.a,s.ga,s.carA,1],[s.b,s.gb,s.carB,1.025]].forEach(([o,g,c,k])=>{o.frequency.setTargetAtTime(spectatorVoice(c,60,1).freq*k,now,.22);g.gain.setTargetAtTime(.3,now,.12)});s.filter.frequency.setTargetAtTime(520,now,.12);spectatorTail=s}
   s.master.gain.cancelScheduledValues(now);s.master.gain.setValueAtTime(Math.max(.0002,s.master.gain.value),now);s.master.gain.exponentialRampToValueAtTime(.0001,now+len);try{s.a.stop(now+len+.02);s.b.stop(now+len+.02)}catch{}
   setTimeout(()=>{if(spectatorTail===s)spectatorTail=null;updateSoundscape()},Math.round(len*1000)+50)}
-function updateSoundToggle(){let effects=document.getElementById('soundToggle'),music=document.getElementById('musicToggle');if(effects){effects.textContent=soundEnabled?'Effects On':'Effects Off';effects.setAttribute('aria-pressed',String(soundEnabled));effects.title=soundEnabled?'Sound effects are enabled.':'Sound effects are muted.'}if(music){music.textContent=musicEnabled?'Music On':'Music Off';music.setAttribute('aria-pressed',String(musicEnabled));music.title=musicEnabled?'Area music is enabled.':'Area music is muted.'}}
-QmbAudio.onChange(()=>{soundEnabled=QmbAudio.soundOn();musicEnabled=QmbAudio.musicOn()});
-function toggleSound(){if(soundEnabled)playSfx('mute');let d=QMB_AUDIO_DEFAULTS;QmbAudio.set(soundEnabled?{ambience:0,engine:0,effects:0}:{muted:false,ambience:d.ambience,engine:d.engine,effects:d.effects});updateSoundToggle();if(soundEnabled)playSfx('toggle')}
-function toggleMusic(){QmbAudio.set(musicEnabled?{music:0}:{muted:false,music:QMB_AUDIO_DEFAULTS.music});updateSoundToggle();if(musicEnabled)getAudioContext()}
+QmbAudio.onChange(()=>{soundEnabled=QmbAudio.soundOn();musicEnabled=QmbAudio.musicOn();updateSoundPanel()});
+// Sound panel (Progress card). The panel only reflects QmbAudio's preferences; every change goes through QmbAudio.
+const SOUND_PANEL_ROWS=[['volMaster','master'],['volMusic','music'],['volAmbience','ambience'],['volEngine','engine']];
+function updateSoundPanel(){let p=QmbAudio.prefs(),mute=document.getElementById('soundMute'),panel=document.getElementById('soundPanel');
+  for(const [id,ch] of SOUND_PANEL_ROWS){let input=document.getElementById(id),out=document.getElementById(id+'Out'),n=Math.round(p[ch]*100);if(input&&String(input.value)!==String(n))input.value=n;if(input)input.setAttribute('aria-valuetext',n+'%');if(out)out.textContent=String(n)}
+  if(mute){mute.textContent=p.muted?'Muted':'Mute';mute.setAttribute('aria-pressed',String(p.muted));mute.title=p.muted?'All game sound is muted.':'Mute all game sound.'}
+  if(panel)panel.classList.toggle('isMuted',p.muted)}
+function setAudioLevel(channel,value){QmbAudio.setLevel(channel,Number(value)/100)}
+function toggleAudioMute(){let wasMuted=QmbAudio.prefs().muted;if(!wasMuted)playSfx('mute');QmbAudio.toggleMute();if(wasMuted)playSfx('toggle')}
 let socialData=null,socialError='',socialBusy=false,recoveryCodeRevealed=false,onlineCount=null,lastStatsSignature='',lastStatsSyncAt=0,statsSyncDelay=null,tradingPostTab='buy';
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function socialStat(v,fallback='-'){return v===null||v===undefined||v===''?fallback:esc(v)}
@@ -1400,7 +1409,7 @@ workTyreShopWeek=function(){let before=state.day;dailyWorkTyreShopWeekBase();if(
 function saveGame(){localStorage.setItem('qmb_mvp_save',JSON.stringify(state));log('Local backup saved.');cloudSave(true);}
 function loadGame(manual=false){if(manual&&socialData&&socialData.save)return cloudLoad();let s=localStorage.getItem('qmb_mvp_save');if(s){state=migrateGameState(mergeBadgeCareer(JSON.parse(s),state));if(manual)log('Local backup loaded.')}else if(manual)alert('No local or cloud save found.');render();}
 function resetGame(){if(confirm('Reset the game?')){localStorage.removeItem('qmb_mvp_save');state=freshState();refreshListings();render();}}
-document.addEventListener('click',e=>{let button=e.target.closest&&e.target.closest('button');if(button&&!button.disabled&&button.id!=='soundToggle')playSfx('click')});
+document.addEventListener('click',e=>{let button=e.target.closest&&e.target.closest('button');if(button&&!button.disabled&&button.id!=='soundMute')playSfx('click')});
 window.addEventListener('keydown',e=>{if(e.key==='Escape')closeDriverProfile();if(e.code==='Space'&&!document.getElementById('driverProfileOverlay')&&rtSpaceIsRaceInput(e)){e.preventDefault();if(e.repeat)return;if(yyRun)handleYouYangsInput();else handleRaceInput(e.timeStamp);}});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){localStorage.setItem(SPLASH_LAST_SEEN,String(Date.now()));syncPublicStats(false,true)}});
 window.addEventListener('beforeunload',()=>localStorage.setItem(SPLASH_LAST_SEEN,String(Date.now())));

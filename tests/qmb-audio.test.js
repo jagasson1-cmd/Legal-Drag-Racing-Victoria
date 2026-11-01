@@ -75,13 +75,27 @@ for (const [sound, music, want] of CASES) {
   assert.equal(ctx.math.calls - before, 0, 'changing audio preferences draws no game random numbers');
 }
 
-// ---------- The old toggles are wrappers over the preference object ----------
+// ---------- The Sound panel reflects and drives the single preference object ----------
 {
   const ctx = makeGameContext({ storage: { qmb_sound_enabled: 'true', qmb_music_enabled: 'true' } });
-  ctx.evaluate('toggleMusic()'); assert.equal(prefsOf(ctx).music, 0, 'Music Off sets music to 0'); assertConsistent(ctx, 'toggleMusic off');
-  ctx.evaluate('toggleMusic()'); assert.equal(prefsOf(ctx).music, D.music, 'Music On restores the default level'); assertConsistent(ctx, 'toggleMusic on');
-  ctx.evaluate('toggleSound()'); assert.deepEqual([prefsOf(ctx).ambience, prefsOf(ctx).engine, prefsOf(ctx).effects], [0, 0, 0], 'Effects Off disables ambience, engine and effects'); assertConsistent(ctx, 'toggleSound off');
-  ctx.evaluate('toggleSound()'); assertConsistent(ctx, 'toggleSound on');
+  ctx.evaluate('render()');
+  const panel = () => ['volMaster', 'volMusic', 'volAmbience', 'volEngine'].map(id => [String(ctx.element(id).value), ctx.element(id + 'Out').textContent]);
+  assert.deepEqual(panel(), [['80', '80'], ['60', '60'], ['50', '50'], ['80', '80']], 'sliders and their numbers show the default levels');
+  ctx.evaluate("setAudioLevel('music','35')");
+  assert.equal(prefsOf(ctx).music, 0.35, 'a slider sets its level'); assertConsistent(ctx, 'after a slider change');
+  assert.deepEqual(panel()[1], ['35', '35'], 'the slider and its number follow');
+  ctx.evaluate("setAudioLevel('master','0')"); assertConsistent(ctx, 'master at 0');
+  assert.equal(ctx.evaluate('soundEnabled||musicEnabled'), false, 'master 0 silences everything');
+  ctx.evaluate("setAudioLevel('master','100')");
+  ctx.evaluate('toggleAudioMute()');
+  assert.equal(ctx.element('soundMute').textContent, 'Muted', 'the mute button shows Muted');
+  assert.equal(ctx.element('soundPanel').classList.contains('isMuted'), true);
+  assertConsistent(ctx, 'muted');
+  ctx.evaluate('toggleAudioMute()');
+  assert.equal(ctx.element('soundMute').textContent, 'Mute'); assertConsistent(ctx, 'unmuted');
+  ctx.evaluate("QmbAudio.setLevel('ambience',0.2)");
+  assert.deepEqual(panel()[2], ['20', '20'], 'changes made elsewhere also update the panel');
+  assert.equal(ctx.evaluate("typeof toggleSound+typeof toggleMusic"), 'undefinedundefined', 'the old Effects and Music toggles are gone');
 }
 
 // ---------- Never part of the gameplay save or the cloud payload ----------
