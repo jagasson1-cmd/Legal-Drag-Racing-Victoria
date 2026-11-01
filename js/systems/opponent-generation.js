@@ -1,6 +1,20 @@
-// Opponent generation and lineup management: eventProfile, makeOpponents, perfIndex, pickRaceSlots, visibleClues, shuffleIndexes, buildNpcPairIndexes. Moved verbatim, in source order, from index.html (four runs of lines at 9344cc2); see docs/MODULARISATION.md. Classic script: loads after js/data/events.js and before the inline game script.
+// Opponent generation and lineup management: eventProfile, makeOpponents, perfIndex, pickRaceSlots, visibleClues, shuffleIndexes, buildNpcPairIndexes (moved verbatim from index.html at 9344cc2), and pickDriverName (driver display names). See docs/MODULARISATION.md. Classic script: loads after js/data/names.js and before the inline game script.
 function eventProfile(ev=EVENT_CALENDAR[0]){let roll=Math.random();let base=roll<.25?{name:'Quiet night',runs:10,raceSlots:4,cars:18,watch:18}:roll<.6?{name:'Normal night',runs:6,raceSlots:6,cars:34,watch:30}:roll<.87?{name:'Busy night',runs:4,raceSlots:8,cars:56,watch:44}:{name:'Packed night',runs:2,raceSlots:8,cars:74,watch:58};base.cars=Math.round(base.cars*(ev.fieldMult||1));base.watch=Math.round(base.watch*(ev.fieldMult||1));base.raceSlots=Math.min(base.raceSlots+Math.floor((ev.reqRespect||0)/10),14);return base;}
-function makeOpponents(n,ev=null){let pool=CARS.filter(c=>c.price<34000);let names=['Mick','Sarah','Davo','Jess','Rob','Tayla','Chris','Ari','Ben','Mia','Noah','Eli','Zoe','Jay','Sam','Alex','Riley','Casey'];return Array.from({length:n},(_,i)=>{let base=choice(pool);let trans=base.manual&&(!base.auto||Math.random()<.55)?'manual':'auto';let o=makeOwned(base,trans);let tier=i/n;let level=rand(.9,1.14)+(state.respect/260)+(tier>.75?rand(.02,.12):0)+(ev?ev.opponentBoost||0:0);o.power*=level;o.grip+=rand(-.035,.09)+(tier>.75?.025:0);if(Math.random()<.18){o.weight-=rand(25,90);o.mods.push('Light interior strip');}o.visible=visibleClues(o);o.label=tier>.88?'quick regular':tier>.7?'serious local':'local car';o.driver=choice(names);o.eventIndex=i;o.entryId=o.id+'_'+i+'_'+Math.random().toString(16).slice(2);return o;});}
+// Driver display name from one random roll in [0,1): below NPC_NICKNAME_SHARE picks a nickname, otherwise a given name, each
+// in proportion to the roll. A name already in `used` is skipped by stepping forward through the same pool (wrapping), then
+// through the other pool from the position the same roll maps to there. No extra random draws and no rerolls. Returns the
+// first choice again only if every name in both pools is used. Does not modify `used`; the caller records the result.
+function pickDriverName(roll,used){
+  let nick=roll<NPC_NICKNAME_SHARE,pos=nick?roll/NPC_NICKNAME_SHARE:(roll-NPC_NICKNAME_SHARE)/(1-NPC_NICKNAME_SHARE);
+  let pools=nick?[NPC_NICKNAMES,NPC_GIVEN_NAMES]:[NPC_GIVEN_NAMES,NPC_NICKNAMES],first=null;
+  for(const pool of pools){
+    let start=Math.floor(pos*pool.length);
+    if(first===null)first=pool[start];
+    for(let k=0;k<pool.length;k++){let name=pool[(start+k)%pool.length];if(!used.has(name))return name;}
+  }
+  return first;
+}
+function makeOpponents(n,ev=null){let pool=CARS.filter(c=>c.price<34000);let usedNames=new Set();return Array.from({length:n},(_,i)=>{let base=choice(pool);let trans=base.manual&&(!base.auto||Math.random()<.55)?'manual':'auto';let o=makeOwned(base,trans);let tier=i/n;let level=rand(.9,1.14)+(state.respect/260)+(tier>.75?rand(.02,.12):0)+(ev?ev.opponentBoost||0:0);o.power*=level;o.grip+=rand(-.035,.09)+(tier>.75?.025:0);if(Math.random()<.18){o.weight-=rand(25,90);o.mods.push('Light interior strip');}o.visible=visibleClues(o);o.label=tier>.88?'quick regular':tier>.7?'serious local':'local car';o.driver=pickDriverName(Math.random(),usedNames);usedNames.add(o.driver);o.eventIndex=i;o.entryId=o.id+'_'+i+'_'+Math.random().toString(16).slice(2);return o;});}
 function perfIndex(c){let driveBonus=(c.drive==='AWD'||c.drive==='4WD')?1.035:1;let aeroPenalty=1-Math.max(0,(c.aero||.32)-.32)*.12;return (c.power/Math.max(700,c.weight))*(c.grip||.84)*driveBonus*aeroPenalty;}
 function pickRaceSlots(field,n){
   if(!state.car){return field.slice(0,Math.min(n,field.length)).map((_,i)=>i)}

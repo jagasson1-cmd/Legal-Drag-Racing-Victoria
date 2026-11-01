@@ -34,7 +34,8 @@ Also decided during the inspection:
 | `css/event-presentation.css` | Lines 262–400: event travel trip card, venue scenes, spectator timing tower and coasting | 4th `<link>` |
 | `js/data/vehicles.js` | Lines 457–1352: `CARS`, `TECH_DATA`, `STALL_RPM`, the `CARS.forEach(...)` enrichment line, `ISSUES`, `UPGRADE_PATHS`, `DYNO_TUNE`, `TOYOTA_LEXUS_IDS` | 1st classic `<script src>` |
 | `js/data/events.js` | Lines 1507–1514 (`EVENT_CALENDAR`), then lines 1808–1881 (`EVENT_STORIES`), each block unchanged and in that order | 2nd classic `<script src>` |
-| `js/systems/opponent-generation.js` | From `9344cc2` `index.html`, in source order: `eventProfile` (line 604); `makeOpponents`, `perfIndex` and `pickRaceSlots` (606–617); `visibleClues` (622); `shuffleIndexes` and `buildNpcPairIndexes` (627–628) | 3rd classic `<script src>`, immediately before the inline `<script>` |
+| `js/data/names.js` | `NPC_GIVEN_NAMES` (180 given names), `NPC_NICKNAMES` (12) and `NPC_NICKNAME_SHARE` (0.12): plain data, added by `feature/population-rework` (not moved from `index.html`) | 3rd classic `<script src>` |
+| `js/systems/opponent-generation.js` | From `9344cc2` `index.html`, in source order: `eventProfile` (line 604); `makeOpponents`, `perfIndex` and `pickRaceSlots` (606–617); `visibleClues` (622); `shuffleIndexes` and `buildNpcPairIndexes` (627–628). Plus `pickDriverName`, added by `feature/population-rework`; `makeOpponents` now calls it in place of the old inline name list | 4th classic `<script src>`, immediately before the inline `<script>` |
 | `index.html` | Markup, the rest of the game script and the startup line. This includes `platformBrand` and the upgrade helpers; the shared helpers `rand`, `choice` and `makeOwned`; travel and arrival (`travelToEvent`, `finishTravel`); event story text (`hashSeed`, `seededPick`, `eventSeed`, `eventNarrative`, `weatherForEvent`); round management (`chooseRoundOpponent`, `prepareSpectatorRound` and the queue); race-slot display and race records; and everything that reads vehicle or event data | — |
 
 Each CSS file starts with two added lines:
@@ -47,9 +48,9 @@ Each JS file starts with one added comment line naming its source lines; everyth
 
 `opponent-generation.js` holds only top-level function declarations. Like inline function declarations, they become global functions (`window` properties), so every caller and the tests reach them under the same names. The file runs no code when it loads; the functions read `CARS`, `EVENT_CALENDAR`, `state`, `choice`, `rand`, `makeOwned` and `carById` only when called, which happens after startup (travelling to an event, rendering call-ups, starting a round).
 
-**Script order:** `js/data/vehicles.js`, then `js/data/events.js`, then `js/systems/opponent-generation.js`, then the inline game script. Classic scripts share one global scope: `const` declarations in the data files are global lexical bindings, not `window` properties, exactly as they were inline. Nothing in the game reads them through `window`, `globalThis` or a dynamic lookup.
+**Script order:** `js/data/vehicles.js`, then `js/data/events.js`, then `js/data/names.js`, then `js/systems/opponent-generation.js`, then the inline game script. Classic scripts share one global scope: `const` declarations in the data files are global lexical bindings, not `window` properties, exactly as they were inline. Nothing in the game reads them through `window`, `globalThis` or a dynamic lookup.
 
-**Missing-file risk.** The data files have no fallback copy in `index.html`, by design: a duplicate would drift. If a data file fails to load (an incomplete deploy, a typo in a path, a blocked request), the browser still runs the inline script, which stops with a `ReferenceError` the first time it reads `CARS` or `EVENT_CALENDAR`, so the game doesn't start. If `js/systems/opponent-generation.js` fails to load, the game still starts, but travelling to an event or showing race call-ups throws a `ReferenceError` (for example, `eventProfile is not defined`). Before code was moved out of `index.html`, none of these failures could happen. To guard against it:
+**Missing-file risk.** The data files have no fallback copy in `index.html`, by design: a duplicate would drift. If a data file fails to load (an incomplete deploy, a typo in a path, a blocked request), the browser still runs the inline script, which stops with a `ReferenceError` the first time it reads `CARS` or `EVENT_CALENDAR`, so the game doesn't start. If `js/data/names.js` fails to load, the game still starts, but travelling to an event throws a `ReferenceError` (`NPC_NICKNAME_SHARE is not defined`) when the field is generated. If `js/systems/opponent-generation.js` fails to load, the game still starts, but travelling to an event or showing race call-ups throws a `ReferenceError` (for example, `eventProfile is not defined`). Before code was moved out of `index.html`, none of these failures could happen. To guard against it:
 - deploy `index.html` and every extracted file together, from one commit;
 - keep the shared `?v=` release version, so a cached `index.html` is never paired with a newer or older data file;
 - after a deploy, open the live site and check the browser console and network panel for a failed `css/` or `js/` request.
@@ -59,7 +60,7 @@ Garage styles have no file of their own yet. They're interleaved through `base.c
 ## Updating extracted files (release version)
 
 1. Change the extracted CSS or JS file.
-2. In `index.html`, change the `?v=` value on **every** extracted `<link>` and `<script>` tag to one new value, such as the next date-based release (`2026.11.01-5`).
+2. In `index.html`, change the `?v=` value on **every** extracted `<link>` and `<script>` tag to one new value, such as the next date-based release (`2026.11.01-6`).
 3. Run `node tests/helpers/asset-manifest.js --write` to record the version and each file's content hash in `tests/fixtures/asset-version.json`.
 4. Run the full test suite.
 
@@ -71,7 +72,7 @@ Garage styles have no file of their own yet. They're interleaved through `base.c
 |---|---|---|
 | `tests/fixtures/expected/saves.json` | A new game, plus load and re-save of the frozen inputs in `tests/fixtures/saves/`: v1 pre-garage, v2 garage with upgrades and history, Race Night mid-event with reaction data, You Yangs mid-session, You Yangs first journey | `qmb-save-compat` |
 | `tests/fixtures/expected/cloud-save.json` | Requests a cloud save makes (captured by a fetch stub, never sent) | `qmb-save-compat` |
-| `tests/fixtures/expected/opponent-generation.json` | The 18 driver names and how a draw maps to a name; night sizes at every band edge with each event's `fieldMult`, `opponentBoost` and `reqRespect`; complete opponent records for Heathcote, Mildura and The Bend; call-ups with and without a player car, including the 0.88 slower-car boundary; NPC pairing; random-draw counts per stage; travel, arrival, queueing, save and reload | `qmb-opponent-generation` |
+| `tests/fixtures/expected/opponent-generation.json` | Driver names produced for fixed rolls; night sizes at every band edge with each event's `fieldMult`, `opponentBoost` and `reqRespect`; complete opponent records for Heathcote, Mildura and The Bend; call-ups with and without a player car, including the 0.88 slower-car boundary; NPC pairing; random-draw counts per stage; travel, arrival, queueing, save and reload | `qmb-opponent-generation` |
 | `tests/fixtures/expected/race-baseline.json` | `simulate()` for four cars (player and NPC paths, auto and manual), and `eventProfile`/`makeOpponents`/`pickRaceSlots` for three events, with random-draw counts | `qmb-race-baseline` |
 
 **The input saves are frozen historical snapshots and are never regenerated.** They were built from the game at `55b5307`; the v1 save uses the pre-garage shape from before `GARAGE_SAVE_VERSION`.
@@ -150,3 +151,21 @@ The shared test loader (`tests/helpers/game-source.js`) reads every file with LF
     - Every variant differs by at most 69 pixels, each off by 1/255 in one colour channel, all in the header and navigation band (y = 75–154 px).
     - Over five runs of the new build, every capture matched a variant seen from `9344cc2`, except one shed capture with the same ±1 difference in that same band.
     - Screen, page height and page width matched in every capture.
+
+## Changes after the split
+
+- **NPC population rework (`feature/population-rework`):** generated opponents get display names from `js/data/names.js`. This replaces the 18-name list that was inside `makeOpponents`.
+  - **The pools:**
+    - 180 given names: the 17 original given names first, in their original order, then 163 more;
+    - 12 nicknames: Davo (the 18th original), Macca, Loz, Kaz, Simmo, Tez, Robbo, Jono, Benno, Tommo, Gazza and Hammo.
+
+    The data carries no ethnicity, gender or other metadata, and no name is linked to a vehicle, performance, venue or progression.
+  - **Selection:** `pickDriverName(roll, used)` turns the one existing name draw into a name.
+    - Rolls below `NPC_NICKNAME_SHARE` (0.12) pick a nickname; all other rolls pick a given name, in proportion to the roll.
+    - A name already in the lineup is skipped by stepping forward through the same pool (wrapping around), then through the other pool from the position the same roll maps to there.
+    - A name repeats only when all 192 are used. The largest possible field is 111.
+    - It never rerolls, draws no random numbers itself, and doesn't modify `used`; `makeOpponents` records each name.
+  - **Unchanged:** the number and order of random draws, vehicles, attributes, entry IDs, UIDs, lineup sizes, call-ups, pairing and performance. A field-by-field comparison of the old and new opponent and race goldens found 397 differing values, all of them `driver` values; the only other change, the arrival opponent hash, re-derives exactly when the old names are put back. Save and cloud goldens are unchanged.
+  - **Saved events keep their names:** names are stored on each opponent, and loading never regenerates them. Existing saves keep their original names, including historical duplicates and names that aren't in the new pools.
+  - **Goldens:** `opponent-generation.json` and the `driver` fields of `race-baseline.json` were regenerated in a separate commit, with that comparison as the review.
+  - **Version:** release version `2026.11.01-5` on every tag.
