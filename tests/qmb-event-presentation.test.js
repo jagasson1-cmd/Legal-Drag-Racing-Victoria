@@ -69,6 +69,8 @@ function setup(ctx, eventId, respect = 24) {
     let ev=eventById('${eventId}');for(let d=1;d<80;d++){state.day=d;if(daysUntil(ev)===0)break}})()`);
 }
 const stateJson = ctx => ctx.evaluate('JSON.stringify(state)');
+// Intervals other than the ambience scheduler (js/systems/audio.js runs one while a soundscape plays).
+const gameIntervals = ctx => ctx.intervals.size - (ctx.evaluate('QmbAudio.debug().scheduler') ? 1 : 0);
 
 // ---------- Travel: venue pacing, controls and state ----------
 const EXPECTED_MS = { calder_test: 4000, heathcote_legal: 7000, mildura_regional: 11000, state_grudge: 6000, bend_open: 8000, sydney_challenge: 8000 };
@@ -414,7 +416,7 @@ function spectatorFlow(search) {
     assert.equal(running(audio), 2, 'one engine voice (two oscillators)');
     const body = ctx.evaluate('engineAudio.body'), gain = ctx.evaluate('engineAudio.master.gain');
     assert.ok(gain.setTo <= 0.0001 && gain.tc >= 0.5, 'fades in slowly from silence');
-    const tick = [...ctx.intervals.values()][0], freqs = [];
+    const tick = ctx.intervals.get(ctx.evaluate('travelTicker')), freqs = [];
     for (let i = 0; i < 30; i++) { ctx.clock.t += 200; tick(); freqs.push(body.frequency.value); }
     assert.ok(new Set(freqs.map(f => f.toFixed(2))).size > 10, 'pitch drifts naturally');
     assert.ok(gain.value > 0 && gain.value <= 0.03, 'quiet cruising level');
@@ -424,7 +426,9 @@ function spectatorFlow(search) {
     assert.equal(ctx.evaluate('cruiseAudio'), null);
     assert.equal(running(audio), 0, `${label}: oscillators stopped`);
     assert.ok(gain.ramp && gain.ramp.v <= 0.0001 && gain.ramp.t <= 0.16 + 1e-9, `${label}: quick fade out`);
-    assert.equal(ctx.intervals.size, 0, `${label}: ticker stopped`);
+    // The travel ticker stops; the only interval allowed to remain is the ambience scheduler of the new soundscape.
+    assert.equal(ctx.evaluate('travelTicker'), null, `${label}: ticker stopped`);
+    assert.equal(gameIntervals(ctx), 0, `${label}: no other interval left running`);
     assert.equal(ctx.evaluate('JSON.stringify(state.car)'), carBefore, 'cruising never changes the car');
   }
   {
@@ -433,17 +437,17 @@ function spectatorFlow(search) {
     ctx.evaluate(`travelToEvent('heathcote_legal')`); await settle();
     ctx.evaluate(`cancelArrival();travelToEvent('heathcote_legal')`); await settle();
     assert.equal(running(audio), 2, 'only one engine voice after re-travelling');
-    assert.equal(ctx.intervals.size, 1, 'only one ticker');
-    ctx.evaluate('soundEnabled=false'); ctx.clock.t += 200; [...ctx.intervals.values()][0]();
+    assert.equal(gameIntervals(ctx), 1, 'only one ticker');
+    ctx.evaluate('soundEnabled=false'); ctx.clock.t += 200; ctx.intervals.get(ctx.evaluate('travelTicker'))();
     assert.equal(running(audio), 0, 'sound off mid-trip stops the cruise');
-    assert.equal(ctx.intervals.size, 1, 'the leg ticker keeps running without sound');
+    assert.equal(gameIntervals(ctx), 1, 'the leg ticker keeps running without sound');
     ctx.evaluate('soundEnabled=true;finishTravel()');
     // Another engine taking over (e.g. a race) is not touched by the cruise or by stopping travel.
     const a2 = fakeAudio(), c2 = makeContext(5, '', { sound: true, audio: a2 }); setup(c2, 'heathcote_legal');
     c2.evaluate(`travelToEvent('heathcote_legal')`); await settle();
     await c2.evaluate('startEngineAudio(state.car,3000)');
     const other = c2.evaluate('engineAudio'), otherGain = other.master.gain.targets.slice();
-    c2.clock.t += 200; [...c2.intervals.values()][0]();
+    c2.clock.t += 200; c2.intervals.get(c2.evaluate('travelTicker'))();
     assert.deepEqual(other.master.gain.targets, otherGain, 'cruise ticker does not drive another engine');
     c2.evaluate('stopTravelFx()');
     assert.equal(c2.evaluate('engineAudio'), other, 'stopping travel leaves another engine running');
@@ -459,7 +463,7 @@ function spectatorFlow(search) {
     // Sound disabled: no audio is created during the whole trip.
     const audio = fakeAudio(), ctx = makeContext(5, '', { sound: false, audio }); setup(ctx, 'mildura_regional');
     ctx.evaluate(`travelToEvent('mildura_regional')`); await settle();
-    for (let i = 0; i < 10; i++) { ctx.clock.t += 200; [...ctx.intervals.values()][0](); }
+    for (let i = 0; i < 10; i++) { ctx.clock.t += 200; ctx.intervals.get(ctx.evaluate('travelTicker'))(); }
     ctx.timers.filter(t => t.fn.name === 'finishTravel').at(-1).fn();
     assert.equal(audio.made.contexts, 0, 'sound off creates no audio context');
   }

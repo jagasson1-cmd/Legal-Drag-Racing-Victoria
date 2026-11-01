@@ -209,5 +209,82 @@ const live = (box, kind) => box.audio.made.sources.filter(s => (!kind || s.kind 
 
     assert.equal(box.evaluate('Math.calls') - draws0, 0, 'none of this drew a game random number');
   }
+  // ================= Game integration =================
+  const SAVE = { qmb_mvp_save: readInput('v2-garage'), qmb_sound_enabled: 'true', qmb_music_enabled: 'true' };
+  const toEvent = id => `(()=>{let e=eventById('${id}');for(let i=0;i<40&&daysUntil(e)!==0;i++)state.day++;state.respect=Math.max(state.respect,30);travelToEvent('${id}')})()`;
+  const startGame = async (opts = {}) => { const box = audioSandbox({ seed: 13, storage: SAVE, ...opts }); box.evaluate('refreshListings();loadGame(false);render()'); if (!opts.noAudio) { box.fire('pointerdown'); await tick(); } return box; };
+
+  // ---------- Screens map to soundscapes ----------
+  {
+    const box = await startGame();
+    for (const screen of ['home', 'garage', 'classifieds', 'upgrades', 'work', 'badges', 'season', 'log', 'social', 'event']) {
+      box.evaluate(`show('${screen}')`);
+      assert.equal(box.evaluate('QmbAudio.soundscape()'), 'garage', `${screen} uses the garage soundscape`);
+    }
+    for (const [id, scape] of [['calder_test', 'travel_metro'], ['heathcote_legal', 'travel_country'], ['mildura_regional', 'travel_long'], ['state_grudge', 'travel_night'], ['bend_open', 'travel_interstate']]) {
+      box.evaluate("show('event')"); box.evaluate(toEvent(id)); await tick();
+      assert.equal(box.evaluate('state.screen'), 'travel', `${id}: travelling`);
+      assert.equal(box.evaluate('QmbAudio.soundscape()'), scape, `${id}: the journey uses ${scape}`);
+      box.evaluate('cancelArrival()');
+    }
+  }
+
+  // ---------- Skipping travel switches the audio at once; arrival plays one stinger; venues get their own character ----------
+  for (const [id, venue] of [['heathcote_legal', 'venue_heathcote_legal'], ['calder_test', 'venue_calder_test'], ['mildura_regional', 'venue_mildura_regional'], ['state_grudge', 'venue_default']]) {
+    const box = await startGame();
+    box.evaluate(toEvent(id)); await tick();
+    assert.equal(box.evaluate('!!(engineAudio&&engineAudio.cruise)'), true, `${id}: the cruise engine plays on the journey`);
+    const musicBus = box.evaluate("QmbAudio.bus('music')");
+    const stingers = () => box.audio.made.nodes.filter(n => n.outputs.includes(musicBus)).length;
+    box.evaluate('finishTravel()');
+    assert.equal(box.evaluate('state.screen'), 'arrival');
+    assert.equal(box.evaluate('engineAudio'), null, `${id}: Arrive now releases the cruise engine immediately`);
+    assert.equal(box.evaluate('QmbAudio.soundscape()'), venue, `${id}: Arrive now switches straight to ${venue}`);
+    assert.equal(stingers(), 1, `${id}: one arrival stinger`);
+    box.evaluate('render();render()');
+    assert.equal(stingers(), 1, `${id}: re-rendering the arrival does not repeat the stinger`);
+    box.evaluate("confirmArrival('race')");
+    assert.equal(box.evaluate('QmbAudio.soundscape()'), venue, `${id}: the venue soundscape continues at the event`);
+  }
+  {
+    const hub = await startGame({ storage: { ...SAVE, qmb_mvp_save: readInput('you-yangs-session') } });
+    hub.evaluate("show('youYangs')");
+    assert.equal(hub.evaluate('state.screen'), 'youYangs');
+    assert.equal(hub.evaluate('QmbAudio.soundscape()'), 'venue_you_yangs', 'the You Yangs hub has its own proving-ground ambience');
+    const journey = await startGame({ storage: { ...SAVE, qmb_mvp_save: readInput('you-yangs-journey') } });
+    assert.equal(journey.evaluate('state.screen'), 'yyTravel');
+    assert.equal(journey.evaluate('QmbAudio.soundscape()'), 'travel_proving', 'the first You Yangs journey uses the proving-ground travel scene');
+  }
+
+  // ---------- Routing, ducking under a live race, and engine cleanup ----------
+  {
+    const box = await startGame();
+    box.evaluate(toEvent('heathcote_legal')); await tick();
+    const engineBus = box.evaluate("QmbAudio.bus('engine')"), effectsBus = box.evaluate("QmbAudio.bus('effects')");
+    assert.ok(box.evaluate('engineAudio.master').outputs.includes(engineBus), 'the engine voice is routed to the engine bus');
+    box.evaluate("finishTravel();confirmArrival('race');chooseRoundOpponent(state.lastEvent.raceSlots[0]);(()=>{const e=state.lastEvent;e.queueIndex=e.lineup.findIndex(x=>x.type==='player')})();goToMyRace();startLiveRace(currentLineupEntry().opponentIndex)");
+    await tick();
+    assert.ok(box.evaluate('!!engineAudio&&!engineAudio.cruise'), 'a live race runs the engine voice');
+    box.advance(0.5);
+    assert.equal(box.evaluate('QmbAudio.debug().ducked'), true, 'the venue ambience ducks under the race engine');
+    box.evaluate("playSfx('click')");
+    assert.ok(box.audio.made.nodes.some(n => n.outputs.includes(effectsBus)), 'effects are routed to the effects bus');
+    box.evaluate("show('garage')"); box.advance(0.5);
+    assert.equal(box.evaluate('engineAudio'), null, 'leaving the race releases the engine');
+    assert.equal(box.evaluate('QmbAudio.debug().ducked'), false, 'and the ambience comes back up');
+    assert.equal(box.evaluate('QmbAudio.soundscape()'), 'garage');
+  }
+
+  // ---------- Audio never changes gameplay random draws ----------
+  {
+    const flow = `${toEvent('mildura_regional')};finishTravel();confirmArrival('race');chooseRoundOpponent(state.lastEvent.raceSlots[0])`;
+    const withAudio = await startGame(), without = await startGame({ noAudio: true });
+    const a0 = withAudio.evaluate('Math.calls'), b0 = without.evaluate('Math.calls');
+    withAudio.evaluate(flow); without.evaluate(flow); await tick();
+    withAudio.advance(30);
+    assert.equal(withAudio.evaluate('Math.calls') - a0, without.evaluate('Math.calls') - b0, 'the same play-through draws the same random numbers with and without audio');
+    assert.equal(withAudio.evaluate('JSON.stringify(state.lastEvent.opponents)'), without.evaluate('JSON.stringify(state.lastEvent.opponents)'), 'and generates the same field');
+    assert.equal(withAudio.evaluate('JSON.stringify(state)'), without.evaluate('JSON.stringify(state)'), 'and leaves the same game state');
+  }
   console.log('Quarter Mile Builder audio checks passed.');
 })().catch(e => { console.error(e); process.exit(1); });
