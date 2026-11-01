@@ -1,0 +1,141 @@
+@charset "UTF-8";
+/* Event travel trip card, venue scenes and spectator timing tower. Moved verbatim from index.html lines 262-400 at 55b5307; see docs/MODULARISATION.md. Link order matters: base, you-yangs, race-night, event-presentation. */
+    /* EVENT PRESENTATION (feature/event-presentation-polish): travel trip card (.tvTrip) and spectator tower (.svStage/.svResult).
+       Presentation only. Spectator lanes use neutral chalk (left, solid) and steel (right, striped) so neither NPC takes the
+       player's amber or the opponent blue. Motion only shows trip or race progress. */
+    .tvTrip,.svStage,.svResult{--sv-a:#e8edf2;--sv-b:#9fb0c2;--sv-ink:#05070a;scroll-margin-top:92px;background:radial-gradient(circle at 70% 0%,#1d2633,#0b0e13 62%);padding:16px}
+    .tvTitle:focus,.svTitle:focus{outline:none}
+    .tvTrip :focus-visible,.svStage :focus-visible,.svResult :focus-visible{outline:3px solid var(--text);outline-offset:3px}
+    .tvHead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+    .tvHeadText{min-width:0}
+    .tvTitle{margin:0!important;font-size:24px;line-height:1.15;text-wrap:balance;overflow-wrap:anywhere}
+    .tvVenue{margin:4px 0 0;color:var(--muted);overflow-wrap:anywhere}
+    .tvTier{flex:none;font:800 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#0b0e13}
+    .tvRoute{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;margin:16px 0 8px;padding:14px 12px;background:#07090d;border:1px solid var(--line);border-radius:14px}
+    .tvNode{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--muted);text-align:center;max-width:150px;overflow-wrap:anywhere}
+    .tvNodeTo{color:var(--text);font-weight:700}
+    .tvPin{display:block;width:14px;height:14px;border-radius:50%;border:2px solid var(--muted);background:#0b0e13}
+    .tvPinTo{border-radius:3px;border-color:var(--text);background:repeating-conic-gradient(var(--text) 0 25%,#05070a 0 50%) 0 0/7px 7px}
+    .tvRoad{position:relative;height:16px;border-radius:8px;background:#151b23;overflow:hidden}
+    .tvRoad::before{content:'';position:absolute;left:8px;right:8px;top:7px;height:2px;background:repeating-linear-gradient(90deg,rgba(255,209,102,.55) 0 14px,transparent 14px 26px)}
+    .tvFill{position:absolute;inset:0;transform-origin:left center;transform:scaleX(0);background:linear-gradient(90deg,rgba(255,176,46,.06),rgba(255,176,46,.32));animation:tvFill var(--tv-ms) linear var(--tv-delay) forwards}
+    .tvMark{position:absolute;top:2px;left:0;width:22px;height:12px;margin-left:-22px;border-radius:3px 6px 6px 3px;background:var(--accent);border:2px solid var(--sv-ink);animation:tvMark var(--tv-ms) linear var(--tv-delay) forwards}
+    .tvRouteHeld .tvFill,.tvRouteHeld .tvMark{animation:none}.tvRouteHeld .tvMark{margin-left:0}
+    @keyframes tvFill{to{transform:scaleX(1)}}
+    @keyframes tvMark{from{left:0;margin-left:0}to{left:100%;margin-left:-22px}}
+    /* Travel scenes: CSS-only backdrop per profile scene. Decorative (aria-hidden); progress is the route strip below. */
+    .tvScene{--tv-sky:linear-gradient(#0a0f17,#151d29);--tv-land:linear-gradient(#0d1219,#0d1219) 0 100%/100% 10px no-repeat;--tv-dash:rgba(255,209,102,.5);--tv-speed:1.1s;position:relative;height:84px;margin:14px 0 0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--tv-sky)}
+    .tvScene::before{content:'';position:absolute;left:0;right:0;bottom:22px;height:44px;background:var(--tv-land)}
+    .tvScene::after{content:'';position:absolute;left:0;right:0;bottom:0;height:22px;background:repeating-linear-gradient(90deg,var(--tv-dash) 0 22px,transparent 22px 48px) 0 50%/48px 2px repeat-x,#0a0d12;animation:tvDash var(--tv-speed) linear infinite}
+    .tvSceneHeld::after{animation:none}
+    @keyframes tvDash{to{background-position:-48px 50%,0 0}}
+    .tvMood,.tvGate{position:absolute;top:8px;z-index:1;font:800 10px/1 ui-monospace,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;padding:5px 7px;border-radius:5px;background:rgba(5,7,10,.62);color:var(--text)}
+    .tvMood{left:8px}.tvGate{right:8px;border:1px solid rgba(232,237,242,.35)}
+    .tvGate::after{content:'';display:block;height:4px;margin-top:5px;border-radius:2px;background:repeating-linear-gradient(90deg,#e8edf2 0 8px,#c94b4b 8px 16px)}
+    .tvScene-metro{--tv-speed:.75s;--tv-sky:radial-gradient(120% 90% at 50% 100%,rgba(255,150,60,.32),transparent 62%),linear-gradient(#070b12,#141b28);
+      --tv-land:radial-gradient(circle,#ffbf47 0 1.5px,transparent 2.2px) 6px 2px/38px 8px repeat-x,repeating-linear-gradient(90deg,#131b27 0 14px,transparent 14px 26px,#111824 26px 44px,transparent 44px 58px,#141c29 58px 66px,transparent 66px 80px) 0 100%/100% 30px no-repeat,repeating-linear-gradient(90deg,#0e141c 0 30px,#0c1219 30px 52px) 0 100%/100% 14px no-repeat}
+    .tvScene-country{--tv-speed:1s;--tv-sky:radial-gradient(circle,rgba(255,255,255,.7) 0 1px,transparent 1.5px) 0 0/53px 23px,linear-gradient(#0a1020 0%,#1b2140 52%,#4f3446 82%,#a2603c 100%);
+      --tv-land:radial-gradient(10px 7px at 90% 38%,rgba(255,250,225,.95),transparent),radial-gradient(70px 26px at 90% 46%,rgba(255,240,200,.24),transparent),radial-gradient(60% 120% at 18% 100%,#0f1913 60%,transparent 61%),radial-gradient(70% 140% at 64% 100%,#0b130f 58%,transparent 59%)}
+    .tvScene-long{--tv-speed:1.6s;--tv-sky:radial-gradient(circle at 72% 100%,rgba(255,206,130,.75) 0 13px,rgba(255,170,90,.18) 30px,transparent 60px),linear-gradient(#0d1424 0%,#36283c 42%,#b0613a 80%,#e39a4f 100%);
+      --tv-land:radial-gradient(5px 4px at 50% 100%,#140e0b 98%,transparent) 0 calc(100% - 9px)/97px 7px repeat-x,linear-gradient(#1a120e,#110c0a) 0 100%/100% 10px no-repeat}
+    .tvScene-proving{--tv-speed:1.3s;--tv-dash:rgba(232,237,242,.42);--tv-sky:linear-gradient(#080d0b,#142019);
+      --tv-land:linear-gradient(to top right,#1d2721 49.5%,transparent 50%) 40px 100%/90px 40px no-repeat,linear-gradient(to top left,#1d2721 49.5%,transparent 50%) 130px 100%/70px 40px no-repeat,linear-gradient(to top right,#18211c 49.5%,transparent 50%) 230px 100%/60px 26px no-repeat,linear-gradient(to top left,#18211c 49.5%,transparent 50%) 290px 100%/80px 26px no-repeat,linear-gradient(#0e1411,#0e1411) 0 100%/100% 9px no-repeat}
+    .tvScene-night{--tv-sky:radial-gradient(80% 70% at 50% 100%,rgba(140,170,255,.18),transparent 65%),linear-gradient(#070a12,#121a2a)}
+    .tvScene-interstate{--tv-speed:1.2s;--tv-sky:radial-gradient(circle,rgba(255,255,255,.55) 0 1px,transparent 1.5px) 0 0/61px 27px,linear-gradient(#060912,#111a2b 70%,#1c2536)}
+    .tvRoad .tvTick{position:absolute;top:3px;bottom:3px;width:2px;margin-left:-1px;background:rgba(232,237,242,.2)}
+    .tvStatus{margin:0 0 10px;font:700 13px/1.3 ui-monospace,Consolas,monospace;color:var(--muted)}
+    .tvActions .btn{min-width:130px}
+    .tvStory{margin:14px 0 12px;color:var(--muted);max-width:70ch}
+    .tvGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .tvPanel{background:#0b0e13;border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+    .tvNight{grid-column:1/-1}
+    .card .tvLabel{margin:0 0 6px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+    .tvCarName,.tvWeather{display:block;font-size:16px;overflow-wrap:anywhere}
+    .tvWeather{color:var(--blue)}
+    .tvMeta{margin:4px 0 0;font-size:13px;color:var(--muted)}
+    .tvFacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:10px 0 0}
+    .tvFacts div{border-top:1px solid var(--line);padding-top:6px;min-width:0}
+    .tvFacts dt{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+    .tvFacts dd{margin:2px 0 0;font:800 17px/1.2 ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}
+    .tvFacts dd small{font:400 12px system-ui,Segoe UI,Arial,sans-serif;color:var(--muted)}
+    .tvEntry{margin:10px 0 0;font-size:13px;font-weight:700}
+    .tvEntry b{display:inline-grid;place-items:center;width:18px;height:18px;margin-right:4px;border-radius:50%;font-size:12px;color:var(--sv-ink)}
+    .tvEntryOk{color:var(--good)}.tvEntryOk b{background:var(--good)}
+    .tvEntryNo{color:var(--warn)}.tvEntryNo b{background:var(--warn)}
+    .svPhase{font:800 13px/1 ui-monospace,Consolas,monospace;letter-spacing:.14em;padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:#0b0e13;color:var(--text);min-width:130px;text-align:center}
+    .svStage[data-phase="ambers"] .svPhase{border-color:#ffbf47;color:#ffbf47}
+    .svStage[data-phase="green"] .svPhase{background:#67e08a;border-color:#67e08a;color:var(--sv-ink)}
+    .svStage[data-phase="finish"] .svPhase,.svFinal{background:var(--text);border-color:var(--text);color:var(--sv-ink)}
+    .svAllBar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;padding:8px 10px;border:1px dashed var(--line);border-radius:10px}
+    .svTower{display:grid;grid-template-columns:96px minmax(0,1fr);gap:14px;align-items:stretch;background:#07090d;border:1px solid var(--line);border-radius:14px;padding:12px}
+    .svTree{display:flex;justify-content:center;gap:6px;align-self:center;padding:8px 6px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#2a2f38,#12161d)}
+    .svTreeLane{display:flex;flex-direction:column;align-items:center}
+    .svStage .treeBulb{width:22px;height:22px;margin:4px auto}.svStage .treeBulb.small{width:14px;height:14px;margin:3px auto}
+    .svTreeTag{margin-top:4px;font:800 11px ui-monospace,Consolas,monospace;color:var(--muted)}
+    .svLane{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:end}
+    .svLaneTag{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+    .svMark{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:4px;font:900 11px/1 ui-monospace,Consolas,monospace;font-style:normal;letter-spacing:0;color:var(--sv-ink)}
+    .svLaneA .svMark{background:var(--sv-a)}
+    .svLaneB .svMark{background:repeating-linear-gradient(135deg,var(--sv-b) 0 4px,#c9d3de 4px 8px)}
+    .svPick{padding:2px 6px;border-radius:4px;border:1px solid var(--text);color:var(--text);font:800 11px/1.2 system-ui,Segoe UI,Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase}
+    .svLaneRight{display:flex;align-items:center;gap:8px}
+    .svWin{padding:3px 7px;border-radius:4px;background:#67e08a;color:var(--sv-ink);font:900 11px/1 ui-monospace,Consolas,monospace;letter-spacing:.12em}
+    .svWin[hidden]{display:none}
+    .svStage .svTrack .laneFill{transition:none;background:linear-gradient(90deg,rgba(232,237,242,.03),rgba(232,237,242,.24))}
+    .svStage .svState{font:800 11px/1 ui-monospace,Consolas,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+    .svStage .svState:empty{display:none}
+    .svStage .svTrack .laneFill{transition:opacity .35s ease-out}
+    .svStage .svLane.coasting .svTrack .laneFill{opacity:.38}
+    .svStage .svLaneB .svTrack .laneFill{background:repeating-linear-gradient(135deg,rgba(159,176,194,.08) 0 6px,rgba(159,176,194,.22) 6px 12px)}
+    .svStage .svCar{top:50%;transform:translate(-100%,-50%);width:30px;height:16px;border-radius:4px 7px 7px 4px;border:2px solid var(--sv-ink);font:900 10px/12px ui-monospace,Consolas,monospace;text-align:center;color:var(--sv-ink);filter:none}
+    .svStage .svLaneA .svCar{background:var(--sv-a)}
+    .svStage .svLaneB .svCar{background:repeating-linear-gradient(135deg,var(--sv-b) 0 4px,#c9d3de 4px 8px)}
+    .svLane.leading .rnCarName,.svLane.won .rnCarName{color:#fff}
+    .svLane.won .svTrack{box-shadow:inset 0 0 0 2px #67e08a}
+    .svGap{min-height:1.2em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .svStrip{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:8px;margin-top:10px}
+    .svNote{margin:10px 0 0}
+    .svBoard{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:12px;border-radius:14px;background:#050608;border:1px solid var(--line);animation:svBoardIn .3s ease-out}
+    @keyframes svBoardIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+    .svBoardLane{min-width:0;padding:10px;border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;gap:4px}
+    .svBoardLane.won{border-color:#67e08a;box-shadow:inset 0 0 0 1px #67e08a}
+    .svBoardTop{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+    .svBoardName{font-size:15px;overflow-wrap:anywhere}
+    .svBoardMeta{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+    .svDigits{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:6px;margin-top:6px}
+    .svDigits div{background:#0b0e13;border-radius:8px;padding:6px 8px;min-width:0}
+    .svDigits span{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+    .svDigits b{display:block;font:900 26px/1.1 ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums;color:#f4f1e8;white-space:nowrap}
+    .svMargin{grid-column:1/-1;margin:2px 0 0;font:700 13px/1.3 ui-monospace,Consolas,monospace;color:var(--muted)}
+    .svMargin b{color:var(--text)}
+    .svMsg{margin:12px 0 0}
+    .svScout{margin-top:12px}
+    .svScoutGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .svScoutCar{background:#0b0e13;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0;overflow-wrap:anywhere}
+    .svScoutCar p{margin:4px 0 0}
+    .svSeen{font-size:13px;color:var(--muted)}.svSeen b{color:var(--text);font-family:ui-monospace,Consolas,monospace}
+    .svAuto{height:4px;margin-top:10px;border-radius:2px;background:#151b23;overflow:hidden}
+    .svAuto i{display:block;height:100%;background:var(--muted);transform-origin:left center;animation:tvFill var(--sv-ms) linear forwards;transform:scaleX(0)}
+    @media(max-width:860px){.tvTrip,.svStage,.svResult{scroll-margin-top:10px}}
+    @media(max-width:640px){
+      .tvTrip,.svStage,.svResult{padding:10px}
+      .tvHead{flex-direction:column;gap:8px}
+      .tvTitle{font-size:20px}
+      .tvRoute{gap:8px;padding:10px 8px}.tvNode{max-width:84px;font-size:11px}
+      .tvScene{height:62px;margin-top:10px}.tvScene::before{height:32px}
+      .tvActions .btn{flex:1 1 0;min-width:0}
+      .tvGrid,.svScoutGrid{grid-template-columns:minmax(0,1fr)}
+      .tvFacts{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .svPhase{min-width:0;font-size:12px;padding:8px 9px}
+      .svTower{grid-template-columns:62px minmax(0,1fr);gap:10px;padding:9px}
+      .svTree{gap:3px;padding:6px 4px;border-radius:12px}
+      .svStage .treeBulb{width:16px;height:16px;margin:3px auto}.svStage .treeBulb.small{width:11px;height:11px}
+      .svBoard{grid-template-columns:minmax(0,1fr);padding:8px}
+      .svDigits b{font-size:22px}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .tvFill,.tvMark{animation-timing-function:steps(4,end)}
+      .tvScene::after{animation:none}
+      .svBoard,.svAuto i{animation:none}.svAuto{display:none}
+      .svStage *{transition:none!important}
+    }

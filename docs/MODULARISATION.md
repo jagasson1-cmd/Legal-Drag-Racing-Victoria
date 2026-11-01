@@ -26,11 +26,21 @@ Also decided during the inspection:
 
 ## Layout
 
-| File | Contains (verbatim from `55b5307`) | Loaded |
+| File | Contains (verbatim from `55b5307` `index.html`) | Loaded |
 |---|---|---|
-| `index.html` | Markup, the remaining game script and the startup line | — |
+| `css/base.css` | Lines 8–94: `:root` tokens, base layout and components, with garage, market, event, onboarding, daily briefing, badges and the responsive rules interleaved | 1st `<link>` in `<head>` |
+| `css/you-yangs.css` | Lines 95–117: You Yangs special event (begins with the original blank separator line) | 2nd `<link>` |
+| `css/race-night.css` | Lines 118–261: Race Night live race (from `feature/race-night-visual-prototype`) and player reaction time (from `feature/player-reaction-time`) | 3rd `<link>` |
+| `css/event-presentation.css` | Lines 262–400: event travel trip card, venue scenes, spectator timing tower and coasting | 4th `<link>` |
+| `index.html` | Markup, the whole game script and the startup line | — |
 
-The table grows with each extraction; see the phase log.
+Each CSS file starts with two added lines:
+- `@charset "UTF-8";`, because the styles contain a non-ASCII `·`, so the encoding doesn't depend on the server or on `file://`;
+- a comment naming its source lines.
+
+Everything below those two lines is the original text, unchanged. **The link order must stay base, you-yangs, race-night, event-presentation.** The cascade depends on source order, and later files override earlier ones; for example, Race Night and event presentation restyle shared classes such as `.treeBulb` and `.laneFill`.
+
+Garage styles have no file of their own yet. They're interleaved through `base.css`, and moving them out would reorder the cascade; that needs its own reviewed change.
 
 ## Updating extracted files (release version)
 
@@ -79,3 +89,10 @@ A golden must never be regenerated to make a refactor pass.
   - an empty asset manifest.
 
   No game files changed.
+- **Phase 1 (CSS):** the inline `<style>` (lines 8–400) moved into the four files above, with release version `2026.11.01-1`.
+  - **Rebuild check:** putting the four files back inline reproduces `55b5307` `index.html` byte for byte (415,310 bytes).
+  - **Rule count:** loaded over HTTP, the four stylesheets hold 196 + 39 + 110 + 117 = 462 rules, the same as the original single sheet.
+  - **Screenshots:** 19 screens at 1366 and 390 px, loaded both from `file://` and from a local HTTP server, are byte-identical to the baseline (76 of 76).
+    - The 19 screens: new-game start, start line, shed, Trading Post buy and sell, Speed Shop, calendar, trophies, Earn Cash, The Books, Race Journal, Car Club, paused travel, arrival, Race Night hub, race start, spectator stage, You Yangs hub and You Yangs journey.
+  - **Startup:** no errors; every stylesheet returns 200.
+  - **Test change:** `qmb-core`'s CSS assertions now read the loaded stylesheets instead of the HTML file.
