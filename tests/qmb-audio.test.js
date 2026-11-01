@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const { makeGameContext } = require('./helpers/game-context');
 const { readInput } = require('./helpers/golden-cases');
+const { audioSandbox } = require('./helpers/fake-audio');
 
 // Audio preference contract (js/systems/audio.js). Preferences live only in localStorage under qmb_audio_prefs_v1:
 // - migrated once from the old qmb_sound_enabled / qmb_music_enabled keys;
@@ -95,4 +96,118 @@ for (const [sound, music, want] of CASES) {
   for (const word of ['qmb_audio', 'ambience', '"muted"']) assert.ok(!resaved.includes(word), `the gameplay save contains no audio preference (${word})`);
   assert.equal(ctx.requests.length, 0, 'no network request');
 }
-console.log('Quarter Mile Builder audio preference checks passed.');
+// ================= Audio manager (fake Web Audio) =================
+const tick = () => new Promise(r => setImmediate(r));
+const live = (box, kind) => box.audio.made.sources.filter(s => (!kind || s.kind === kind) && s.startAt !== null && s.stopAt === null);
+
+(async () => {
+  // ---------- No Web Audio at all: everything is a safe no-op and the game still runs ----------
+  {
+    const box = audioSandbox({ noAudio: true });
+    assert.equal(box.evaluate('QmbAudio.available()'), false);
+    assert.equal(await box.evaluate('QmbAudio.context()'), null, 'no context without Web Audio');
+    box.evaluate("QmbAudio.setSoundscape('garage');QmbAudio.stinger('arrival');QmbAudio.unlock();refreshListings();loadGame(false);render()");
+    assert.equal(box.evaluate('QmbAudio.bus("engine")'), null, 'no buses without Web Audio');
+    assert.equal(box.evaluate('state.screen'), 'home', 'the game starts normally without audio');
+  }
+
+  // ---------- Nothing is created before a genuine interaction ----------
+  {
+    const box = audioSandbox({ activated: false });
+    assert.equal(await box.evaluate('QmbAudio.context()'), null, 'no context before the player interacts');
+    box.evaluate("QmbAudio.setSoundscape('garage')");
+    assert.equal(box.audio.made.contexts.length, 0, 'a requested soundscape waits for the first interaction');
+    box.activation.hasBeenActive = true; box.fire('pointerdown'); await tick();
+    assert.equal(box.audio.made.contexts.length, 1, 'the first interaction creates exactly one context');
+    assert.equal(box.evaluate('QmbAudio.debug().playing'), 'garage', 'the waiting soundscape starts after unlocking');
+    box.fire('click'); box.fire('keydown'); await tick();
+    assert.equal(box.audio.made.contexts.length, 1, 'further interactions reuse the same context');
+  }
+
+  // ---------- Graph, levels, crossfades, scheduling, ducking, hiding and muting ----------
+  {
+    const box = audioSandbox({ seed: 21 });
+    const draws0 = box.evaluate('Math.calls');
+    box.fire('pointerdown'); await tick();
+    const bus = n => box.evaluate(`QmbAudio.bus('${n}').gain.value`);
+    assert.deepEqual(['music', 'ambience', 'engine', 'effects'].map(bus), [0.6, 0.5, 0.8, 1], 'bus levels follow the preferences');
+    box.evaluate("QmbAudio.setLevel('ambience',0.3)"); assert.equal(bus('ambience'), 0.3, 'changing a level updates its bus');
+
+    box.evaluate("QmbAudio.setSoundscape('garage')");
+    assert.equal(box.evaluate('QmbAudio.debug().playing'), 'garage');
+    assert.equal(box.intervals.size, 1, 'one scheduler while a soundscape plays');
+    const garageBeds = live(box, 'buffer').length;
+    assert.ok(garageBeds >= 2, 'garage beds are running');
+    box.evaluate("QmbAudio.setSoundscape('garage')");
+    assert.equal(live(box, 'buffer').length, garageBeds, 'asking for the same soundscape again starts nothing new');
+
+    // Crossfade to a venue: the old scape fades out and is stopped; nothing is left running from it.
+    const before = new Set(live(box));
+    box.evaluate("QmbAudio.setSoundscape('venue_heathcote_legal',{crowd:.85,temp:15,wind:1})");
+    assert.equal(box.evaluate('QmbAudio.debug().playing'), 'venue_heathcote_legal');
+    assert.ok(box.evaluate("QmbAudio.debug().events.includes('crickets')"), 'a 15 C Heathcote night has crickets');
+    box.flushTimeouts();
+    assert.ok([...before].every(s => s.stopAt !== null), 'every garage source is stopped after the crossfade');
+    assert.equal(box.intervals.size, 1, 'still exactly one scheduler');
+
+    // Weather and turnout conditions.
+    box.evaluate("QmbAudio.setSoundscape('venue_heathcote_legal',{crowd:.35,temp:24,wind:1})");
+    assert.ok(!box.evaluate("QmbAudio.debug().events.includes('crickets')"), 'no crickets on a hot night');
+    assert.ok(!box.evaluate("QmbAudio.debug().events.includes('cheer')"), 'no crowd swells on a quiet night');
+    box.evaluate("QmbAudio.setSoundscape('venue_mildura_regional',{crowd:.6,temp:28,wind:1})");
+    assert.ok(box.evaluate("QmbAudio.debug().events.includes('cicada')"), 'a hot Mildura night has cicadas');
+    box.evaluate("QmbAudio.setSoundscape('venue_you_yangs',{})");
+    const yy = box.evaluate('QmbAudio.debug().events');
+    assert.ok(!yy.includes('pa') && !yy.includes('cheer'), 'the You Yangs has no PA and no crowd');
+
+    // Let a few minutes of a busy venue play: one-shots are capped and every one is scheduled to stop.
+    box.evaluate("QmbAudio.setSoundscape('venue_calder_test',{crowd:1,temp:14,wind:1})");
+    box.flushTimeouts();
+    let peak = 0;
+    for (let i = 0; i < 180 * 4; i++) { box.advance(0.25); peak = Math.max(peak, box.evaluate('QmbAudio.debug().voices')); }
+    assert.ok(peak > 0 && peak <= 6, `one-shot voices are capped (peak ${peak})`);
+    const oneShots = box.audio.made.sources.filter(s => s.kind === 'oscillator');
+    assert.ok(oneShots.length > 10, 'Calder produced distant engines, PA and crowd over three minutes');
+    assert.ok(oneShots.every(s => s.stopAt !== null), 'every one-shot oscillator is scheduled to stop');
+
+    // Ducking under engines.
+    box.evaluate('QmbAudio.setDuckProbe(()=>true)'); box.advance(0.25);
+    assert.equal(box.evaluate('QmbAudio.debug().ducked'), true, 'ambience ducks while an engine runs');
+    box.evaluate('QmbAudio.setDuckProbe(()=>false)'); box.advance(0.25);
+    assert.equal(box.evaluate('QmbAudio.debug().ducked'), false, 'and returns afterwards');
+
+    // Hidden page: fade, stop scheduling, suspend; visible again: resume and carry on.
+    box.context.document.hidden = true; box.fire('visibilitychange');
+    assert.equal(box.evaluate('QmbAudio.debug().master'), 0, 'the master fades to silence while hidden');
+    assert.equal(box.intervals.size, 0, 'no scheduling while hidden');
+    box.flushTimeouts();
+    assert.equal(box.ctx().state, 'suspended', 'the context is suspended while hidden');
+    box.context.document.hidden = false; box.fire('visibilitychange'); await tick(); await tick();
+    assert.equal(box.ctx().state, 'running', 'the context resumes when visible');
+    assert.equal(box.intervals.size, 1, 'the soundscape carries on');
+    assert.equal(box.evaluate('QmbAudio.debug().master'), 0.8, 'and the master level comes back');
+
+    // Mute and zero ambience.
+    box.evaluate('QmbAudio.setMuted(true)'); box.flushTimeouts();
+    assert.equal(box.ctx().state, 'suspended', 'muting suspends the context');
+    box.evaluate('QmbAudio.setMuted(false)'); await tick(); await tick();
+    assert.equal(box.ctx().state, 'running', 'unmuting resumes it');
+    box.evaluate("QmbAudio.setLevel('ambience',0)"); box.flushTimeouts();
+    assert.equal(box.evaluate('QmbAudio.debug().playing'), null, 'ambience at 0 stops the soundscape');
+    assert.equal(live(box, 'buffer').length, 0, 'and leaves nothing running');
+    box.evaluate("QmbAudio.setLevel('ambience',0.5)");
+    assert.equal(box.evaluate('QmbAudio.debug().playing'), 'venue_calder_test', 'raising ambience restarts the wanted soundscape');
+
+    // Stingers only when music is audible.
+    assert.equal(box.evaluate("QmbAudio.stinger('arrival')"), true, 'arrival stinger plays on the music bus');
+    box.evaluate("QmbAudio.setLevel('music',0)");
+    assert.equal(box.evaluate("QmbAudio.stinger('arrival')"), false, 'no stinger with music at 0');
+
+    // Unknown soundscape: a clean stop, not an error.
+    box.evaluate("QmbAudio.setSoundscape('no_such_place')"); box.flushTimeouts();
+    assert.equal(box.evaluate('QmbAudio.debug().playing'), null);
+
+    assert.equal(box.evaluate('Math.calls') - draws0, 0, 'none of this drew a game random number');
+  }
+  console.log('Quarter Mile Builder audio checks passed.');
+})().catch(e => { console.error(e); process.exit(1); });

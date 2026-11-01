@@ -48,7 +48,7 @@ assert.ok(box.evaluate('CARS.length') > 40 && box.evaluate('EVENT_CALENDAR.lengt
 // js/data/vehicles.js must precede the inline script, and the CARS enrichment (TECH_DATA and stallRpm merged into
 // each car) must already have happened when it finishes, before any game code can read a car.
 const order = src.scripts.map(s => s.name);
-assert.deepEqual(order, ['js/data/vehicles.js', 'js/data/events.js', 'js/data/names.js', 'js/systems/opponent-generation.js', 'js/systems/audio.js', 'inline'], 'script order: vehicles.js, events.js, names.js, opponent-generation.js, audio.js, then the inline game script');
+assert.deepEqual(order, ['js/data/vehicles.js', 'js/data/events.js', 'js/data/names.js', 'js/data/soundscapes.js', 'js/systems/opponent-generation.js', 'js/systems/audio.js', 'inline'], 'script order: vehicles, events, names and soundscapes data, then opponent-generation and audio, then the inline game script');
 const dataOnly = createSandbox({ seed: 3 });
 vm.runInContext(src.scripts.find(s => s.name === 'js/data/vehicles.js').source, dataOnly.context, { filename: 'js/data/vehicles.js' });
 assert.equal(dataOnly.evaluate("CARS.every(c=>typeof c.stallRpm==='number'&&c.stallRpm===(STALL_RPM[c.id]||2200))"), true, 'every car enriched with stallRpm when vehicles.js finishes');
@@ -102,6 +102,14 @@ const audioOnly = createSandbox({ seed: 3 });
 vm.runInContext(audioSource, audioOnly.context, { filename: 'js/systems/audio.js' });
 assert.equal(audioOnly.evaluate('typeof QmbAudio.prefs'), 'function', 'QmbAudio is available');
 assert.equal(audioOnly.evaluate('Math.calls'), 0, 'audio.js draws no game random numbers when it loads');
+
+// ---------- Soundscape data is plain data ----------
+const scapeSource = src.scripts.find(s => s.name === 'js/data/soundscapes.js').source;
+assert.deepEqual([...scapeSource.matchAll(/^(?:const|let|var|function|class) (\w+)/gm)].map(m => m[1]), ['SOUNDSCAPES', 'SOUNDSCAPE_CROWD'], 'soundscapes.js declares exactly its two constants');
+const scapesOnly = createSandbox({ seed: 3 });
+vm.runInContext(scapeSource, scapesOnly.context, { filename: 'js/data/soundscapes.js' });
+assert.equal(scapesOnly.evaluate("(function walk(v){return typeof v!=='function'&&(v===null||typeof v!=='object'||Object.values(v).every(walk))})([SOUNDSCAPES,SOUNDSCAPE_CROWD])"), true, 'soundscape data contains no functions');
+assert.equal(scapesOnly.evaluate('Math.calls'), 0, 'soundscape data draws no random numbers');
 
 // ---------- Inline handlers resolve to global functions ----------
 const handlers = new Set();
