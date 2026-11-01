@@ -64,9 +64,14 @@ for (const [sound, music] of [[null, null], ['false', 'true'], ['true', 'false']
   const ctx = makeGameContext({ storage: { qmb_sound_enabled: sound, qmb_music_enabled: music } });
   assert.equal(ctx.evaluate('soundEnabled'), sound !== 'false', `effects preference ${sound}`);
   assert.equal(ctx.evaluate('musicEnabled'), music !== 'false', `music preference ${music}`);
-  ctx.evaluate('toggleSound();toggleMusic()');
-  assert.equal(ctx.storage.get('qmb_sound_enabled'), String(sound === 'false'), 'effects toggle saved');
-  assert.equal(ctx.storage.get('qmb_music_enabled'), String(music === 'false'), 'music toggle saved');
+  // The Sound panel's mute is saved (qmb_audio_prefs_v1, mirrored to the old keys) and unmuting restores the old state.
+  ctx.evaluate('toggleAudioMute()');
+  assert.equal(JSON.parse(ctx.storage.get('qmb_audio_prefs_v1')).muted, true, 'mute saved');
+  assert.equal(ctx.storage.get('qmb_sound_enabled'), 'false', 'muted: effects mirror off');
+  assert.equal(ctx.storage.get('qmb_music_enabled'), 'false', 'muted: music mirror off');
+  ctx.evaluate('toggleAudioMute()');
+  assert.equal(ctx.storage.get('qmb_sound_enabled'), String(sound !== 'false'), 'unmuted: effects preference restored');
+  assert.equal(ctx.storage.get('qmb_music_enabled'), String(music !== 'false'), 'unmuted: music preference restored');
 }
 
 // ---------- Cloud save serialisation (fetch is stubbed; nothing leaves the test) ----------

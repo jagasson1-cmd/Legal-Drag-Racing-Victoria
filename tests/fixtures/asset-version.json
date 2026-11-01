@@ -1,13 +1,16 @@
 {
- "version": "2026.11.01-5",
+ "version": "2026.11.01-6",
  "files": {
   "css/base.css": "a5ffe8a21ed52353489bcf94be6672f7123a95c52f56ad5fbb8f753228417b87",
   "css/you-yangs.css": "d4f79097c8d27a7997844f8a888c6a54b44b52ac45778c2cf01b3e37716792f2",
   "css/race-night.css": "fe93c2775787164210d0601b92db81644e8b4fd0b0988963d8800c11a713ad7a",
   "css/event-presentation.css": "5279234637bb808dbadff47d16eb8480396820422112edc96ba254628d502bf8",
+  "css/sound-panel.css": "e462364ed193ec9a5a5209102b47d24972ba1727339f611ebaa6c0ea797f9d46",
   "js/data/vehicles.js": "9c8e184d1f2a53ddf87d09040f925752c43dbb038de3b63d99b52e02408d0bed",
   "js/data/events.js": "ac6a913ad4953dd78307f0c99fbd537a0bbd414885c2bbb7d77964555ffe94ec",
   "js/data/names.js": "4fbd45b99d89c789d9712448f4b25c8dab288ce4068ccaefa722eb4428944ef7",
-  "js/systems/opponent-generation.js": "14820269877761cd78fab30b86d145cb4738b51dcc960538a05993eefe4f5be4"
+  "js/data/soundscapes.js": "ec3d9ea3b798fa76fd133a0f1c489a97059d92153ffd7598c72bfb6806c6afe7",
+  "js/systems/opponent-generation.js": "14820269877761cd78fab30b86d145cb4738b51dcc960538a05993eefe4f5be4",
+  "js/systems/audio.js": "b2503d8025cf6c8f0c0412c1c47a84ad9b2e513e20ac7faca81da5ff66b988fa"
  }
 }
