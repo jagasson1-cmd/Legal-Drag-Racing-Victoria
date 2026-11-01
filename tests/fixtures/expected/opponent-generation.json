@@ -1,0 +1,3030 @@
+{
+ "nameSelection": [
+  "Mick",
+  "Sarah",
+  "Davo",
+  "Jess",
+  "Rob",
+  "Tayla",
+  "Chris",
+  "Ari",
+  "Ben",
+  "Mia",
+  "Noah",
+  "Eli",
+  "Zoe",
+  "Jay",
+  "Sam",
+  "Alex",
+  "Riley",
+  "Casey"
+ ],
+ "nightSizes": {
+  "heathcote_legal": {
+   "event": {
+    "fieldMult": 1,
+    "opponentBoost": 0,
+    "reqRespect": 0
+   },
+   "nights": [
+    {
+     "roll": 0.1,
+     "busy": {
+      "name": "Quiet night",
+      "runs": 10,
+      "raceSlots": 4,
+      "cars": 18,
+      "watch": 18
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.2499,
+     "busy": {
+      "name": "Quiet night",
+      "runs": 10,
+      "raceSlots": 4,
+      "cars": 18,
+      "watch": 18
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.25,
+     "busy": {
+      "name": "Normal night",
+      "runs": 6,
+      "raceSlots": 6,
+      "cars": 34,
+      "watch": 30
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.4,
+     "busy": {
+      "name": "Normal night",
+      "runs": 6,
+      "raceSlots": 6,
+      "cars": 34,
+      "watch": 30
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.5999,
+     "busy": {
+      "name": "Normal night",
+      "runs": 6,
+      "raceSlots": 6,
+      "cars": 34,
+      "watch": 30
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.6,
+     "busy": {
+      "name": "Busy night",
+      "runs": 4,
+      "raceSlots": 8,
+      "cars": 56,
+      "watch": 44
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.7,
+     "busy": {
+      "name": "Busy night",
+      "runs": 4,
+      "raceSlots": 8,
+      "cars": 56,
+      "watch": 44
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.8699,
+     "busy": {
+      "name": "Busy night",
+      "runs": 4,
+      "raceSlots": 8,
+      "cars": 56,
+      "watch": 44
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.87,
+     "busy": {
+      "name": "Packed night",
+      "runs": 2,
+      "raceSlots": 8,
+      "cars": 74,
+      "watch": 58
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.95,
+     "busy": {
+      "name": "Packed night",
+      "runs": 2,
+      "raceSlots": 8,
+      "cars": 74,
+      "watch": 58
+     },
+     "draws": 1
+    }
+   ]
+  },
+  "mildura_regional": {
+   "event": {
+    "fieldMult": 1,
+    "opponentBoost": 0.06,
+    "reqRespect": 8
+   },
+   "nights": [
+    {
+     "roll": 0.1,
+     "busy": {
+      "name": "Quiet night",
+      "runs": 10,
+      "raceSlots": 4,
+      "cars": 18,
+      "watch": 18
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.2499,
+     "busy": {
+      "name": "Quiet night",
+      "runs": 10,
+      "raceSlots": 4,
+      "cars": 18,
+      "watch": 18
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.25,
+     "busy": {
+      "name": "Normal night",
+      "runs": 6,
+      "raceSlots": 6,
+      "cars": 34,
+      "watch": 30
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.4,
+     "busy": {
+      "name": "Normal night",
+      "runs": 6,
+      "raceSlots": 6,
+      "cars": 34,
+      "watch": 30
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.5999,
+     "busy": {
+      "name": "Normal night",
+      "runs": 6,
+      "raceSlots": 6,
+      "cars": 34,
+      "watch": 30
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.6,
+     "busy": {
+      "name": "Busy night",
+      "runs": 4,
+      "raceSlots": 8,
+      "cars": 56,
+      "watch": 44
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.7,
+     "busy": {
+      "name": "Busy night",
+      "runs": 4,
+      "raceSlots": 8,
+      "cars": 56,
+      "watch": 44
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.8699,
+     "busy": {
+      "name": "Busy night",
+      "runs": 4,
+      "raceSlots": 8,
+      "cars": 56,
+      "watch": 44
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.87,
+     "busy": {
+      "name": "Packed night",
+      "runs": 2,
+      "raceSlots": 8,
+      "cars": 74,
+      "watch": 58
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.95,
+     "busy": {
+      "name": "Packed night",
+      "runs": 2,
+      "raceSlots": 8,
+      "cars": 74,
+      "watch": 58
+     },
+     "draws": 1
+    }
+   ]
+  },
+  "bend_open": {
+   "event": {
+    "fieldMult": 1.35,
+    "opponentBoost": 0.16,
+    "reqRespect": 25
+   },
+   "nights": [
+    {
+     "roll": 0.1,
+     "busy": {
+      "name": "Quiet night",
+      "runs": 10,
+      "raceSlots": 6,
+      "cars": 24,
+      "watch": 24
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.2499,
+     "busy": {
+      "name": "Quiet night",
+      "runs": 10,
+      "raceSlots": 6,
+      "cars": 24,
+      "watch": 24
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.25,
+     "busy": {
+      "name": "Normal night",
+      "runs": 6,
+      "raceSlots": 8,
+      "cars": 46,
+      "watch": 41
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.4,
+     "busy": {
+      "name": "Normal night",
+      "runs": 6,
+      "raceSlots": 8,
+      "cars": 46,
+      "watch": 41
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.5999,
+     "busy": {
+      "name": "Normal night",
+      "runs": 6,
+      "raceSlots": 8,
+      "cars": 46,
+      "watch": 41
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.6,
+     "busy": {
+      "name": "Busy night",
+      "runs": 4,
+      "raceSlots": 10,
+      "cars": 76,
+      "watch": 59
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.7,
+     "busy": {
+      "name": "Busy night",
+      "runs": 4,
+      "raceSlots": 10,
+      "cars": 76,
+      "watch": 59
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.8699,
+     "busy": {
+      "name": "Busy night",
+      "runs": 4,
+      "raceSlots": 10,
+      "cars": 76,
+      "watch": 59
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.87,
+     "busy": {
+      "name": "Packed night",
+      "runs": 2,
+      "raceSlots": 10,
+      "cars": 100,
+      "watch": 78
+     },
+     "draws": 1
+    },
+    {
+     "roll": 0.95,
+     "busy": {
+      "name": "Packed night",
+      "runs": 2,
+      "raceSlots": 10,
+      "cars": 100,
+      "watch": 78
+     },
+     "draws": 1
+    }
+   ]
+  }
+ },
+ "events": {
+  "heathcote_legal": {
+   "busy": {
+    "name": "Normal night",
+    "runs": 6,
+    "raceSlots": 6,
+    "cars": 34,
+    "watch": 30
+   },
+   "draws": {
+    "eventProfile": 1,
+    "makeOpponents": 277,
+    "pickRaceSlotsNoCar": 0,
+    "pickRaceSlotsWithCar": 0,
+    "shuffle10": 9,
+    "spectatorPairs": 33,
+    "racerPairs": 32
+   },
+   "objectKeys": [
+    "id,name,cat,type,price,weight,power,torque,drive,aero,manual,auto,gears,red,peak,band,asp,baseGrip,upgradeMult,reliability,engine,disp,tyreDia,manualMax,autoMax,shiftBuffer,stallRpm,uid,trans,shiftMode,grip,mods,installed,issueNames,launchBonus,sceneValueBase,basePower,baseWeight,basePeak,baseReliability,upgradeStages,tuneFresh,tuneVariance,tuneSignature,dynoQuality,dynoCurve,buildTags,stallBonus,modSpend,modMarketValue,sceneValue,visible,label,driver,eventIndex,entryId",
+    "id,name,cat,type,price,weight,power,torque,drive,aero,manual,auto,gears,red,peak,band,asp,baseGrip,upgradeMult,reliability,engine,disp,tyreDia,autoMax,shiftBuffer,stallRpm,uid,trans,shiftMode,grip,mods,installed,issueNames,launchBonus,sceneValueBase,basePower,baseWeight,basePeak,baseReliability,upgradeStages,tuneFresh,tuneVariance,tuneSignature,dynoQuality,dynoCurve,buildTags,stallBonus,modSpend,modMarketValue,sceneValue,visible,label,driver,eventIndex,entryId",
+    "id,name,cat,type,price,weight,power,torque,drive,aero,manual,auto,gears,red,peak,band,asp,baseGrip,upgradeMult,reliability,engine,disp,tyreDia,manualMax,shiftBuffer,stallRpm,uid,trans,shiftMode,grip,mods,installed,issueNames,launchBonus,sceneValueBase,basePower,baseWeight,basePeak,baseReliability,upgradeStages,tuneFresh,tuneVariance,tuneSignature,dynoQuality,dynoCurve,buildTags,stallBonus,modSpend,modMarketValue,sceneValue,visible,label,driver,eventIndex,entryId"
+   ],
+   "field": [
+    {
+     "id": "falconxr6t",
+     "uid": "falconxr6t_1767225600000_81d954e1",
+     "entryId": "falconxr6t_0_581a7f31",
+     "eventIndex": 0,
+     "driver": "Ari",
+     "label": "local car",
+     "trans": "auto",
+     "power": 370.8021357246144,
+     "weight": 1725,
+     "grip": 0.820984871617984,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "vncommodorev6",
+     "uid": "vncommodorev6_1767225600000_c123ea6b",
+     "entryId": "vncommodorev6_1_dc202448",
+     "eventIndex": 1,
+     "driver": "Jay",
+     "label": "local car",
+     "trans": "auto",
+     "power": 188.62182347733238,
+     "weight": 1310,
+     "grip": 0.8892698750575073,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "suprana",
+     "uid": "suprana_1767225600000_1b655dd1",
+     "entryId": "suprana_2_326dbe9d",
+     "eventIndex": 2,
+     "driver": "Davo",
+     "label": "local car",
+     "trans": "auto",
+     "power": 228.8883143026095,
+     "weight": 1451.3276132720057,
+     "grip": 0.8529323203722015,
+     "mods": [
+      "Light interior strip"
+     ],
+     "visible": "street tyres, looks stripped"
+    },
+    {
+     "id": "gu",
+     "uid": "gu_1767225600000_90da3bd8",
+     "entryId": "gu_3_dab54bf",
+     "eventIndex": 3,
+     "driver": "Davo",
+     "label": "local car",
+     "trans": "manual",
+     "power": 268.2703010166565,
+     "weight": 2350,
+     "grip": 0.9804361133521888,
+     "mods": [],
+     "visible": "serious tyres, non-factory exhaust"
+    },
+    {
+     "id": "golfgti",
+     "uid": "golfgti_1767225600000_af1fd5ba",
+     "entryId": "golfgti_4_7d164153",
+     "eventIndex": 4,
+     "driver": "Sarah",
+     "label": "local car",
+     "trans": "auto",
+     "power": 207.26985669779233,
+     "weight": 1313.3027367102914,
+     "grip": 0.9111744292965158,
+     "mods": [
+      "Light interior strip"
+     ],
+     "visible": "good street tyres, looks stripped"
+    },
+    {
+     "id": "vncommodorev6",
+     "uid": "vncommodorev6_1767225600000_79581d6e",
+     "entryId": "vncommodorev6_5_ecc7358d",
+     "eventIndex": 5,
+     "driver": "Rob",
+     "label": "local car",
+     "trans": "auto",
+     "power": 192.98468894455294,
+     "weight": 1310,
+     "grip": 0.8415435673529282,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust"
+    },
+    {
+     "id": "adventrav8",
+     "uid": "adventrav8_1767225600000_168e112b",
+     "entryId": "adventrav8_6_aef07d61",
+     "eventIndex": 6,
+     "driver": "Riley",
+     "label": "local car",
+     "trans": "auto",
+     "power": 335.44919008758774,
+     "weight": 1947,
+     "grip": 0.9709090712713078,
+     "mods": [],
+     "visible": "serious tyres"
+    },
+    {
+     "id": "vtcommodoresho",
+     "uid": "vtcommodoresho_1767225600000_cd57e0f6",
+     "entryId": "vtcommodoresho_7_c6911dda",
+     "eventIndex": 7,
+     "driver": "Sarah",
+     "label": "local car",
+     "trans": "manual",
+     "power": 349.30898547890376,
+     "weight": 1645,
+     "grip": 0.8692279099544976,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust"
+    },
+    {
+     "id": "bmw335i",
+     "uid": "bmw335i_1767225600000_dc9c70df",
+     "entryId": "bmw335i_8_afad6b58",
+     "eventIndex": 8,
+     "driver": "Casey",
+     "label": "local car",
+     "trans": "manual",
+     "power": 366.45358322379104,
+     "weight": 1600,
+     "grip": 0.8268645395943894,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "r34gtt",
+     "uid": "r34gtt_1767225600000_6a41847a",
+     "entryId": "r34gtt_9_c02776a4",
+     "eventIndex": 9,
+     "driver": "Zoe",
+     "label": "local car",
+     "trans": "auto",
+     "power": 323.6199303751897,
+     "weight": 1410,
+     "grip": 0.8181813859823159,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "silvia",
+     "uid": "silvia_1767225600000_a90aa25f",
+     "entryId": "silvia_10_0b8d8d59",
+     "eventIndex": 10,
+     "driver": "Noah",
+     "label": "local car",
+     "trans": "manual",
+     "power": 266.07695081986486,
+     "weight": 1260,
+     "grip": 0.8455635587335564,
+     "mods": [],
+     "visible": "street tyres, possible intercooler"
+    },
+    {
+     "id": "vtcommodoresho",
+     "uid": "vtcommodoresho_1767225600000_460a9b5a",
+     "entryId": "vtcommodoresho_11_a380ca79",
+     "eventIndex": 11,
+     "driver": "Mick",
+     "label": "local car",
+     "trans": "auto",
+     "power": 327.0380926681754,
+     "weight": 1645,
+     "grip": 0.8860325966728851,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "commodorev6",
+     "uid": "commodorev6_1767225600000_0252fb71",
+     "entryId": "commodorev6_12_8793da2",
+     "eventIndex": 12,
+     "driver": "Zoe",
+     "label": "local car",
+     "trans": "auto",
+     "power": 233.71366160935506,
+     "weight": 1522,
+     "grip": 0.8905699654389172,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "civic",
+     "uid": "civic_1767225600000_dad24e0a",
+     "entryId": "civic_13_f52ab76e",
+     "eventIndex": 13,
+     "driver": "Alex",
+     "label": "local car",
+     "trans": "manual",
+     "power": 172.9603706811483,
+     "weight": 1080,
+     "grip": 0.9002562582970131,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "is200",
+     "uid": "is200_1767225600000_7d812c04",
+     "entryId": "is200_14_578ea564",
+     "eventIndex": 14,
+     "driver": "Ari",
+     "label": "local car",
+     "trans": "manual",
+     "power": 167.0175118638489,
+     "weight": 1380,
+     "grip": 0.9139937269571237,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "silvia",
+     "uid": "silvia_1767225600000_f71e510f",
+     "entryId": "silvia_15_a610fa8e",
+     "eventIndex": 15,
+     "driver": "Mia",
+     "label": "local car",
+     "trans": "auto",
+     "power": 246.9536431615986,
+     "weight": 1260,
+     "grip": 0.8733335428580176,
+     "mods": [],
+     "visible": "good street tyres, possible intercooler"
+    },
+    {
+     "id": "focusxr5",
+     "uid": "focusxr5_1767225600000_2d08c89f",
+     "entryId": "focusxr5_16_8850f737",
+     "eventIndex": 16,
+     "driver": "Sarah",
+     "label": "local car",
+     "trans": "manual",
+     "power": 225.33104141030748,
+     "weight": 1351.9837816909421,
+     "grip": 0.9055680451728403,
+     "mods": [
+      "Light interior strip"
+     ],
+     "visible": "good street tyres, looks stripped"
+    },
+    {
+     "id": "mx5",
+     "uid": "mx5_1767225600000_c3e2e6ff",
+     "entryId": "mx5_17_729a6626",
+     "eventIndex": 17,
+     "driver": "Davo",
+     "label": "local car",
+     "trans": "manual",
+     "power": 138.34825244995835,
+     "weight": 1060,
+     "grip": 0.937922621105099,
+     "mods": [],
+     "visible": "serious tyres"
+    },
+    {
+     "id": "is200",
+     "uid": "is200_1767225600000_33730a77",
+     "entryId": "is200_18_0f2c172f",
+     "eventIndex": 18,
+     "driver": "Davo",
+     "label": "local car",
+     "trans": "manual",
+     "power": 164.937969083349,
+     "weight": 1380,
+     "grip": 0.8813712749467231,
+     "mods": [],
+     "visible": "good street tyres"
+    },
+    {
+     "id": "evo8",
+     "uid": "evo8_1767225600000_733c450b",
+     "entryId": "evo8_19_7c459bad",
+     "eventIndex": 19,
+     "driver": "Sarah",
+     "label": "local car",
+     "trans": "manual",
+     "power": 306.141805013166,
+     "weight": 1410,
+     "grip": 1.0000417565670796,
+     "mods": [],
+     "visible": "serious tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "falconxr6",
+     "uid": "falconxr6_1767225600000_0d0b332e",
+     "entryId": "falconxr6_20_38022c53",
+     "eventIndex": 20,
+     "driver": "Zoe",
+     "label": "local car",
+     "trans": "manual",
+     "power": 294.8955459217268,
+     "weight": 1619.4633898779284,
+     "grip": 0.87484512463212,
+     "mods": [
+      "Light interior strip"
+     ],
+     "visible": "good street tyres, non-factory exhaust, looks stripped"
+    },
+    {
+     "id": "starletgt",
+     "uid": "starletgt_1767225600000_2d54bc16",
+     "entryId": "starletgt_21_02eab254",
+     "eventIndex": 21,
+     "driver": "Casey",
+     "label": "local car",
+     "trans": "manual",
+     "power": 147.21050582348298,
+     "weight": 890,
+     "grip": 0.8058926161576527,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust"
+    },
+    {
+     "id": "chaserjzx100",
+     "uid": "chaserjzx100_1767225600000_0aac0711",
+     "entryId": "chaserjzx100_22_e9932b3a",
+     "eventIndex": 22,
+     "driver": "Sarah",
+     "label": "local car",
+     "trans": "manual",
+     "power": 295.0709621028316,
+     "weight": 1480,
+     "grip": 0.8497682472004089,
+     "mods": [],
+     "visible": "street tyres, possible intercooler"
+    },
+    {
+     "id": "i30n",
+     "uid": "i30n_1767225600000_68791fd7",
+     "entryId": "i30n_23_439647c5",
+     "eventIndex": 23,
+     "driver": "Ben",
+     "label": "local car",
+     "trans": "manual",
+     "power": 320.1531749430241,
+     "weight": 1450,
+     "grip": 0.943805188772967,
+     "mods": [],
+     "visible": "serious tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "golfrmk6",
+     "uid": "golfrmk6_1767225600000_dd09825",
+     "entryId": "golfrmk6_24_54866d8",
+     "eventIndex": 24,
+     "driver": "Jay",
+     "label": "serious local",
+     "trans": "manual",
+     "power": 291.9056370599453,
+     "weight": 1521,
+     "grip": 1.025355184393702,
+     "mods": [],
+     "visible": "serious tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "bafairmontv8",
+     "uid": "bafairmontv8_1767225600000_a51e5612",
+     "entryId": "bafairmontv8_25_81f0e6c",
+     "eventIndex": 25,
+     "driver": "Eli",
+     "label": "serious local",
+     "trans": "auto",
+     "power": 331.6077090416175,
+     "weight": 1785,
+     "grip": 0.7814340323733632,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust"
+    },
+    {
+     "id": "is200",
+     "uid": "is200_1767225600000_8ca526b1",
+     "entryId": "is200_26_3a3555b3",
+     "eventIndex": 26,
+     "driver": "Mia",
+     "label": "serious local",
+     "trans": "manual",
+     "power": 193.6560598213745,
+     "weight": 1380,
+     "grip": 0.9088122312224004,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "nissan350z",
+     "uid": "nissan350z_1767225600000_51938586",
+     "entryId": "nissan350z_27_c8a143b8",
+     "eventIndex": 27,
+     "driver": "Chris",
+     "label": "serious local",
+     "trans": "auto",
+     "power": 304.8354000681166,
+     "weight": 1471.1624095530715,
+     "grip": 0.8648196546069812,
+     "mods": [
+      "Light interior strip"
+     ],
+     "visible": "street tyres, non-factory exhaust, looks stripped"
+    },
+    {
+     "id": "lc100",
+     "uid": "lc100_1767225600000_262ede3b",
+     "entryId": "lc100_28_78d418b5",
+     "eventIndex": 28,
+     "driver": "Zoe",
+     "label": "serious local",
+     "trans": "auto",
+     "power": 262.18056091644087,
+     "weight": 2260,
+     "grip": 0.9635650315182284,
+     "mods": [],
+     "visible": "serious tyres, non-factory exhaust"
+    },
+    {
+     "id": "civic",
+     "uid": "civic_1767225600000_c6bddf33",
+     "entryId": "civic_29_e26c7bc1",
+     "eventIndex": 29,
+     "driver": "Riley",
+     "label": "serious local",
+     "trans": "manual",
+     "power": 181.8985299793,
+     "weight": 1080,
+     "grip": 0.8548676702321972,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust"
+    },
+    {
+     "id": "commodoresho",
+     "uid": "commodoresho_1767225600000_86cb381e",
+     "entryId": "commodoresho_30_65ba2e9a",
+     "eventIndex": 30,
+     "driver": "Jess",
+     "label": "quick regular",
+     "trans": "manual",
+     "power": 361.5163284281125,
+     "weight": 1590,
+     "grip": 0.8940511847729795,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "300csrt",
+     "uid": "300csrt_1767225600000_d4aaa139",
+     "entryId": "300csrt_31_e6a7f759",
+     "eventIndex": 31,
+     "driver": "Casey",
+     "label": "quick regular",
+     "trans": "auto",
+     "power": 505.66442509000905,
+     "weight": 1995,
+     "grip": 0.9081235682941042,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "soarer",
+     "uid": "soarer_1767225600000_7e6554b8",
+     "entryId": "soarer_32_4ab1ae01",
+     "eventIndex": 32,
+     "driver": "Mia",
+     "label": "quick regular",
+     "trans": "auto",
+     "power": 322.81480617531497,
+     "weight": 1570,
+     "grip": 0.884741964850109,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "bmw335i",
+     "uid": "bmw335i_1767225600000_470ad7c8",
+     "entryId": "bmw335i_33_88ff81fe",
+     "eventIndex": 33,
+     "driver": "Mick",
+     "label": "quick regular",
+     "trans": "auto",
+     "power": 327.9444420304422,
+     "weight": 1600,
+     "grip": 0.917655394396279,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust, possible intercooler"
+    }
+   ],
+   "slotsNoCar": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "slotsWithCar": [
+    3,
+    5,
+    14,
+    17,
+    18,
+    28
+   ],
+   "perfIndex": {
+    "player": 0.09313043478260868,
+    "field": [
+     0.17584175141790725,
+     0.12773522114798036,
+     0.13451562503111933,
+     0.113339378744528,
+     0.1438046142049904,
+     0.12367576452084349,
+     0.1720941426575797,
+     0.1845769722651389,
+     0.1893796708594089,
+     0.18778709444388178,
+     0.17855950272398285,
+     0.17614979359132588,
+     0.13642499044674458,
+     0.1441746816139583,
+     0.1106180856054673,
+     0.17116896833651868,
+     0.15092828290549573,
+     0.1221212562922861,
+     0.10534173050588007,
+     0.22365178939300182,
+     0.158731080728213,
+     0.13297880179863428,
+     0.1694202258553118,
+     0.20838774325059697,
+     0.20367041542019848,
+     0.1448222063441469,
+     0.1275340549391319,
+     0.17919683352905796,
+     0.11319568545725547,
+     0.1439807153167275,
+     0.2027914389319128,
+     0.22907348086124288,
+     0.18191579993519444,
+     0.18808749143219566
+    ]
+   },
+   "shuffle10": [
+    8,
+    1,
+    0,
+    5,
+    7,
+    6,
+    2,
+    3,
+    4,
+    9
+   ],
+   "spectatorPairs": [
+    [
+     29,
+     10
+    ],
+    [
+     24,
+     32
+    ],
+    [
+     26,
+     25
+    ],
+    [
+     14,
+     19
+    ],
+    [
+     6,
+     16
+    ],
+    [
+     2,
+     1
+    ],
+    [
+     30,
+     21
+    ],
+    [
+     20,
+     28
+    ],
+    [
+     27,
+     8
+    ],
+    [
+     0,
+     33
+    ],
+    [
+     22,
+     5
+    ],
+    [
+     11,
+     3
+    ],
+    [
+     12,
+     31
+    ],
+    [
+     15,
+     23
+    ],
+    [
+     4,
+     17
+    ],
+    [
+     13,
+     7
+    ],
+    [
+     18,
+     9
+    ]
+   ],
+   "racerPairs": [
+    [
+     22,
+     8
+    ],
+    [
+     6,
+     23
+    ],
+    [
+     30,
+     32
+    ],
+    [
+     12,
+     5
+    ],
+    [
+     7,
+     18
+    ],
+    [
+     10,
+     17
+    ],
+    [
+     21,
+     31
+    ],
+    [
+     16,
+     4
+    ],
+    [
+     24,
+     29
+    ],
+    [
+     14,
+     27
+    ],
+    [
+     28,
+     11
+    ],
+    [
+     3,
+     26
+    ],
+    [
+     15,
+     25
+    ],
+    [
+     19,
+     1
+    ],
+    [
+     9,
+     33
+    ],
+    [
+     13,
+     20
+    ]
+   ]
+  },
+  "mildura_regional": {
+   "busy": {
+    "name": "Normal night",
+    "runs": 6,
+    "raceSlots": 6,
+    "cars": 34,
+    "watch": 30
+   },
+   "draws": {
+    "eventProfile": 1,
+    "makeOpponents": 277,
+    "pickRaceSlotsNoCar": 0,
+    "pickRaceSlotsWithCar": 0,
+    "shuffle10": 9,
+    "spectatorPairs": 33,
+    "racerPairs": 32
+   },
+   "objectKeys": [
+    "id,name,cat,type,price,weight,power,torque,drive,aero,manual,auto,gears,red,peak,band,asp,baseGrip,upgradeMult,reliability,engine,disp,tyreDia,manualMax,autoMax,shiftBuffer,stallRpm,uid,trans,shiftMode,grip,mods,installed,issueNames,launchBonus,sceneValueBase,basePower,baseWeight,basePeak,baseReliability,upgradeStages,tuneFresh,tuneVariance,tuneSignature,dynoQuality,dynoCurve,buildTags,stallBonus,modSpend,modMarketValue,sceneValue,visible,label,driver,eventIndex,entryId",
+    "id,name,cat,type,price,weight,power,torque,drive,aero,manual,auto,gears,red,peak,band,asp,baseGrip,upgradeMult,reliability,engine,disp,tyreDia,autoMax,shiftBuffer,stallRpm,uid,trans,shiftMode,grip,mods,installed,issueNames,launchBonus,sceneValueBase,basePower,baseWeight,basePeak,baseReliability,upgradeStages,tuneFresh,tuneVariance,tuneSignature,dynoQuality,dynoCurve,buildTags,stallBonus,modSpend,modMarketValue,sceneValue,visible,label,driver,eventIndex,entryId",
+    "id,name,cat,type,price,weight,power,torque,drive,aero,manual,auto,gears,red,peak,band,asp,baseGrip,upgradeMult,reliability,engine,disp,tyreDia,manualMax,shiftBuffer,stallRpm,uid,trans,shiftMode,grip,mods,installed,issueNames,launchBonus,sceneValueBase,basePower,baseWeight,basePeak,baseReliability,upgradeStages,tuneFresh,tuneVariance,tuneSignature,dynoQuality,dynoCurve,buildTags,stallBonus,modSpend,modMarketValue,sceneValue,visible,label,driver,eventIndex,entryId"
+   ],
+   "field": [
+    {
+     "id": "falconxr6t",
+     "uid": "falconxr6t_1767225600000_81d954e1",
+     "entryId": "falconxr6t_0_581a7f31",
+     "eventIndex": 0,
+     "driver": "Ari",
+     "label": "local car",
+     "trans": "auto",
+     "power": 390.3621357246144,
+     "weight": 1725,
+     "grip": 0.820984871617984,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "vncommodorev6",
+     "uid": "vncommodorev6_1767225600000_c123ea6b",
+     "entryId": "vncommodorev6_1_dc202448",
+     "eventIndex": 1,
+     "driver": "Jay",
+     "label": "local car",
+     "trans": "auto",
+     "power": 198.7018234773324,
+     "weight": 1310,
+     "grip": 0.8892698750575073,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "suprana",
+     "uid": "suprana_1767225600000_1b655dd1",
+     "entryId": "suprana_2_326dbe9d",
+     "eventIndex": 2,
+     "driver": "Davo",
+     "label": "local car",
+     "trans": "auto",
+     "power": 242.32831430260953,
+     "weight": 1451.3276132720057,
+     "grip": 0.8529323203722015,
+     "mods": [
+      "Light interior strip"
+     ],
+     "visible": "street tyres, non-factory exhaust, looks stripped"
+    },
+    {
+     "id": "gu",
+     "uid": "gu_1767225600000_90da3bd8",
+     "entryId": "gu_3_dab54bf",
+     "eventIndex": 3,
+     "driver": "Davo",
+     "label": "local car",
+     "trans": "manual",
+     "power": 282.97030101665655,
+     "weight": 2350,
+     "grip": 0.9804361133521888,
+     "mods": [],
+     "visible": "serious tyres, non-factory exhaust"
+    },
+    {
+     "id": "golfgti",
+     "uid": "golfgti_1767225600000_af1fd5ba",
+     "entryId": "golfgti_4_7d164153",
+     "eventIndex": 4,
+     "driver": "Sarah",
+     "label": "local car",
+     "trans": "auto",
+     "power": 219.08985669779233,
+     "weight": 1313.3027367102914,
+     "grip": 0.9111744292965158,
+     "mods": [
+      "Light interior strip"
+     ],
+     "visible": "good street tyres, non-factory exhaust, looks stripped"
+    },
+    {
+     "id": "vncommodorev6",
+     "uid": "vncommodorev6_1767225600000_79581d6e",
+     "entryId": "vncommodorev6_5_ecc7358d",
+     "eventIndex": 5,
+     "driver": "Rob",
+     "label": "local car",
+     "trans": "auto",
+     "power": 203.06468894455296,
+     "weight": 1310,
+     "grip": 0.8415435673529282,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust"
+    },
+    {
+     "id": "adventrav8",
+     "uid": "adventrav8_1767225600000_168e112b",
+     "entryId": "adventrav8_6_aef07d61",
+     "eventIndex": 6,
+     "driver": "Riley",
+     "label": "local car",
+     "trans": "auto",
+     "power": 354.3491900875878,
+     "weight": 1947,
+     "grip": 0.9709090712713078,
+     "mods": [],
+     "visible": "serious tyres, non-factory exhaust"
+    },
+    {
+     "id": "vtcommodoresho",
+     "uid": "vtcommodoresho_1767225600000_cd57e0f6",
+     "entryId": "vtcommodoresho_7_c6911dda",
+     "eventIndex": 7,
+     "driver": "Sarah",
+     "label": "local car",
+     "trans": "manual",
+     "power": 367.00898547890375,
+     "weight": 1645,
+     "grip": 0.8692279099544976,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust"
+    },
+    {
+     "id": "bmw335i",
+     "uid": "bmw335i_1767225600000_dc9c70df",
+     "entryId": "bmw335i_8_afad6b58",
+     "eventIndex": 8,
+     "driver": "Casey",
+     "label": "local car",
+     "trans": "manual",
+     "power": 384.57358322379105,
+     "weight": 1600,
+     "grip": 0.8268645395943894,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "r34gtt",
+     "uid": "r34gtt_1767225600000_6a41847a",
+     "entryId": "r34gtt_9_c02776a4",
+     "eventIndex": 9,
+     "driver": "Zoe",
+     "label": "local car",
+     "trans": "auto",
+     "power": 340.1799303751897,
+     "weight": 1410,
+     "grip": 0.8181813859823159,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "silvia",
+     "uid": "silvia_1767225600000_a90aa25f",
+     "entryId": "silvia_10_0b8d8d59",
+     "eventIndex": 10,
+     "driver": "Noah",
+     "label": "local car",
+     "trans": "manual",
+     "power": 280.89695081986486,
+     "weight": 1260,
+     "grip": 0.8455635587335564,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "vtcommodoresho",
+     "uid": "vtcommodoresho_1767225600000_460a9b5a",
+     "entryId": "vtcommodoresho_11_a380ca79",
+     "eventIndex": 11,
+     "driver": "Mick",
+     "label": "local car",
+     "trans": "auto",
+     "power": 344.7380926681754,
+     "weight": 1645,
+     "grip": 0.8860325966728851,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "commodorev6",
+     "uid": "commodorev6_1767225600000_0252fb71",
+     "entryId": "commodorev6_12_8793da2",
+     "eventIndex": 12,
+     "driver": "Zoe",
+     "label": "local car",
+     "trans": "auto",
+     "power": 245.9536616093551,
+     "weight": 1522,
+     "grip": 0.8905699654389172,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "civic",
+     "uid": "civic_1767225600000_dad24e0a",
+     "entryId": "civic_13_f52ab76e",
+     "eventIndex": 13,
+     "driver": "Alex",
+     "label": "local car",
+     "trans": "manual",
+     "power": 182.56037068114833,
+     "weight": 1080,
+     "grip": 0.9002562582970131,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "is200",
+     "uid": "is200_1767225600000_7d812c04",
+     "entryId": "is200_14_578ea564",
+     "eventIndex": 14,
+     "driver": "Ari",
+     "label": "local car",
+     "trans": "manual",
+     "power": 176.19751186384892,
+     "weight": 1380,
+     "grip": 0.9139937269571237,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "silvia",
+     "uid": "silvia_1767225600000_f71e510f",
+     "entryId": "silvia_15_a610fa8e",
+     "eventIndex": 15,
+     "driver": "Mia",
+     "label": "local car",
+     "trans": "auto",
+     "power": 261.7736431615986,
+     "weight": 1260,
+     "grip": 0.8733335428580176,
+     "mods": [],
+     "visible": "good street tyres, possible intercooler"
+    },
+    {
+     "id": "focusxr5",
+     "uid": "focusxr5_1767225600000_2d08c89f",
+     "entryId": "focusxr5_16_8850f737",
+     "eventIndex": 16,
+     "driver": "Sarah",
+     "label": "local car",
+     "trans": "manual",
+     "power": 238.6510414103075,
+     "weight": 1351.9837816909421,
+     "grip": 0.9055680451728403,
+     "mods": [
+      "Light interior strip"
+     ],
+     "visible": "good street tyres, possible intercooler, looks stripped"
+    },
+    {
+     "id": "mx5",
+     "uid": "mx5_1767225600000_c3e2e6ff",
+     "entryId": "mx5_17_729a6626",
+     "eventIndex": 17,
+     "driver": "Davo",
+     "label": "local car",
+     "trans": "manual",
+     "power": 146.7482524499584,
+     "weight": 1060,
+     "grip": 0.937922621105099,
+     "mods": [],
+     "visible": "serious tyres"
+    },
+    {
+     "id": "is200",
+     "uid": "is200_1767225600000_33730a77",
+     "entryId": "is200_18_0f2c172f",
+     "eventIndex": 18,
+     "driver": "Davo",
+     "label": "local car",
+     "trans": "manual",
+     "power": 174.117969083349,
+     "weight": 1380,
+     "grip": 0.8813712749467231,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "evo8",
+     "uid": "evo8_1767225600000_733c450b",
+     "entryId": "evo8_19_7c459bad",
+     "eventIndex": 19,
+     "driver": "Sarah",
+     "label": "local car",
+     "trans": "manual",
+     "power": 322.70180501316605,
+     "weight": 1410,
+     "grip": 1.0000417565670796,
+     "mods": [],
+     "visible": "serious tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "falconxr6",
+     "uid": "falconxr6_1767225600000_0d0b332e",
+     "entryId": "falconxr6_20_38022c53",
+     "eventIndex": 20,
+     "driver": "Zoe",
+     "label": "local car",
+     "trans": "manual",
+     "power": 309.53554592172685,
+     "weight": 1619.4633898779284,
+     "grip": 0.87484512463212,
+     "mods": [
+      "Light interior strip"
+     ],
+     "visible": "good street tyres, non-factory exhaust, looks stripped"
+    },
+    {
+     "id": "starletgt",
+     "uid": "starletgt_1767225600000_2d54bc16",
+     "entryId": "starletgt_21_02eab254",
+     "eventIndex": 21,
+     "driver": "Casey",
+     "label": "local car",
+     "trans": "manual",
+     "power": 155.190505823483,
+     "weight": 890,
+     "grip": 0.8058926161576527,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust"
+    },
+    {
+     "id": "chaserjzx100",
+     "uid": "chaserjzx100_1767225600000_0aac0711",
+     "entryId": "chaserjzx100_22_e9932b3a",
+     "eventIndex": 22,
+     "driver": "Sarah",
+     "label": "local car",
+     "trans": "manual",
+     "power": 311.6309621028316,
+     "weight": 1480,
+     "grip": 0.8497682472004089,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "i30n",
+     "uid": "i30n_1767225600000_68791fd7",
+     "entryId": "i30n_23_439647c5",
+     "eventIndex": 23,
+     "driver": "Ben",
+     "label": "local car",
+     "trans": "manual",
+     "power": 336.4131749430241,
+     "weight": 1450,
+     "grip": 0.943805188772967,
+     "mods": [],
+     "visible": "serious tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "golfrmk6",
+     "uid": "golfrmk6_1767225600000_dd09825",
+     "entryId": "golfrmk6_24_54866d8",
+     "eventIndex": 24,
+     "driver": "Jay",
+     "label": "serious local",
+     "trans": "manual",
+     "power": 307.26563705994533,
+     "weight": 1521,
+     "grip": 1.025355184393702,
+     "mods": [],
+     "visible": "serious tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "bafairmontv8",
+     "uid": "bafairmontv8_1767225600000_a51e5612",
+     "entryId": "bafairmontv8_25_81f0e6c",
+     "eventIndex": 25,
+     "driver": "Eli",
+     "label": "serious local",
+     "trans": "auto",
+     "power": 349.30770904161756,
+     "weight": 1785,
+     "grip": 0.7814340323733632,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust"
+    },
+    {
+     "id": "is200",
+     "uid": "is200_1767225600000_8ca526b1",
+     "entryId": "is200_26_3a3555b3",
+     "eventIndex": 26,
+     "driver": "Mia",
+     "label": "serious local",
+     "trans": "manual",
+     "power": 202.8360598213745,
+     "weight": 1380,
+     "grip": 0.9088122312224004,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "nissan350z",
+     "uid": "nissan350z_1767225600000_51938586",
+     "entryId": "nissan350z_27_c8a143b8",
+     "eventIndex": 27,
+     "driver": "Chris",
+     "label": "serious local",
+     "trans": "auto",
+     "power": 321.3954000681166,
+     "weight": 1471.1624095530715,
+     "grip": 0.8648196546069812,
+     "mods": [
+      "Light interior strip"
+     ],
+     "visible": "street tyres, non-factory exhaust, looks stripped"
+    },
+    {
+     "id": "lc100",
+     "uid": "lc100_1767225600000_262ede3b",
+     "entryId": "lc100_28_78d418b5",
+     "eventIndex": 28,
+     "driver": "Zoe",
+     "label": "serious local",
+     "trans": "auto",
+     "power": 276.4605609164409,
+     "weight": 2260,
+     "grip": 0.9635650315182284,
+     "mods": [],
+     "visible": "serious tyres, non-factory exhaust"
+    },
+    {
+     "id": "civic",
+     "uid": "civic_1767225600000_c6bddf33",
+     "entryId": "civic_29_e26c7bc1",
+     "eventIndex": 29,
+     "driver": "Riley",
+     "label": "serious local",
+     "trans": "manual",
+     "power": 191.4985299793,
+     "weight": 1080,
+     "grip": 0.8548676702321972,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust"
+    },
+    {
+     "id": "commodoresho",
+     "uid": "commodoresho_1767225600000_86cb381e",
+     "entryId": "commodoresho_30_65ba2e9a",
+     "eventIndex": 30,
+     "driver": "Jess",
+     "label": "quick regular",
+     "trans": "manual",
+     "power": 380.71632842811255,
+     "weight": 1590,
+     "grip": 0.8940511847729795,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "300csrt",
+     "uid": "300csrt_1767225600000_d4aaa139",
+     "entryId": "300csrt_31_e6a7f759",
+     "eventIndex": 31,
+     "driver": "Casey",
+     "label": "quick regular",
+     "trans": "auto",
+     "power": 531.164425090009,
+     "weight": 1995,
+     "grip": 0.9081235682941042,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "soarer",
+     "uid": "soarer_1767225600000_7e6554b8",
+     "entryId": "soarer_32_4ab1ae01",
+     "eventIndex": 32,
+     "driver": "Mia",
+     "label": "quick regular",
+     "trans": "auto",
+     "power": 339.37480617531503,
+     "weight": 1570,
+     "grip": 0.884741964850109,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "bmw335i",
+     "uid": "bmw335i_1767225600000_470ad7c8",
+     "entryId": "bmw335i_33_88ff81fe",
+     "eventIndex": 33,
+     "driver": "Mick",
+     "label": "quick regular",
+     "trans": "auto",
+     "power": 346.0644420304422,
+     "weight": 1600,
+     "grip": 0.917655394396279,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust, possible intercooler"
+    }
+   ],
+   "slotsNoCar": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "slotsWithCar": [
+    3,
+    5,
+    14,
+    17,
+    18,
+    28
+   ],
+   "perfIndex": {
+    "player": 0.09313043478260868,
+    "field": [
+     0.18511749264580749,
+     0.13456142505924926,
+     0.14241419340463649,
+     0.11954986444208988,
+     0.15200537512113907,
+     0.13013561225896264,
+     0.18179033329491287,
+     0.1939297588950444,
+     0.19874391177031536,
+     0.19739637370052515,
+     0.1885049407719442,
+     0.18568339660719826,
+     0.14356980975927258,
+     0.15217695946548734,
+     0.11669813083261688,
+     0.18144103429299158,
+     0.15985011061160617,
+     0.1295360124217591,
+     0.11120476550878652,
+     0.2357496916451586,
+     0.16661123712256504,
+     0.14018732833970557,
+     0.17892844354020285,
+     0.21897137936745795,
+     0.2143875006137668,
+     0.15255228312583502,
+     0.13357963195552439,
+     0.18893159387046876,
+     0.11936103342462359,
+     0.1515795390521248,
+     0.21356161809483537,
+     0.24062535888968417,
+     0.1912478553096644,
+     0.19847993877373352
+    ]
+   },
+   "shuffle10": [
+    8,
+    1,
+    0,
+    5,
+    7,
+    6,
+    2,
+    3,
+    4,
+    9
+   ],
+   "spectatorPairs": [
+    [
+     29,
+     10
+    ],
+    [
+     24,
+     32
+    ],
+    [
+     26,
+     25
+    ],
+    [
+     14,
+     19
+    ],
+    [
+     6,
+     16
+    ],
+    [
+     2,
+     1
+    ],
+    [
+     30,
+     21
+    ],
+    [
+     20,
+     28
+    ],
+    [
+     27,
+     8
+    ],
+    [
+     0,
+     33
+    ],
+    [
+     22,
+     5
+    ],
+    [
+     11,
+     3
+    ],
+    [
+     12,
+     31
+    ],
+    [
+     15,
+     23
+    ],
+    [
+     4,
+     17
+    ],
+    [
+     13,
+     7
+    ],
+    [
+     18,
+     9
+    ]
+   ],
+   "racerPairs": [
+    [
+     22,
+     8
+    ],
+    [
+     6,
+     23
+    ],
+    [
+     30,
+     32
+    ],
+    [
+     12,
+     5
+    ],
+    [
+     7,
+     18
+    ],
+    [
+     10,
+     17
+    ],
+    [
+     21,
+     31
+    ],
+    [
+     16,
+     4
+    ],
+    [
+     24,
+     29
+    ],
+    [
+     14,
+     27
+    ],
+    [
+     28,
+     11
+    ],
+    [
+     3,
+     26
+    ],
+    [
+     15,
+     25
+    ],
+    [
+     19,
+     1
+    ],
+    [
+     9,
+     33
+    ],
+    [
+     13,
+     20
+    ]
+   ]
+  },
+  "bend_open": {
+   "busy": {
+    "name": "Normal night",
+    "runs": 6,
+    "raceSlots": 8,
+    "cars": 46,
+    "watch": 41
+   },
+   "draws": {
+    "eventProfile": 1,
+    "makeOpponents": 381,
+    "pickRaceSlotsNoCar": 0,
+    "pickRaceSlotsWithCar": 0,
+    "shuffle10": 9,
+    "spectatorPairs": 45,
+    "racerPairs": 44
+   },
+   "objectKeys": [
+    "id,name,cat,type,price,weight,power,torque,drive,aero,manual,auto,gears,red,peak,band,asp,baseGrip,upgradeMult,reliability,engine,disp,tyreDia,manualMax,autoMax,shiftBuffer,stallRpm,uid,trans,shiftMode,grip,mods,installed,issueNames,launchBonus,sceneValueBase,basePower,baseWeight,basePeak,baseReliability,upgradeStages,tuneFresh,tuneVariance,tuneSignature,dynoQuality,dynoCurve,buildTags,stallBonus,modSpend,modMarketValue,sceneValue,visible,label,driver,eventIndex,entryId",
+    "id,name,cat,type,price,weight,power,torque,drive,aero,manual,auto,gears,red,peak,band,asp,baseGrip,upgradeMult,reliability,engine,disp,tyreDia,autoMax,shiftBuffer,stallRpm,uid,trans,shiftMode,grip,mods,installed,issueNames,launchBonus,sceneValueBase,basePower,baseWeight,basePeak,baseReliability,upgradeStages,tuneFresh,tuneVariance,tuneSignature,dynoQuality,dynoCurve,buildTags,stallBonus,modSpend,modMarketValue,sceneValue,visible,label,driver,eventIndex,entryId",
+    "id,name,cat,type,price,weight,power,torque,drive,aero,manual,auto,gears,red,peak,band,asp,baseGrip,upgradeMult,reliability,engine,disp,tyreDia,manualMax,shiftBuffer,stallRpm,uid,trans,shiftMode,grip,mods,installed,issueNames,launchBonus,sceneValueBase,basePower,baseWeight,basePeak,baseReliability,upgradeStages,tuneFresh,tuneVariance,tuneSignature,dynoQuality,dynoCurve,buildTags,stallBonus,modSpend,modMarketValue,sceneValue,visible,label,driver,eventIndex,entryId"
+   ],
+   "field": [
+    {
+     "id": "falconxr6t",
+     "uid": "falconxr6t_1767225600000_81d954e1",
+     "entryId": "falconxr6t_0_581a7f31",
+     "eventIndex": 0,
+     "driver": "Ari",
+     "label": "local car",
+     "trans": "auto",
+     "power": 422.96213572461437,
+     "weight": 1725,
+     "grip": 0.820984871617984,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "vncommodorev6",
+     "uid": "vncommodorev6_1767225600000_c123ea6b",
+     "entryId": "vncommodorev6_1_dc202448",
+     "eventIndex": 1,
+     "driver": "Jay",
+     "label": "local car",
+     "trans": "auto",
+     "power": 215.50182347733238,
+     "weight": 1310,
+     "grip": 0.8892698750575073,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "suprana",
+     "uid": "suprana_1767225600000_1b655dd1",
+     "entryId": "suprana_2_326dbe9d",
+     "eventIndex": 2,
+     "driver": "Davo",
+     "label": "local car",
+     "trans": "auto",
+     "power": 264.7283143026095,
+     "weight": 1451.3276132720057,
+     "grip": 0.8529323203722015,
+     "mods": [
+      "Light interior strip"
+     ],
+     "visible": "street tyres, non-factory exhaust, looks stripped"
+    },
+    {
+     "id": "gu",
+     "uid": "gu_1767225600000_90da3bd8",
+     "entryId": "gu_3_dab54bf",
+     "eventIndex": 3,
+     "driver": "Davo",
+     "label": "local car",
+     "trans": "manual",
+     "power": 307.4703010166565,
+     "weight": 2350,
+     "grip": 0.9804361133521888,
+     "mods": [],
+     "visible": "serious tyres, non-factory exhaust"
+    },
+    {
+     "id": "golfgti",
+     "uid": "golfgti_1767225600000_af1fd5ba",
+     "entryId": "golfgti_4_7d164153",
+     "eventIndex": 4,
+     "driver": "Sarah",
+     "label": "local car",
+     "trans": "auto",
+     "power": 238.78985669779232,
+     "weight": 1313.3027367102914,
+     "grip": 0.9111744292965158,
+     "mods": [
+      "Light interior strip"
+     ],
+     "visible": "good street tyres, non-factory exhaust, possible intercooler, looks stripped"
+    },
+    {
+     "id": "vncommodorev6",
+     "uid": "vncommodorev6_1767225600000_79581d6e",
+     "entryId": "vncommodorev6_5_ecc7358d",
+     "eventIndex": 5,
+     "driver": "Rob",
+     "label": "local car",
+     "trans": "auto",
+     "power": 219.86468894455294,
+     "weight": 1310,
+     "grip": 0.8415435673529282,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust"
+    },
+    {
+     "id": "adventrav8",
+     "uid": "adventrav8_1767225600000_168e112b",
+     "entryId": "adventrav8_6_aef07d61",
+     "eventIndex": 6,
+     "driver": "Riley",
+     "label": "local car",
+     "trans": "auto",
+     "power": 385.8491900875877,
+     "weight": 1947,
+     "grip": 0.9709090712713078,
+     "mods": [],
+     "visible": "serious tyres, non-factory exhaust"
+    },
+    {
+     "id": "vtcommodoresho",
+     "uid": "vtcommodoresho_1767225600000_cd57e0f6",
+     "entryId": "vtcommodoresho_7_c6911dda",
+     "eventIndex": 7,
+     "driver": "Sarah",
+     "label": "local car",
+     "trans": "manual",
+     "power": 396.50898547890375,
+     "weight": 1645,
+     "grip": 0.8692279099544976,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust"
+    },
+    {
+     "id": "bmw335i",
+     "uid": "bmw335i_1767225600000_dc9c70df",
+     "entryId": "bmw335i_8_afad6b58",
+     "eventIndex": 8,
+     "driver": "Casey",
+     "label": "local car",
+     "trans": "manual",
+     "power": 414.773583223791,
+     "weight": 1600,
+     "grip": 0.8268645395943894,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "r34gtt",
+     "uid": "r34gtt_1767225600000_6a41847a",
+     "entryId": "r34gtt_9_c02776a4",
+     "eventIndex": 9,
+     "driver": "Zoe",
+     "label": "local car",
+     "trans": "auto",
+     "power": 367.7799303751897,
+     "weight": 1410,
+     "grip": 0.8181813859823159,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "silvia",
+     "uid": "silvia_1767225600000_a90aa25f",
+     "entryId": "silvia_10_0b8d8d59",
+     "eventIndex": 10,
+     "driver": "Noah",
+     "label": "local car",
+     "trans": "manual",
+     "power": 305.59695081986484,
+     "weight": 1260,
+     "grip": 0.8455635587335564,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "vtcommodoresho",
+     "uid": "vtcommodoresho_1767225600000_460a9b5a",
+     "entryId": "vtcommodoresho_11_a380ca79",
+     "eventIndex": 11,
+     "driver": "Mick",
+     "label": "local car",
+     "trans": "auto",
+     "power": 374.2380926681754,
+     "weight": 1645,
+     "grip": 0.8860325966728851,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "commodorev6",
+     "uid": "commodorev6_1767225600000_0252fb71",
+     "entryId": "commodorev6_12_8793da2",
+     "eventIndex": 12,
+     "driver": "Zoe",
+     "label": "local car",
+     "trans": "auto",
+     "power": 266.3536616093551,
+     "weight": 1522,
+     "grip": 0.8905699654389172,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "civic",
+     "uid": "civic_1767225600000_dad24e0a",
+     "entryId": "civic_13_f52ab76e",
+     "eventIndex": 13,
+     "driver": "Alex",
+     "label": "local car",
+     "trans": "manual",
+     "power": 198.5603706811483,
+     "weight": 1080,
+     "grip": 0.9002562582970131,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "is200",
+     "uid": "is200_1767225600000_7d812c04",
+     "entryId": "is200_14_578ea564",
+     "eventIndex": 14,
+     "driver": "Ari",
+     "label": "local car",
+     "trans": "manual",
+     "power": 191.49751186384887,
+     "weight": 1380,
+     "grip": 0.9139937269571237,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "silvia",
+     "uid": "silvia_1767225600000_f71e510f",
+     "entryId": "silvia_15_a610fa8e",
+     "eventIndex": 15,
+     "driver": "Mia",
+     "label": "local car",
+     "trans": "auto",
+     "power": 286.47364316159855,
+     "weight": 1260,
+     "grip": 0.8733335428580176,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "focusxr5",
+     "uid": "focusxr5_1767225600000_2d08c89f",
+     "entryId": "focusxr5_16_8850f737",
+     "eventIndex": 16,
+     "driver": "Sarah",
+     "label": "local car",
+     "trans": "manual",
+     "power": 260.85104141030746,
+     "weight": 1351.9837816909421,
+     "grip": 0.9055680451728403,
+     "mods": [
+      "Light interior strip"
+     ],
+     "visible": "good street tyres, non-factory exhaust, possible intercooler, looks stripped"
+    },
+    {
+     "id": "mx5",
+     "uid": "mx5_1767225600000_c3e2e6ff",
+     "entryId": "mx5_17_729a6626",
+     "eventIndex": 17,
+     "driver": "Davo",
+     "label": "local car",
+     "trans": "manual",
+     "power": 160.74825244995836,
+     "weight": 1060,
+     "grip": 0.937922621105099,
+     "mods": [],
+     "visible": "serious tyres, non-factory exhaust"
+    },
+    {
+     "id": "is200",
+     "uid": "is200_1767225600000_33730a77",
+     "entryId": "is200_18_0f2c172f",
+     "eventIndex": 18,
+     "driver": "Davo",
+     "label": "local car",
+     "trans": "manual",
+     "power": 189.41796908334896,
+     "weight": 1380,
+     "grip": 0.8813712749467231,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "evo8",
+     "uid": "evo8_1767225600000_733c450b",
+     "entryId": "evo8_19_7c459bad",
+     "eventIndex": 19,
+     "driver": "Sarah",
+     "label": "local car",
+     "trans": "manual",
+     "power": 350.301805013166,
+     "weight": 1410,
+     "grip": 1.0000417565670796,
+     "mods": [],
+     "visible": "serious tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "falconxr6",
+     "uid": "falconxr6_1767225600000_0d0b332e",
+     "entryId": "falconxr6_20_38022c53",
+     "eventIndex": 20,
+     "driver": "Zoe",
+     "label": "local car",
+     "trans": "manual",
+     "power": 333.93554592172677,
+     "weight": 1619.4633898779284,
+     "grip": 0.87484512463212,
+     "mods": [
+      "Light interior strip"
+     ],
+     "visible": "good street tyres, non-factory exhaust, looks stripped"
+    },
+    {
+     "id": "starletgt",
+     "uid": "starletgt_1767225600000_2d54bc16",
+     "entryId": "starletgt_21_02eab254",
+     "eventIndex": 21,
+     "driver": "Casey",
+     "label": "local car",
+     "trans": "manual",
+     "power": 168.49050582348298,
+     "weight": 890,
+     "grip": 0.8058926161576527,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust"
+    },
+    {
+     "id": "chaserjzx100",
+     "uid": "chaserjzx100_1767225600000_0aac0711",
+     "entryId": "chaserjzx100_22_e9932b3a",
+     "eventIndex": 22,
+     "driver": "Sarah",
+     "label": "local car",
+     "trans": "manual",
+     "power": 339.23096210283154,
+     "weight": 1480,
+     "grip": 0.8497682472004089,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "i30n",
+     "uid": "i30n_1767225600000_68791fd7",
+     "entryId": "i30n_23_439647c5",
+     "eventIndex": 23,
+     "driver": "Ben",
+     "label": "local car",
+     "trans": "manual",
+     "power": 363.51317494302407,
+     "weight": 1450,
+     "grip": 0.943805188772967,
+     "mods": [],
+     "visible": "serious tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "golfrmk6",
+     "uid": "golfrmk6_1767225600000_dd09825",
+     "entryId": "golfrmk6_24_54866d8",
+     "eventIndex": 24,
+     "driver": "Jay",
+     "label": "local car",
+     "trans": "manual",
+     "power": 332.8656370599453,
+     "weight": 1521,
+     "grip": 1.025355184393702,
+     "mods": [],
+     "visible": "serious tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "bafairmontv8",
+     "uid": "bafairmontv8_1767225600000_a51e5612",
+     "entryId": "bafairmontv8_25_81f0e6c",
+     "eventIndex": 25,
+     "driver": "Eli",
+     "label": "local car",
+     "trans": "auto",
+     "power": 378.8077090416175,
+     "weight": 1785,
+     "grip": 0.7814340323733632,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust"
+    },
+    {
+     "id": "is200",
+     "uid": "is200_1767225600000_8ca526b1",
+     "entryId": "is200_26_80c6faca",
+     "eventIndex": 26,
+     "driver": "Sam",
+     "label": "local car",
+     "trans": "manual",
+     "power": 203.42931220197187,
+     "weight": 1380,
+     "grip": 0.9001531668251845,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "soarer",
+     "uid": "soarer_1767225600000_c98d762a",
+     "entryId": "soarer_27_1e59c45f",
+     "eventIndex": 27,
+     "driver": "Noah",
+     "label": "local car",
+     "trans": "auto",
+     "power": 359.11223870684313,
+     "weight": 1570,
+     "grip": 0.844832156326156,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "golfgti",
+     "uid": "golfgti_1767225600000_5dc59aa9",
+     "entryId": "golfgti_28_96a94364",
+     "eventIndex": 28,
+     "driver": "Ben",
+     "label": "local car",
+     "trans": "manual",
+     "power": 261.02768811561737,
+     "weight": 1361.7643809698056,
+     "grip": 0.8572443238587584,
+     "mods": [
+      "Light interior strip"
+     ],
+     "visible": "street tyres, non-factory exhaust, possible intercooler, looks stripped"
+    },
+    {
+     "id": "rx8",
+     "uid": "rx8_1767225600000_78d418b5",
+     "entryId": "rx8_29_32edd233",
+     "eventIndex": 29,
+     "driver": "Chris",
+     "label": "local car",
+     "trans": "auto",
+     "power": 265.2161685775908,
+     "weight": 1370,
+     "grip": 0.91204183935537,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "vesv6",
+     "uid": "vesv6_1767225600000_e26c7bc1",
+     "entryId": "vesv6_30_9aa2558e",
+     "eventIndex": 30,
+     "driver": "Tayla",
+     "label": "local car",
+     "trans": "auto",
+     "power": 343.3251369720955,
+     "weight": 1715,
+     "grip": 0.8428604876843746,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust"
+    },
+    {
+     "id": "r34gtt",
+     "uid": "r34gtt_1767225600000_38389a17",
+     "entryId": "r34gtt_31_c548d6f6",
+     "eventIndex": 31,
+     "driver": "Ben",
+     "label": "local car",
+     "trans": "manual",
+     "power": 340.11270127047715,
+     "weight": 1410,
+     "grip": 0.8793629597034305,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "bmw130i",
+     "uid": "bmw130i_1767225600000_fdeefc0b",
+     "entryId": "bmw130i_32_2b31d426",
+     "eventIndex": 32,
+     "driver": "Eli",
+     "label": "local car",
+     "trans": "manual",
+     "power": 353.175591944105,
+     "weight": 1450,
+     "grip": 0.8433827354724053,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust"
+    },
+    {
+     "id": "gu",
+     "uid": "gu_1767225600000_8681b9d6",
+     "entryId": "gu_33_2819963c",
+     "eventIndex": 33,
+     "driver": "Rob",
+     "label": "serious local",
+     "trans": "manual",
+     "power": 295.70244605993275,
+     "weight": 2350,
+     "grip": 0.9697301643993705,
+     "mods": [],
+     "visible": "serious tyres, non-factory exhaust"
+    },
+    {
+     "id": "300csrt",
+     "uid": "300csrt_1767225600000_b384abe2",
+     "entryId": "300csrt_34_f0b9028d",
+     "eventIndex": 34,
+     "driver": "Chris",
+     "label": "serious local",
+     "trans": "auto",
+     "power": 561.0003175850097,
+     "weight": 1995,
+     "grip": 0.7796893938269932,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust"
+    },
+    {
+     "id": "effalconxr6",
+     "uid": "effalconxr6_1767225600000_68319876",
+     "entryId": "effalconxr6_35_45d311b2",
+     "eventIndex": 35,
+     "driver": "Eli",
+     "label": "serious local",
+     "trans": "manual",
+     "power": 286.92761451068975,
+     "weight": 1530,
+     "grip": 0.8692827161110472,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust"
+    },
+    {
+     "id": "effalconxr6",
+     "uid": "effalconxr6_1767225600000_721d114f",
+     "entryId": "effalconxr6_36_844d9b29",
+     "eventIndex": 36,
+     "driver": "Tayla",
+     "label": "serious local",
+     "trans": "manual",
+     "power": 289.0831607642368,
+     "weight": 1530,
+     "grip": 0.9045335427916144,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "lancer",
+     "uid": "lancer_1767225600000_40cd0ac9",
+     "entryId": "lancer_37_4d4e4313",
+     "eventIndex": 37,
+     "driver": "Rob",
+     "label": "serious local",
+     "trans": "manual",
+     "power": 159.87180413191132,
+     "weight": 1290,
+     "grip": 0.8113944284291937,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust"
+    },
+    {
+     "id": "r33gtst",
+     "uid": "r33gtst_1767225600000_65418a28",
+     "entryId": "r33gtst_38_282a96c9",
+     "eventIndex": 38,
+     "driver": "Chris",
+     "label": "serious local",
+     "trans": "manual",
+     "power": 300.86287039893216,
+     "weight": 1370,
+     "grip": 0.8743859707738738,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "bafairmontv8",
+     "uid": "bafairmontv8_1767225600000_dede850f",
+     "entryId": "bafairmontv8_39_0b9f1cd",
+     "eventIndex": 39,
+     "driver": "Ari",
+     "label": "serious local",
+     "trans": "auto",
+     "power": 359.08433218210246,
+     "weight": 1721.3634035200812,
+     "grip": 0.8379816830682103,
+     "mods": [
+      "Light interior strip"
+     ],
+     "visible": "street tyres, non-factory exhaust, looks stripped"
+    },
+    {
+     "id": "falconxr6t",
+     "uid": "falconxr6t_1767225600000_abef3465",
+     "entryId": "falconxr6t_40_f1177028",
+     "eventIndex": 40,
+     "driver": "Mick",
+     "label": "serious local",
+     "trans": "manual",
+     "power": 470.314567595006,
+     "weight": 1667.904804861173,
+     "grip": 0.8865082008438184,
+     "mods": [
+      "Light interior strip"
+     ],
+     "visible": "good street tyres, non-factory exhaust, possible intercooler, looks stripped"
+    },
+    {
+     "id": "mr2sw20t",
+     "uid": "mr2sw20t_1767225600000_d9630dd2",
+     "entryId": "mr2sw20t_41_cd3e13fd",
+     "eventIndex": 41,
+     "driver": "Alex",
+     "label": "quick regular",
+     "trans": "manual",
+     "power": 300.8593537977288,
+     "weight": 1224.0606673562434,
+     "grip": 0.984670988812577,
+     "mods": [
+      "Light interior strip"
+     ],
+     "visible": "serious tyres, non-factory exhaust, possible intercooler, looks stripped"
+    },
+    {
+     "id": "chaserjzx100",
+     "uid": "chaserjzx100_1767225600000_8f16741",
+     "entryId": "chaserjzx100_42_05c759ea",
+     "eventIndex": 42,
+     "driver": "Davo",
+     "label": "quick regular",
+     "trans": "auto",
+     "power": 331.5561050041478,
+     "weight": 1394.6186316281091,
+     "grip": 0.9049467225687112,
+     "mods": [
+      "Light interior strip"
+     ],
+     "visible": "good street tyres, non-factory exhaust, possible intercooler, looks stripped"
+    },
+    {
+     "id": "volvos60t5",
+     "uid": "volvos60t5_1767225600000_b82b91ec",
+     "entryId": "volvos60t5_43_20221875",
+     "eventIndex": 43,
+     "driver": "Chris",
+     "label": "quick regular",
+     "trans": "manual",
+     "power": 353.6004453928542,
+     "weight": 1545,
+     "grip": 0.8471488508151378,
+     "mods": [],
+     "visible": "street tyres, non-factory exhaust, possible intercooler"
+    },
+    {
+     "id": "falconv8",
+     "uid": "falconv8_1767225600000_a3a5b949",
+     "entryId": "falconv8_44_5b6b5a44",
+     "eventIndex": 44,
+     "driver": "Chris",
+     "label": "quick regular",
+     "trans": "manual",
+     "power": 497.6156398510345,
+     "weight": 1740,
+     "grip": 0.9071145221358166,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    },
+    {
+     "id": "aufalconxr6",
+     "uid": "aufalconxr6_1767225600000_84528cc3",
+     "entryId": "aufalconxr6_45_df7494bb",
+     "eventIndex": 45,
+     "driver": "Riley",
+     "label": "quick regular",
+     "trans": "auto",
+     "power": 274.68958832712553,
+     "weight": 1565,
+     "grip": 0.8769534873159136,
+     "mods": [],
+     "visible": "good street tyres, non-factory exhaust"
+    }
+   ],
+   "slotsNoCar": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "slotsWithCar": [
+    3,
+    5,
+    14,
+    17,
+    18,
+    26,
+    33,
+    37
+   ],
+   "perfIndex": {
+    "player": 0.09313043478260868,
+    "field": [
+     0.20057706135897455,
+     0.14593843157803077,
+     0.15557847402716504,
+     0.12990067393802632,
+     0.1656733099813868,
+     0.14090202515582792,
+     0.19795065102380144,
+     0.20951773661155365,
+     0.21435097995515942,
+     0.21341183912826409,
+     0.20508067085187978,
+     0.20157273496698558,
+     0.15547784194681924,
+     0.16551408921803565,
+     0.1268315395445328,
+     0.1985611442204463,
+     0.17471982345512357,
+     0.141893939304214,
+     0.12097649051363062,
+     0.2559128620654198,
+     0.1797448311131518,
+     0.152201539241491,
+     0.19477547301502127,
+     0.23661077289555957,
+     0.23224930926971382,
+     0.16543574442864853,
+     0.13269386927802473,
+     0.19324176241389526,
+     0.16431954538840945,
+     0.17656076074181734,
+     0.16852941233337956,
+     0.21211525646945778,
+     0.2054222047144174,
+     0.12356479516133487,
+     0.21819872118613776,
+     0.1624335292099785,
+     0.17029024056956213,
+     0.10055743498880326,
+     0.19202209708290838,
+     0.17438730125679222,
+     0.24907701215461653,
+     0.24202025708200003,
+     0.21514169090145946,
+     0.19388492618917627,
+     0.25848813425673384,
+     0.15355390187287835
+    ]
+   },
+   "shuffle10": [
+    9,
+    5,
+    8,
+    6,
+    3,
+    1,
+    0,
+    4,
+    7,
+    2
+   ],
+   "spectatorPairs": [
+    [
+     11,
+     18
+    ],
+    [
+     41,
+     13
+    ],
+    [
+     39,
+     16
+    ],
+    [
+     33,
+     38
+    ],
+    [
+     2,
+     36
+    ],
+    [
+     45,
+     5
+    ],
+    [
+     29,
+     32
+    ],
+    [
+     6,
+     28
+    ],
+    [
+     43,
+     14
+    ],
+    [
+     17,
+     12
+    ],
+    [
+     27,
+     23
+    ],
+    [
+     15,
+     9
+    ],
+    [
+     37,
+     3
+    ],
+    [
+     42,
+     30
+    ],
+    [
+     20,
+     25
+    ],
+    [
+     24,
+     21
+    ],
+    [
+     10,
+     1
+    ],
+    [
+     44,
+     0
+    ],
+    [
+     26,
+     4
+    ],
+    [
+     7,
+     22
+    ],
+    [
+     40,
+     19
+    ],
+    [
+     31,
+     35
+    ],
+    [
+     34,
+     8
+    ]
+   ],
+   "racerPairs": [
+    [
+     30,
+     42
+    ],
+    [
+     22,
+     44
+    ],
+    [
+     37,
+     17
+    ],
+    [
+     32,
+     35
+    ],
+    [
+     4,
+     33
+    ],
+    [
+     7,
+     29
+    ],
+    [
+     26,
+     23
+    ],
+    [
+     28,
+     1
+    ],
+    [
+     36,
+     19
+    ],
+    [
+     12,
+     40
+    ],
+    [
+     8,
+     20
+    ],
+    [
+     38,
+     43
+    ],
+    [
+     15,
+     13
+    ],
+    [
+     3,
+     6
+    ],
+    [
+     39,
+     11
+    ],
+    [
+     5,
+     25
+    ],
+    [
+     31,
+     45
+    ],
+    [
+     2,
+     41
+    ],
+    [
+     18,
+     10
+    ],
+    [
+     9,
+     34
+    ],
+    [
+     24,
+     14
+    ],
+    [
+     21,
+     16
+    ]
+   ]
+  }
+ },
+ "arrival": {
+  "draws": {
+   "travel": 802,
+   "chooseRoundOpponent": 73
+  },
+  "pendingEqualsArrived": true,
+  "reloadEqualsSaved": true,
+  "networkRequests": 0,
+  "totalCars": 74,
+  "busy": {
+   "name": "Packed night",
+   "runs": 2,
+   "raceSlots": 8,
+   "cars": 74,
+   "watch": 58
+  },
+  "raceSlots": [
+   3,
+   8,
+   24,
+   26,
+   42,
+   43,
+   45,
+   48,
+   49,
+   71
+  ],
+  "lineup": [
+   {
+    "type": "npc",
+    "aIdx": 26,
+    "bIdx": 23,
+    "done": false,
+    "label": "Race 1"
+   },
+   {
+    "type": "npc",
+    "aIdx": 53,
+    "bIdx": 73,
+    "done": false,
+    "label": "Race 2"
+   },
+   {
+    "type": "player",
+    "opponentIndex": 3,
+    "done": false,
+    "label": "Your race"
+   },
+   {
+    "type": "npc",
+    "aIdx": 72,
+    "bIdx": 14,
+    "done": false,
+    "label": "Race 3"
+   },
+   {
+    "type": "npc",
+    "aIdx": 41,
+    "bIdx": 69,
+    "done": false,
+    "label": "Race 4"
+   },
+   {
+    "type": "npc",
+    "aIdx": 2,
+    "bIdx": 17,
+    "done": false,
+    "label": "Race 5"
+   }
+  ],
+  "drivers": [
+   "Sarah",
+   "Ari",
+   "Zoe",
+   "Mia",
+   "Ben",
+   "Tayla",
+   "Jay",
+   "Rob",
+   "Eli",
+   "Jay",
+   "Sam",
+   "Alex",
+   "Mick",
+   "Zoe",
+   "Ben",
+   "Rob",
+   "Davo",
+   "Tayla",
+   "Alex",
+   "Alex",
+   "Mick",
+   "Mick",
+   "Zoe",
+   "Tayla",
+   "Riley",
+   "Mick",
+   "Rob",
+   "Ari",
+   "Rob",
+   "Chris",
+   "Alex",
+   "Tayla",
+   "Zoe",
+   "Chris",
+   "Jay",
+   "Sam",
+   "Jay",
+   "Mick",
+   "Jay",
+   "Casey",
+   "Ari",
+   "Chris",
+   "Mick",
+   "Mick",
+   "Ben",
+   "Sam",
+   "Davo",
+   "Mick",
+   "Ari",
+   "Alex",
+   "Eli",
+   "Ben",
+   "Ari",
+   "Tayla",
+   "Noah",
+   "Ari",
+   "Ari",
+   "Mick",
+   "Mick",
+   "Alex",
+   "Casey",
+   "Sam",
+   "Ben",
+   "Ari",
+   "Zoe",
+   "Davo",
+   "Noah",
+   "Mick",
+   "Ben",
+   "Riley",
+   "Chris",
+   "Ari",
+   "Jay",
+   "Jay"
+  ],
+  "ids": [
+   "i30n",
+   "wrx",
+   "civic",
+   "gu",
+   "c63",
+   "golfrmk6",
+   "civic",
+   "civic",
+   "lancer",
+   "bmw130i",
+   "evo8",
+   "300csrt",
+   "evo8",
+   "i30n",
+   "golfgti",
+   "falconv8",
+   "commodoresho",
+   "monaro",
+   "focusxr5",
+   "commodorev6",
+   "bmw335i",
+   "bafairmontv8",
+   "vtcommodoresho",
+   "lc100",
+   "commodorev6",
+   "soarer",
+   "corolla",
+   "falconv8",
+   "meganers250",
+   "focusxr5",
+   "adventrav8",
+   "is200",
+   "m3",
+   "effalconxr6",
+   "vncommodorev6",
+   "evo8",
+   "vncommodorev6",
+   "evo8",
+   "c63",
+   "adventrav8",
+   "vesv6",
+   "r34gtt",
+   "lc80",
+   "gqpatrol",
+   "audis3_8p",
+   "lc100",
+   "bmw335i",
+   "vesv6",
+   "gqpatrol",
+   "lc80",
+   "bafairmontv8",
+   "commodorev6",
+   "vncommodorev6",
+   "commodoresho",
+   "vncommodorev6",
+   "focusxr5",
+   "lc80",
+   "lc80",
+   "commodoresho",
+   "bafairmontv8",
+   "audis3_8p",
+   "volvos60t5",
+   "lc100",
+   "i30n",
+   "is200",
+   "chaserjzx100",
+   "chaserjzx100",
+   "lc100",
+   "starletgt",
+   "chaserjzx100",
+   "focusxr5",
+   "lancer",
+   "bafairmontv8",
+   "wrx"
+  ],
+  "opponentsSha256": "0b948c5d8bcbf0e8fde45c03a35cff4884da26aad8f68c716b359ac7e147aae7"
+ },
+ "slotBoundaries": {
+  "ratios": [
+   1,
+   0.885,
+   0.8801,
+   0.8799,
+   0.875,
+   0.5
+  ],
+  "perf": [
+   1,
+   0.885,
+   0.8801000000000001,
+   0.8799,
+   0.8750000000000001,
+   0.5
+  ],
+  "one": [
+   0,
+   3,
+   4,
+   5
+  ],
+  "three": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "all": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5
+  ]
+ }
+}
