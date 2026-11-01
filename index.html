@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Street to Strip - Public Beta</title>
   <!-- Stylesheets, in cascade order. When any extracted file changes, bump ?v= on every extracted asset (docs/MODULARISATION.md). -->
-  <link rel="stylesheet" href="css/base.css?v=2026.11.01-3">
-  <link rel="stylesheet" href="css/you-yangs.css?v=2026.11.01-3">
-  <link rel="stylesheet" href="css/race-night.css?v=2026.11.01-3">
-  <link rel="stylesheet" href="css/event-presentation.css?v=2026.11.01-3">
+  <link rel="stylesheet" href="css/base.css?v=2026.11.01-4">
+  <link rel="stylesheet" href="css/you-yangs.css?v=2026.11.01-4">
+  <link rel="stylesheet" href="css/race-night.css?v=2026.11.01-4">
+  <link rel="stylesheet" href="css/event-presentation.css?v=2026.11.01-4">
 </head>
 <body>
 <header>
@@ -60,8 +60,9 @@
   <div class="splashShade"></div>
   <div class="splashContent"><h2>Street to Strip</h2><p>Buy cheap · Build smart · Race the quarter</p><button class="splashSkip" type="button" onclick="dismissSplash()">Enter the pits</button></div>
 </div>
-<script src="js/data/vehicles.js?v=2026.11.01-3"></script>
-<script src="js/data/events.js?v=2026.11.01-3"></script>
+<script src="js/data/vehicles.js?v=2026.11.01-4"></script>
+<script src="js/data/events.js?v=2026.11.01-4"></script>
+<script src="js/systems/opponent-generation.js?v=2026.11.01-4"></script>
 <script>
 const QMB_API_URL='https://elebvltrvcqqyyjwwydi.supabase.co/functions/v1/qmb-api-v2';
 const QMB_PUBLISHABLE_KEY='sb_publishable_wgUH3E8Nepy-6QC_dXpVtA_Uyszqkrm';
@@ -601,31 +602,19 @@ function confirmArrival(kind){
   render();
 }
 
-function eventProfile(ev=EVENT_CALENDAR[0]){let roll=Math.random();let base=roll<.25?{name:'Quiet night',runs:10,raceSlots:4,cars:18,watch:18}:roll<.6?{name:'Normal night',runs:6,raceSlots:6,cars:34,watch:30}:roll<.87?{name:'Busy night',runs:4,raceSlots:8,cars:56,watch:44}:{name:'Packed night',runs:2,raceSlots:8,cars:74,watch:58};base.cars=Math.round(base.cars*(ev.fieldMult||1));base.watch=Math.round(base.watch*(ev.fieldMult||1));base.raceSlots=Math.min(base.raceSlots+Math.floor((ev.reqRespect||0)/10),14);return base;}
+// eventProfile (opponent generation) is in js/systems/opponent-generation.js, which loads before this script.
 function startEvent(kind,eventId='heathcote_legal'){travelToEvent(eventId);}
-function makeOpponents(n,ev=null){let pool=CARS.filter(c=>c.price<34000);let names=['Mick','Sarah','Davo','Jess','Rob','Tayla','Chris','Ari','Ben','Mia','Noah','Eli','Zoe','Jay','Sam','Alex','Riley','Casey'];return Array.from({length:n},(_,i)=>{let base=choice(pool);let trans=base.manual&&(!base.auto||Math.random()<.55)?'manual':'auto';let o=makeOwned(base,trans);let tier=i/n;let level=rand(.9,1.14)+(state.respect/260)+(tier>.75?rand(.02,.12):0)+(ev?ev.opponentBoost||0:0);o.power*=level;o.grip+=rand(-.035,.09)+(tier>.75?.025:0);if(Math.random()<.18){o.weight-=rand(25,90);o.mods.push('Light interior strip');}o.visible=visibleClues(o);o.label=tier>.88?'quick regular':tier>.7?'serious local':'local car';o.driver=choice(names);o.eventIndex=i;o.entryId=o.id+'_'+i+'_'+Math.random().toString(16).slice(2);return o;});}
-function perfIndex(c){let driveBonus=(c.drive==='AWD'||c.drive==='4WD')?1.035:1;let aeroPenalty=1-Math.max(0,(c.aero||.32)-.32)*.12;return (c.power/Math.max(700,c.weight))*(c.grip||.84)*driveBonus*aeroPenalty;}
-function pickRaceSlots(field,n){
-  if(!state.car){return field.slice(0,Math.min(n,field.length)).map((_,i)=>i)}
-  let playerScore=perfIndex(state.car);
-  let scored=field.map((o,i)=>({i,score:perfIndex(o),gap:Math.abs(perfIndex(o)-playerScore)}));
-  let matched=scored.slice().sort((a,b)=>a.gap-b.gap).slice(0,Math.min(n,field.length));
-  let obviouslySlower=scored.filter(x=>x.score<playerScore*.88);
-  let combined=[];
-  for(const item of [...matched,...obviouslySlower]){if(!combined.includes(item.i))combined.push(item.i)}
-  return combined.sort((a,b)=>a-b);
-}
+// makeOpponents, perfIndex, pickRaceSlots (opponent generation) are in js/systems/opponent-generation.js, which loads before this script.
 function completeEventNight(reason='The event night is over.',kind='event',details=[]){let e=state.lastEvent;if(!e||e.dayAdvanced)return;let summary=finaliseEventSummary(e),ledger=e.bettingLedger||{profit:0,movedIntoProfit:false,wagerAfterProfit:false};let newlyUnlocked=checkRelevantBadges('event_completed',{eventName:e.eventName,venue:e.eventDef&&e.eventDef.venue,bettingProfit:ledger.profit,wagerAfterProfit:ledger.wagerAfterProfit,disqualified:kind==='bad'});let before=snapshot();advanceGameDays(1);e.dayAdvanced=true;e.over=true;if(newlyUnlocked.length)persistBadgeState();let summaryDetails=summary?[`Cash net ${signedMoney(summary.cashNet)}`,`Respect net ${signedNumber(summary.respectNet,1)}`,`Races ${summary.raceCount}`,`Event P/L ${signedMoney(summary.cashNet)}`]:[];logChange(reason+' A new day begins.',before,kind,[...details,...summaryDetails]);if(state.pendingSale){completePendingSale(state.pendingSale.amount,state.pendingSale.buyer,state.pendingSale.vehicleId);return;}processMarketDay();}
 function finaliseEventSummary(e){normaliseAccounting();if(!e)return null;if(e.eventSummary)return e.eventSummary;let entries=e.eventAccounting||[];let cashIn=sumAccounting(entries,'cashDelta',x=>x.cashDelta>0);let cashOut=sumAccounting(entries,'cashDelta',x=>x.cashDelta<0);let respectIn=sumAccounting(entries,'respectDelta',x=>x.respectDelta>0);let respectOut=sumAccounting(entries,'respectDelta',x=>x.respectDelta<0);let summary={id:(e.eventId||'event')+'_'+(e.day||state.day)+'_'+Date.now(),season:seasonForDay(e.day||state.day),day:e.day||state.day,eventName:e.eventName||'Event',venue:e.eventDef?e.eventDef.venue:'',tier:e.eventDef?e.eventDef.tier:'',kind:e.kind||'event',startMoney:e.eventStartMoney!==undefined?e.eventStartMoney:state.money,startRespect:e.eventStartRespect!==undefined?e.eventStartRespect:state.respect,endMoney:state.money,endRespect:state.respect,cashIn,cashOut,cashNet:state.money-(e.eventStartMoney!==undefined?e.eventStartMoney:state.money),respectIn,respectOut,respectNet:state.respect-(e.eventStartRespect!==undefined?e.eventStartRespect:state.respect),raceCount:(e.raceReports||[]).length,winCount:(e.raceReports||[]).filter(r=>r.win).length,lossCount:(e.raceReports||[]).filter(r=>!r.win&&r.result!=='DEAD HEAT').length,raceReports:(e.raceReports||[]).slice(),entries:entries.slice()};e.eventSummary=summary;state.eventSummaries.push(summary);return summary;}
 function balanceTableRows(entries){if(!entries.length)return '<tr><td colspan="5" class="muted">No balance movements recorded.</td></tr>';return entries.map(x=>`<tr><td>Day ${x.day}</td><td>${x.kind}</td><td>${x.label}</td><td class="${x.cashDelta>=0?'goodText':'badText'}">${x.cashDelta?signedMoney(x.cashDelta):'-'}</td><td class="${x.respectDelta>=0?'goodText':'badText'}">${x.respectDelta?signedNumber(x.respectDelta,1):'-'}</td></tr>`).join('');}
 function eventSummaryHtml(summary){if(!summary)return '<p class="muted">No event summary available.</p>';let raceRows=summary.raceReports.length?summary.raceReports.map(r=>`<tr><td>${r.result}</td><td>${r.opponent}</td><td>${rtRunCell(r,true)}</td><td>${rtRunCell(r,false)}</td><td class="${r.cashDelta>=0?'goodText':'badText'}">${signedMoney(r.cashDelta)}</td><td class="goodText">${signedNumber(r.respectDelta,1)}</td></tr>`).join(''):'<tr><td colspan="6" class="muted">No personal races recorded.</td></tr>';return `<div class="arrivalBanner"><h3>End of Event Summary</h3><div class="raceHud"><div class="gauge"><div class="muted">Cash start</div><div class="value">${fmt(summary.startMoney)}</div></div><div class="gauge"><div class="muted">Cash finish</div><div class="value">${fmt(summary.endMoney)}</div></div><div class="gauge"><div class="muted">Event cash P/L</div><div class="value ${summary.cashNet>=0?'goodText':'badText'}">${signedMoney(summary.cashNet)}</div></div><div class="gauge"><div class="muted">Respect net</div><div class="value ${summary.respectNet>=0?'goodText':'badText'}">${signedNumber(summary.respectNet,1)}</div></div></div><div class="hr"></div><h3>Cash balance sheet</h3><p class="small muted">Income ${fmt(summary.cashIn)} / Costs ${fmt(Math.abs(summary.cashOut))} / Net <b>${signedMoney(summary.cashNet)}</b></p><h3>Respect balance sheet</h3><p class="small muted">Gained ${summary.respectIn.toFixed(1)} / Lost ${Math.abs(summary.respectOut).toFixed(1)} / Net <b>${signedNumber(summary.respectNet,1)}</b></p><div class="hr"></div><h3>Race report</h3><table style="width:100%;border-collapse:collapse"><thead><tr><th align="left">Result</th><th align="left">Opponent</th><th align="left">Your run</th><th align="left">Opponent run</th><th align="left">Cash</th><th align="left">Respect</th></tr></thead><tbody>${raceRows}</tbody></table></div>`;}
-function visibleClues(o){let clues=[];if(o.grip>.93)clues.push('serious tyres');else if(o.grip>.87)clues.push('good street tyres');else clues.push('street tyres');if(o.power>carById(o.id)?.power*1.08)clues.push('non-factory exhaust');if(o.asp==='turbo'&&o.power>230)clues.push('possible intercooler');if(o.weight<carById(o.id)?.weight-25)clues.push('looks stripped');return clues.join(', ')}
+// visibleClues (opponent generation) is in js/systems/opponent-generation.js, which loads before this script.
 function ensureEventShape(e){if(!e)return;if(!e.raceSlots)e.raceSlots=(e.opponents||[]).slice(0,4).map((_,i)=>i);if(!e.totalCars)e.totalCars=(e.opponents||[]).length;if(e.dayAdvanced===undefined)e.dayAdvanced=false;}
 function opponentBrief(o){return `${o.driver?o.driver+' - ':''}${o.name} / ${o.type} / ${o.drive}`}
 function carClueLine(o){return `<p class="clue">Visible clues: ${o.visible||'street car, details unclear'}</p>`}
 function raceSlotCard(i){let e=state.lastEvent,o=e.opponents[i];let rec=getEventRaceRecord(o);let slower=state.car&&perfIndex(o)<perfIndex(state.car)*.88;let recText=rec.attempts?`<p class="small warning">Your record tonight: ${rec.wins}-${rec.losses} across ${rec.attempts} run${rec.attempts===1?'':'s'}. ${rec.wins?'Repeat-win rewards are reduced.':''}${rec.losses&&!rec.wins?' Revenge bonus available if you beat them.':''}</p>`:'';return `<div class="opponent"><h3>${o.name}</h3><p class="muted">${opponentBrief(o)}${slower?' / slower on paper':' / matched call-up'}</p>${carClueLine(o)}${recText}<div class="btns"><button class="btn" onclick="chooseRoundOpponent(${i})">Queue against this car</button></div></div>`}
-function shuffleIndexes(arr){let out=arr.slice();for(let i=out.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]];}return out;}
-function buildNpcPairIndexes(e,exclude=[]){let banned=new Set(exclude);let indexes=shuffleIndexes(e.opponents.map((_,i)=>i).filter(i=>!banned.has(i)));let pairs=[];for(let i=0;i<indexes.length-1;i+=2){pairs.push([indexes[i],indexes[i+1]]);}return pairs;}
+// shuffleIndexes, buildNpcPairIndexes (opponent generation) are in js/systems/opponent-generation.js, which loads before this script.
 function prepareSpectatorRound(shouldLog=true){let e=state.lastEvent;if(!e||e.over)return;let pairCount=Math.min(6,Math.max(2,Math.ceil((e.watchesLeft||0)/2)+2));let pairs=buildNpcPairIndexes(e).slice(0,pairCount);e.roundNo=(e.roundNo||0)+1;e.selectedOpponentIndex=null;e.lineup=pairs.map((p,idx)=>({type:'npc',aIdx:p[0],bIdx:p[1],done:false,label:'Race '+(idx+1)}));e.queueIndex=0;if(shouldLog)log(`The staging lanes reset for round ${e.roundNo}. The next race card is ready.`, 'event', [`Line-up races ${e.lineup.length}`]);}
 function chooseRoundOpponent(i){let e=state.lastEvent;if(!e||e.kind!=='race'||e.runsLeft<=0||!(e.raceSlots||[]).includes(i))return;e.roundNo=(e.roundNo||0)+1;e.selectedOpponentIndex=i;let pairs=buildNpcPairIndexes(e,[i]).slice(0,Math.min(5,Math.max(3,e.busy&&e.busy.name==='Quiet night'?3:5)));let lineup=pairs.map((p,idx)=>({type:'npc',aIdx:p[0],bIdx:p[1],done:false,label:'Race '+(idx+1)}));let slot=Math.min(lineup.length,Math.floor(Math.random()*(lineup.length+1)));lineup.splice(slot,0,{type:'player',opponentIndex:i,done:false,label:'Your race'});e.lineup=lineup;e.queueIndex=0;log(`You joined the round ${e.roundNo} race queue against ${e.opponents[i].name}.`, 'event', [`Queue position ${slot+1} of ${lineup.length}`, `Runs left ${e.runsLeft}`]);render();}
 function currentLineupEntry(){let e=state.lastEvent;if(!e||!e.lineup)return null;while(e.queueIndex<e.lineup.length&&e.lineup[e.queueIndex].done)e.queueIndex++;return e.lineup[e.queueIndex]||null;}

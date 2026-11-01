@@ -48,7 +48,7 @@ assert.ok(box.evaluate('CARS.length') > 40 && box.evaluate('EVENT_CALENDAR.lengt
 // js/data/vehicles.js must precede the inline script, and the CARS enrichment (TECH_DATA and stallRpm merged into
 // each car) must already have happened when it finishes, before any game code can read a car.
 const order = src.scripts.map(s => s.name);
-assert.deepEqual(order, ['js/data/vehicles.js', 'js/data/events.js', 'inline'], 'script order: vehicles.js, then events.js, then the inline game script');
+assert.deepEqual(order, ['js/data/vehicles.js', 'js/data/events.js', 'js/systems/opponent-generation.js', 'inline'], 'script order: vehicles.js, events.js, opponent-generation.js, then the inline game script');
 const dataOnly = createSandbox({ seed: 3 });
 vm.runInContext(src.scripts.find(s => s.name === 'js/data/vehicles.js').source, dataOnly.context, { filename: 'js/data/vehicles.js' });
 assert.equal(dataOnly.evaluate("CARS.every(c=>typeof c.stallRpm==='number'&&c.stallRpm===(STALL_RPM[c.id]||2200))"), true, 'every car enriched with stallRpm when vehicles.js finishes');
@@ -67,6 +67,20 @@ assert.equal(eventsOnly.evaluate('Math.calls'), 0, 'event data draws no random n
 const BASELINE_EVENT_IDS = ['heathcote_legal', 'calder_test', 'mildura_regional', 'state_grudge', 'bend_open', 'sydney_challenge'];
 assert.deepEqual(JSON.parse(eventsOnly.evaluate('JSON.stringify(EVENT_CALENDAR.map(e=>e.id))')), BASELINE_EVENT_IDS, 'EVENT_CALENDAR IDs and order match the baseline');
 assert.deepEqual(JSON.parse(eventsOnly.evaluate('JSON.stringify(Object.keys(EVENT_STORIES))')), BASELINE_EVENT_IDS, 'EVENT_STORIES keys and order match the baseline');
+
+// ---------- Opponent generation defines exactly its seven functions and does nothing at load ----------
+// js/systems/opponent-generation.js holds only top-level function declarations. Loaded on its own it runs no code
+// (no random draws, no reads of CARS, EVENT_CALENDAR or state), and its functions are global, as they were inline.
+const OPPONENT_FUNCTIONS = ['eventProfile', 'makeOpponents', 'perfIndex', 'pickRaceSlots', 'visibleClues', 'shuffleIndexes', 'buildNpcPairIndexes'];
+const opponentSource = src.scripts.find(s => s.name === 'js/systems/opponent-generation.js').source;
+assert.deepEqual([...opponentSource.matchAll(/^function (\w+)\(/gm)].map(m => m[1]), OPPONENT_FUNCTIONS, 'opponent-generation.js declares exactly the seven functions, in source order');
+assert.ok(opponentSource.split('\n').every(l => l === '' || l.startsWith('//') || l.startsWith('function ') || l.startsWith('  ') || l === '}'), 'opponent-generation.js has no top-level statements besides function declarations');
+const opponentsOnly = createSandbox({ seed: 3 });
+vm.runInContext(opponentSource, opponentsOnly.context, { filename: 'js/systems/opponent-generation.js' });
+assert.equal(opponentsOnly.evaluate('Math.calls'), 0, 'opponent-generation.js draws no random numbers when it loads');
+for (const name of OPPONENT_FUNCTIONS) assert.equal(opponentsOnly.evaluate(`typeof Object.getOwnPropertyDescriptor(globalThis,'${name}').value`), 'function', `${name} is a global function`);
+assert.equal(opponentsOnly.evaluate("typeof CARS+typeof EVENT_CALENDAR+typeof rand+typeof choice+typeof makeOwned"), 'undefined'.repeat(5), 'opponent-generation.js defines no data or shared helpers of its own');
+for (const name of OPPONENT_FUNCTIONS) assert.ok(!src.scripts.find(s => s.name === 'inline').source.includes(`function ${name}(`), `${name} is no longer defined inline`);
 
 // ---------- Inline handlers resolve to global functions ----------
 const handlers = new Set();

@@ -11,9 +11,13 @@ const BOOT_MARKER = 'refreshListings();loadGame(false);render();';
 // Strip the cache-busting query (?v=...) from a local asset reference.
 const localPath = ref => ref.split(/[?#]/)[0];
 
+// Git stores LF; a Windows checkout with core.autocrlf=true presents CRLF. Browsers treat both the same, so read
+// with LF line endings and tests behave identically on every checkout.
+const readText = file => fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
+
 function loadGameSource() {
-  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  const read = ref => fs.readFileSync(path.join(ROOT, localPath(ref)), 'utf8');
+  const html = readText(path.join(ROOT, 'index.html'));
+  const read = ref => readText(path.join(ROOT, localPath(ref)));
   const stylesheets = [];
   for (const m of html.matchAll(/<style>([\s\S]*?)<\/style>|<link rel="stylesheet" href="([^"]+)"\s*\/?>/g)) {
     stylesheets.push(m[1] !== undefined ? { name: 'inline', ref: null, source: m[1] } : { name: localPath(m[2]), ref: m[2], source: read(m[2]) });
