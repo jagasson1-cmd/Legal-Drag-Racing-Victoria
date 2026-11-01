@@ -32,25 +32,28 @@ Also decided during the inspection:
 | `css/you-yangs.css` | Lines 95–117: You Yangs special event (begins with the original blank separator line) | 2nd `<link>` |
 | `css/race-night.css` | Lines 118–261: Race Night live race (from `feature/race-night-visual-prototype`) and player reaction time (from `feature/player-reaction-time`) | 3rd `<link>` |
 | `css/event-presentation.css` | Lines 262–400: event travel trip card, venue scenes, spectator timing tower and coasting | 4th `<link>` |
+| `css/sound-panel.css` | The Sound panel in the Progress card (added by `feature/music-and-atmosphere`, not moved from `index.html`) | 5th `<link>`, last |
 | `js/data/vehicles.js` | Lines 457–1352: `CARS`, `TECH_DATA`, `STALL_RPM`, the `CARS.forEach(...)` enrichment line, `ISSUES`, `UPGRADE_PATHS`, `DYNO_TUNE`, `TOYOTA_LEXUS_IDS` | 1st classic `<script src>` |
 | `js/data/events.js` | Lines 1507–1514 (`EVENT_CALENDAR`), then lines 1808–1881 (`EVENT_STORIES`), each block unchanged and in that order | 2nd classic `<script src>` |
 | `js/data/names.js` | `NPC_GIVEN_NAMES` (180 given names), `NPC_NICKNAMES` (12) and `NPC_NICKNAME_SHARE` (0.12): plain data, added by `feature/population-rework` (not moved from `index.html`) | 3rd classic `<script src>` |
-| `js/systems/opponent-generation.js` | From `9344cc2` `index.html`, in source order: `eventProfile` (line 604); `makeOpponents`, `perfIndex` and `pickRaceSlots` (606–617); `visibleClues` (622); `shuffleIndexes` and `buildNpcPairIndexes` (627–628). Plus `pickDriverName`, added by `feature/population-rework`; `makeOpponents` now calls it in place of the old inline name list | 4th classic `<script src>`, immediately before the inline `<script>` |
+| `js/data/soundscapes.js` | `SOUNDSCAPES` (procedural ambience profiles: garage, six travel scenes, Heathcote, Calder Park, Mildura, the You Yangs and a generic dragway) and `SOUNDSCAPE_CROWD`: plain data, added by `feature/music-and-atmosphere` | 4th classic `<script src>` |
+| `js/systems/opponent-generation.js` | From `9344cc2` `index.html`, in source order: `eventProfile` (line 604); `makeOpponents`, `perfIndex` and `pickRaceSlots` (606–617); `visibleClues` (622); `shuffleIndexes` and `buildNpcPairIndexes` (627–628). Plus `pickDriverName`, added by `feature/population-rework`; `makeOpponents` now calls it in place of the old inline name list | 5th classic `<script src>` |
+| `js/systems/audio.js` | `QmbAudio`: audio preferences (`qmb_audio_prefs_v1`) and the audio manager (buses, unlock, soundscapes, ducking, hidden-page handling), plus `QMB_AUDIO_PREFS_KEY` and `QMB_AUDIO_DEFAULTS`. Added by `feature/music-and-atmosphere` | 6th classic `<script src>`, immediately before the inline `<script>` |
 | `index.html` | Markup, the rest of the game script and the startup line. This includes `platformBrand` and the upgrade helpers; the shared helpers `rand`, `choice` and `makeOwned`; travel and arrival (`travelToEvent`, `finishTravel`); event story text (`hashSeed`, `seededPick`, `eventSeed`, `eventNarrative`, `weatherForEvent`); round management (`chooseRoundOpponent`, `prepareSpectatorRound` and the queue); race-slot display and race records; and everything that reads vehicle or event data | — |
 
 Each CSS file starts with two added lines:
 - `@charset "UTF-8";`, because the styles contain a non-ASCII `·`, so the encoding doesn't depend on the server or on `file://`;
 - a comment naming its source lines.
 
-Everything below those two lines is the original text, unchanged. **The link order must stay base, you-yangs, race-night, event-presentation.** The cascade depends on source order, and later files override earlier ones; for example, Race Night and event presentation restyle shared classes such as `.treeBulb` and `.laneFill`.
+Everything below those two lines is the original text, unchanged. **The link order must stay base, you-yangs, race-night, event-presentation, sound-panel.** The cascade depends on source order, and later files override earlier ones; for example, Race Night and event presentation restyle shared classes such as `.treeBulb` and `.laneFill`.
 
 Each JS file starts with one added comment line naming its source lines; everything below it is the original text. The inline script keeps a one-line pointer comment where each block used to be (`events.js` has two, one for each collection; `opponent-generation.js` has four, one for each run of lines).
 
 `opponent-generation.js` holds only top-level function declarations. Like inline function declarations, they become global functions (`window` properties), so every caller and the tests reach them under the same names. The file runs no code when it loads; the functions read `CARS`, `EVENT_CALENDAR`, `state`, `choice`, `rand`, `makeOwned` and `carById` only when called, which happens after startup (travelling to an event, rendering call-ups, starting a round).
 
-**Script order:** `js/data/vehicles.js`, then `js/data/events.js`, then `js/data/names.js`, then `js/systems/opponent-generation.js`, then the inline game script. Classic scripts share one global scope: `const` declarations in the data files are global lexical bindings, not `window` properties, exactly as they were inline. Nothing in the game reads them through `window`, `globalThis` or a dynamic lookup.
+**Script order:** `js/data/vehicles.js`, `js/data/events.js`, `js/data/names.js`, `js/data/soundscapes.js`, then `js/systems/opponent-generation.js`, `js/systems/audio.js`, then the inline game script. Classic scripts share one global scope: `const` declarations in the data files are global lexical bindings, not `window` properties, exactly as they were inline. Nothing in the game reads them through `window`, `globalThis` or a dynamic lookup.
 
-**Missing-file risk.** The data files have no fallback copy in `index.html`, by design: a duplicate would drift. If a data file fails to load (an incomplete deploy, a typo in a path, a blocked request), the browser still runs the inline script, which stops with a `ReferenceError` the first time it reads `CARS` or `EVENT_CALENDAR`, so the game doesn't start. If `js/data/names.js` fails to load, the game still starts, but travelling to an event throws a `ReferenceError` (`NPC_NICKNAME_SHARE is not defined`) when the field is generated. If `js/systems/opponent-generation.js` fails to load, the game still starts, but travelling to an event or showing race call-ups throws a `ReferenceError` (for example, `eventProfile is not defined`). Before code was moved out of `index.html`, none of these failures could happen. To guard against it:
+**Missing-file risk.** The data files have no fallback copy in `index.html`, by design: a duplicate would drift. If a data file fails to load (an incomplete deploy, a typo in a path, a blocked request), the browser still runs the inline script, which stops with a `ReferenceError` the first time it reads `CARS` or `EVENT_CALENDAR`, so the game doesn't start. If `js/data/names.js` fails to load, the game still starts, but travelling to an event throws a `ReferenceError` (`NPC_NICKNAME_SHARE is not defined`) when the field is generated. If `js/systems/opponent-generation.js` fails to load, the game still starts, but travelling to an event or showing race call-ups throws a `ReferenceError` (for example, `eventProfile is not defined`). Before code was moved out of `index.html`, none of these failures could happen. To guard against it: **Audio is the exception and is deliberately optional:** if `js/systems/audio.js` or `js/data/soundscapes.js` fails to load, the game still starts and plays silently (the inline script reaches audio only through `gameAudio`, a silent stand-in when `QmbAudio` is missing), and `qmb-modular-loading` tests both cases.
 - deploy `index.html` and every extracted file together, from one commit;
 - keep the shared `?v=` release version, so a cached `index.html` is never paired with a newer or older data file;
 - after a deploy, open the live site and check the browser console and network panel for a failed `css/` or `js/` request.
@@ -60,7 +63,7 @@ Garage styles have no file of their own yet. They're interleaved through `base.c
 ## Updating extracted files (release version)
 
 1. Change the extracted CSS or JS file.
-2. In `index.html`, change the `?v=` value on **every** extracted `<link>` and `<script>` tag to one new value, such as the next date-based release (`2026.11.01-6`).
+2. In `index.html`, change the `?v=` value on **every** extracted `<link>` and `<script>` tag to one new value, such as the next date-based release (`2026.11.01-7`).
 3. Run `node tests/helpers/asset-manifest.js --write` to record the version and each file's content hash in `tests/fixtures/asset-version.json`.
 4. Run the full test suite.
 
@@ -169,3 +172,27 @@ The shared test loader (`tests/helpers/game-source.js`) reads every file with LF
   - **Saved events keep their names:** names are stored on each opponent, and loading never regenerates them. Existing saves keep their original names, including historical duplicates and names that aren't in the new pools.
   - **Goldens:** `opponent-generation.json` and the `driver` fields of `race-baseline.json` were regenerated in a separate commit, with that comparison as the review.
   - **Version:** release version `2026.11.01-5` on every tag.
+
+- **Audio Phase 1 (`feature/music-and-atmosphere`):** a modular audio foundation with restrained, grounded ambience for the garage, each journey and each venue. The continuous chiptune themes (`RETRO_THEMES` and their sequencer) are retired.
+  - **Graph:** music, ambience, engine and effects buses feed a master gain, then a compressor, then the speakers.
+    - Effects (UI clicks, notifications, money chimes) follow master volume; there is no visible effects slider yet.
+    - Engines, spectator voices and the travel cruise keep every value and timing. Only their output node changed.
+  - **Unlocking:** the context is created only after a genuine interaction (`pointerdown`, `keydown`, `touchend` or `click`, honouring `navigator.userActivation`).
+  - **Hidden, muted, or master at 0:** the master fades to 0, scheduling stops and the context suspends. It resumes afterwards without a burst of queued sounds.
+  - **Soundscapes:** procedural beds and occasional one-shots, all synthesised in the browser.
+    - Turnout and weather shape each venue: crowd density, crickets or cicadas, wind.
+    - Travel scenes follow `TRAVEL_PROFILES`, and Arrive now crossfades to the venue in 0.4 s.
+    - Ambience ducks under race, dyno, spectator and You Yangs engines, but not under the travel cruise.
+    - A single short arrival stinger is the only use of the music bus.
+    - The manager uses a private random generator and never `Math.random`, so audio cannot change gameplay draws. `qmb-audio` proves the same play-through draws the same numbers and leaves the same state with and without audio.
+  - **Preferences:** stored in `qmb_audio_prefs_v1` (`{version:1, master, music, ambience, engine, effects, muted}`, levels 0–1), in localStorage only, never in `qmb_mvp_save` or the cloud payload.
+    - **Migration:** done once from the old keys. Music Off becomes music 0; Effects Off becomes ambience, engine and effects 0; anything else gets the defaults (master 0.8, music 0.6, ambience 0.5, engine 0.8).
+    - **Authority:** after migration the object is authoritative. `qmb_sound_enabled` and `qmb_music_enabled` are rewritten only as mirrors, for rollback, and an unreadable object is rebuilt from them.
+    - **Runtime gates:** `soundEnabled` and `musicEnabled` are derived from the object, never stored separately.
+  - **Sound panel:** Mute plus master, music, ambience and engine sliders with visible values, replacing the Effects and Music buttons.
+  - **Assets and provenance:** Phase 1 ships no audio files; everything is synthesised, so there is nothing to license. Any future recording or composition must be original, commissioned, or CC0. Before it is committed it needs an entry in `assets/audio/PROVENANCE.md`: source, author, licence, URL, date and edits. Commercial music is never used.
+  - **Tests:**
+    - `tests/qmb-audio.test.js`, using the fake Web Audio in `tests/helpers/fake-audio.js`: preferences and migration, the manager, screen mapping, routing, ducking, hidden and mute behaviour, and no gameplay draws;
+    - `qmb-modular-loading`: the script order and playing without the audio files;
+    - `qmb-save-compat`: the old keys are respected, and mute is saved.
+  - **Version:** release version `2026.11.01-6` on every tag. No golden was regenerated.
