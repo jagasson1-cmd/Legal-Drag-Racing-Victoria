@@ -32,7 +32,8 @@ Also decided during the inspection:
 | `css/you-yangs.css` | Lines 95–117: You Yangs special event (begins with the original blank separator line) | 2nd `<link>` |
 | `css/race-night.css` | Lines 118–261: Race Night live race (from `feature/race-night-visual-prototype`) and player reaction time (from `feature/player-reaction-time`) | 3rd `<link>` |
 | `css/event-presentation.css` | Lines 262–400: event travel trip card, venue scenes, spectator timing tower and coasting | 4th `<link>` |
-| `index.html` | Markup, the whole game script and the startup line | — |
+| `js/data/vehicles.js` | Lines 457–1352: `CARS`, `TECH_DATA`, `STALL_RPM`, the `CARS.forEach(...)` enrichment line, `ISSUES`, `UPGRADE_PATHS`, `DYNO_TUNE`, `TOYOTA_LEXUS_IDS` | Classic `<script src>` immediately before the inline `<script>` |
+| `index.html` | Markup, the rest of the game script (including `platformBrand`, the upgrade helpers and everything that reads vehicle data) and the startup line | — |
 
 Each CSS file starts with two added lines:
 - `@charset "UTF-8";`, because the styles contain a non-ASCII `·`, so the encoding doesn't depend on the server or on `file://`;
@@ -40,12 +41,16 @@ Each CSS file starts with two added lines:
 
 Everything below those two lines is the original text, unchanged. **The link order must stay base, you-yangs, race-night, event-presentation.** The cascade depends on source order, and later files override earlier ones; for example, Race Night and event presentation restyle shared classes such as `.treeBulb` and `.laneFill`.
 
+Each JS file starts with one added comment line naming its source lines; everything below it is the original text. The inline script keeps a one-line pointer comment where the block used to be.
+
+**Script order:** `js/data/vehicles.js`, then the inline game script. Classic scripts share one global scope: `const` declarations in `vehicles.js` are global lexical bindings, not `window` properties, exactly as they were inline. Nothing in the game reads them through `window`, `globalThis` or a dynamic lookup.
+
 Garage styles have no file of their own yet. They're interleaved through `base.css`, and moving them out would reorder the cascade; that needs its own reviewed change.
 
 ## Updating extracted files (release version)
 
 1. Change the extracted CSS or JS file.
-2. In `index.html`, change the `?v=` value on **every** extracted `<link>` and `<script>` tag to one new value, such as the next date-based release (`2026.11.01-2`).
+2. In `index.html`, change the `?v=` value on **every** extracted `<link>` and `<script>` tag to one new value, such as the next date-based release (`2026.11.01-3`).
 3. Run `node tests/helpers/asset-manifest.js --write` to record the version and each file's content hash in `tests/fixtures/asset-version.json`.
 4. Run the full test suite.
 
@@ -96,3 +101,8 @@ A golden must never be regenerated to make a refactor pass.
     - The 19 screens: new-game start, start line, shed, Trading Post buy and sell, Speed Shop, calendar, trophies, Earn Cash, The Books, Race Journal, Car Club, paused travel, arrival, Race Night hub, race start, spectator stage, You Yangs hub and You Yangs journey.
   - **Startup:** no errors; every stylesheet returns 200.
   - **Test change:** `qmb-core`'s CSS assertions now read the loaded stylesheets instead of the HTML file.
+- **Phase 2 (vehicle data):** lines 457–1352 moved verbatim into `js/data/vehicles.js`, release version `2026.11.01-2` on every tag.
+  - **Execution order:** the only statements that used to run before the block were three string constants (`QMB_API_URL`, `QMB_PUBLISHABLE_KEY`, `QMB_RECOVERY_STORAGE`); they now run just after it. The block references none of them and calls no game function (only `CARS.forEach` and `Object.assign`), so the reorder can't change a value. The enrichment still completes before any game code runs.
+  - **Rebuild check:** putting the file back at its pointer line, and the stylesheets back inline, reproduces `55b5307` `index.html` byte for byte.
+  - **Tests:** `qmb-modular-loading` now also checks that `vehicles.js` loads before the inline script, leaves every car enriched on its own, defines no functions and draws no random numbers.
+  - **Screenshots:** the same 19 screens, at both widths, over `file://` and HTTP, match the Phase 0 baseline byte for byte.

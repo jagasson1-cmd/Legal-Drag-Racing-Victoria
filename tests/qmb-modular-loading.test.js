@@ -44,6 +44,18 @@ assert.equal(box.evaluate('state.screen'), 'home', 'startup reached the start sc
 assert.match(box.element('screen').innerHTML, /Start with your first car|Street to Strip|card/, 'start screen rendered');
 assert.ok(box.evaluate('CARS.length') > 40 && box.evaluate('EVENT_CALENDAR.length') === 6, 'game data available');
 
+// ---------- Vehicle data runs first and is complete on its own ----------
+// js/data/vehicles.js must precede the inline script, and the CARS enrichment (TECH_DATA and stallRpm merged into
+// each car) must already have happened when it finishes, before any game code can read a car.
+const order = src.scripts.map(s => s.name);
+assert.ok(order.indexOf('js/data/vehicles.js') >= 0 && order.indexOf('js/data/vehicles.js') < order.indexOf('inline'), 'vehicle data loads before the inline game script');
+const dataOnly = createSandbox({ seed: 3 });
+vm.runInContext(src.scripts.find(s => s.name === 'js/data/vehicles.js').source, dataOnly.context, { filename: 'js/data/vehicles.js' });
+assert.equal(dataOnly.evaluate("CARS.every(c=>typeof c.stallRpm==='number'&&c.stallRpm===(STALL_RPM[c.id]||2200))"), true, 'every car enriched with stallRpm when vehicles.js finishes');
+assert.equal(dataOnly.evaluate("CARS.every(c=>Object.keys(TECH_DATA[c.id]||{}).every(k=>c[k]===TECH_DATA[c.id][k]))"), true, 'every car enriched with TECH_DATA when vehicles.js finishes');
+assert.equal(dataOnly.evaluate('typeof platformBrand'), 'undefined', 'vehicles.js holds data only; helper functions stay in the inline script');
+assert.equal(dataOnly.evaluate('Math.calls'), 0, 'vehicle data draws no random numbers');
+
 // ---------- Inline handlers resolve to global functions ----------
 const handlers = new Set();
 for (const m of (src.html + src.script).matchAll(/\bon(?:click|change|input|submit|keydown|keyup)=(\\?["'])([^"'\\]*)/g))
