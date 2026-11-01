@@ -48,13 +48,25 @@ assert.ok(box.evaluate('CARS.length') > 40 && box.evaluate('EVENT_CALENDAR.lengt
 // js/data/vehicles.js must precede the inline script, and the CARS enrichment (TECH_DATA and stallRpm merged into
 // each car) must already have happened when it finishes, before any game code can read a car.
 const order = src.scripts.map(s => s.name);
-assert.ok(order.indexOf('js/data/vehicles.js') >= 0 && order.indexOf('js/data/vehicles.js') < order.indexOf('inline'), 'vehicle data loads before the inline game script');
+assert.deepEqual(order, ['js/data/vehicles.js', 'js/data/events.js', 'inline'], 'script order: vehicles.js, then events.js, then the inline game script');
 const dataOnly = createSandbox({ seed: 3 });
 vm.runInContext(src.scripts.find(s => s.name === 'js/data/vehicles.js').source, dataOnly.context, { filename: 'js/data/vehicles.js' });
 assert.equal(dataOnly.evaluate("CARS.every(c=>typeof c.stallRpm==='number'&&c.stallRpm===(STALL_RPM[c.id]||2200))"), true, 'every car enriched with stallRpm when vehicles.js finishes');
 assert.equal(dataOnly.evaluate("CARS.every(c=>Object.keys(TECH_DATA[c.id]||{}).every(k=>c[k]===TECH_DATA[c.id][k]))"), true, 'every car enriched with TECH_DATA when vehicles.js finishes');
 assert.equal(dataOnly.evaluate('typeof platformBrand'), 'undefined', 'vehicles.js holds data only; helper functions stay in the inline script');
 assert.equal(dataOnly.evaluate('Math.calls'), 0, 'vehicle data draws no random numbers');
+
+// ---------- Event data is static and unchanged in identity and order ----------
+// js/data/events.js holds only EVENT_CALENDAR and EVENT_STORIES as plain literals: no functions anywhere inside,
+// no random draws, and the same event IDs in the same order as 55b5307.
+const eventsOnly = createSandbox({ seed: 3 });
+vm.runInContext(src.scripts.find(s => s.name === 'js/data/events.js').source, eventsOnly.context, { filename: 'js/data/events.js' });
+assert.equal(eventsOnly.evaluate("(function walk(v){return typeof v!=='function'&&(v===null||typeof v!=='object'||Object.values(v).every(walk))})([EVENT_CALENDAR,EVENT_STORIES])"), true, 'event data contains no functions');
+assert.equal(eventsOnly.evaluate("typeof hashSeed+typeof seededPick+typeof eventSeed+typeof freshState"), 'undefined'.repeat(4), 'events.js holds data only; event helpers stay in the inline script');
+assert.equal(eventsOnly.evaluate('Math.calls'), 0, 'event data draws no random numbers');
+const BASELINE_EVENT_IDS = ['heathcote_legal', 'calder_test', 'mildura_regional', 'state_grudge', 'bend_open', 'sydney_challenge'];
+assert.deepEqual(JSON.parse(eventsOnly.evaluate('JSON.stringify(EVENT_CALENDAR.map(e=>e.id))')), BASELINE_EVENT_IDS, 'EVENT_CALENDAR IDs and order match the baseline');
+assert.deepEqual(JSON.parse(eventsOnly.evaluate('JSON.stringify(Object.keys(EVENT_STORIES))')), BASELINE_EVENT_IDS, 'EVENT_STORIES keys and order match the baseline');
 
 // ---------- Inline handlers resolve to global functions ----------
 const handlers = new Set();

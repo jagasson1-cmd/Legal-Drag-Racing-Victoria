@@ -32,8 +32,9 @@ Also decided during the inspection:
 | `css/you-yangs.css` | Lines 95–117: You Yangs special event (begins with the original blank separator line) | 2nd `<link>` |
 | `css/race-night.css` | Lines 118–261: Race Night live race (from `feature/race-night-visual-prototype`) and player reaction time (from `feature/player-reaction-time`) | 3rd `<link>` |
 | `css/event-presentation.css` | Lines 262–400: event travel trip card, venue scenes, spectator timing tower and coasting | 4th `<link>` |
-| `js/data/vehicles.js` | Lines 457–1352: `CARS`, `TECH_DATA`, `STALL_RPM`, the `CARS.forEach(...)` enrichment line, `ISSUES`, `UPGRADE_PATHS`, `DYNO_TUNE`, `TOYOTA_LEXUS_IDS` | Classic `<script src>` immediately before the inline `<script>` |
-| `index.html` | Markup, the rest of the game script (including `platformBrand`, the upgrade helpers and everything that reads vehicle data) and the startup line | — |
+| `js/data/vehicles.js` | Lines 457–1352: `CARS`, `TECH_DATA`, `STALL_RPM`, the `CARS.forEach(...)` enrichment line, `ISSUES`, `UPGRADE_PATHS`, `DYNO_TUNE`, `TOYOTA_LEXUS_IDS` | 1st classic `<script src>` |
+| `js/data/events.js` | Lines 1507–1514 (`EVENT_CALENDAR`), then lines 1808–1881 (`EVENT_STORIES`), each block unchanged and in that order | 2nd classic `<script src>`, immediately before the inline `<script>` |
+| `index.html` | Markup, the rest of the game script (including `platformBrand`, the upgrade helpers, `hashSeed`, `seededPick`, event generation, travel profiles, presentation, and everything that reads vehicle or event data) and the startup line | — |
 
 Each CSS file starts with two added lines:
 - `@charset "UTF-8";`, because the styles contain a non-ASCII `·`, so the encoding doesn't depend on the server or on `file://`;
@@ -41,16 +42,21 @@ Each CSS file starts with two added lines:
 
 Everything below those two lines is the original text, unchanged. **The link order must stay base, you-yangs, race-night, event-presentation.** The cascade depends on source order, and later files override earlier ones; for example, Race Night and event presentation restyle shared classes such as `.treeBulb` and `.laneFill`.
 
-Each JS file starts with one added comment line naming its source lines; everything below it is the original text. The inline script keeps a one-line pointer comment where the block used to be.
+Each JS file starts with one added comment line naming its source lines; everything below it is the original text. The inline script keeps a one-line pointer comment where each block used to be (`events.js` has two: one for each collection).
 
-**Script order:** `js/data/vehicles.js`, then the inline game script. Classic scripts share one global scope: `const` declarations in `vehicles.js` are global lexical bindings, not `window` properties, exactly as they were inline. Nothing in the game reads them through `window`, `globalThis` or a dynamic lookup.
+**Script order:** `js/data/vehicles.js`, then `js/data/events.js`, then the inline game script. Classic scripts share one global scope: `const` declarations in the data files are global lexical bindings, not `window` properties, exactly as they were inline. Nothing in the game reads them through `window`, `globalThis` or a dynamic lookup.
+
+**Missing-file risk.** The data files have no fallback copy in `index.html`, by design: a duplicate would drift. If a data file fails to load (an incomplete deploy, a typo in a path, a blocked request), the browser still runs the inline script, which stops with a `ReferenceError` the first time it reads `CARS` or `EVENT_CALENDAR`, so the game doesn't start. Before inline data was moved out, this failure couldn't happen. To guard against it:
+- deploy `index.html` and every extracted file together, from one commit;
+- keep the shared `?v=` release version, so a cached `index.html` is never paired with a newer or older data file;
+- after a deploy, open the live site and check the browser console and network panel for a failed `css/` or `js/` request.
 
 Garage styles have no file of their own yet. They're interleaved through `base.css`, and moving them out would reorder the cascade; that needs its own reviewed change.
 
 ## Updating extracted files (release version)
 
 1. Change the extracted CSS or JS file.
-2. In `index.html`, change the `?v=` value on **every** extracted `<link>` and `<script>` tag to one new value, such as the next date-based release (`2026.11.01-3`).
+2. In `index.html`, change the `?v=` value on **every** extracted `<link>` and `<script>` tag to one new value, such as the next date-based release (`2026.11.01-4`).
 3. Run `node tests/helpers/asset-manifest.js --write` to record the version and each file's content hash in `tests/fixtures/asset-version.json`.
 4. Run the full test suite.
 
@@ -106,3 +112,9 @@ A golden must never be regenerated to make a refactor pass.
   - **Rebuild check:** putting the file back at its pointer line, and the stylesheets back inline, reproduces `55b5307` `index.html` byte for byte.
   - **Tests:** `qmb-modular-loading` now also checks that `vehicles.js` loads before the inline script, leaves every car enriched on its own, defines no functions and draws no random numbers.
   - **Screenshots:** the same 19 screens, at both widths, over `file://` and HTTP, match the Phase 0 baseline byte for byte.
+- **Phase 3 (event data):** `EVENT_CALENDAR` (lines 1507–1514) and `EVENT_STORIES` (lines 1808–1881) moved verbatim into `js/data/events.js`, loaded after `vehicles.js`. Release version `2026.11.01-3` on every tag. The vehicle pointer comment now says "loads before this script", since `events.js` sits between them.
+  - **Static data:** both collections are plain object and array literals with string, number and boolean values. They call nothing and read no state, constants, dates, random numbers or browser state.
+  - **Initialisation order:** both now exist before any inline code runs. Before the move, any code that ran before them and read them would have thrown a temporal-dead-zone `ReferenceError`; startup never threw, so no such code ran. The only top-level code before them was function reassignments, aliases and `let state=freshState()`; `freshState` and its helpers (`freshBadgeHistory`, `freshDailyBriefing`, `freshGuidance`, `realWeekKey`) never read event data, and no `try` could have hidden a failure. Every read of either collection in the inline script is inside a function body (`eventById`, `eventProfile`, `weatherForEvent`, `eventNarrative`, `finishLiveRace` and others), so none runs at load time.
+  - **Rebuild check:** putting both blocks back at their pointer lines (and the vehicle file and stylesheets back inline) reproduces `55b5307` `index.html` byte for byte.
+  - **Tests:** `qmb-modular-loading` now checks the exact order (`vehicles.js`, `events.js`, inline), that the event data holds no functions, defines no helpers, draws no random numbers, and keeps the baseline event IDs in order in both collections. Each of these assertions was confirmed by a deliberate mutation.
+  - **Screenshots:** the same 19 screens at both widths, over `file://` and HTTP, match the Phase 0 baseline byte for byte (76 of 76).
