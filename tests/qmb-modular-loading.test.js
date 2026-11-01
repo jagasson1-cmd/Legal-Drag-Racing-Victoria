@@ -103,6 +103,18 @@ vm.runInContext(audioSource, audioOnly.context, { filename: 'js/systems/audio.js
 assert.equal(audioOnly.evaluate('typeof QmbAudio.prefs'), 'function', 'QmbAudio is available');
 assert.equal(audioOnly.evaluate('Math.calls'), 0, 'audio.js draws no game random numbers when it loads');
 
+// ---------- Audio is optional: the game starts and plays if either audio file fails to load ----------
+// Missing or unavailable audio must never prevent the game from starting or being played (approved requirement).
+for (const missing of [['js/systems/audio.js'], ['js/data/soundscapes.js'], ['js/systems/audio.js', 'js/data/soundscapes.js']]) {
+  const box = createSandbox({ seed: 3, storage: { qmb_mvp_save: fs.readFileSync(path.join(src.root, 'tests/fixtures/saves/v2-garage.json'), 'utf8') } });
+  const label = 'without ' + missing.join(' and ');
+  assert.doesNotThrow(() => { for (const s of src.scripts) if (!missing.includes(s.name)) vm.runInContext(s.source, box.context, { filename: s.name }); }, `${label}: the game starts`);
+  assert.doesNotThrow(() => box.evaluate(`(()=>{let e=eventById('heathcote_legal');for(let i=0;i<40&&daysUntil(e)!==0;i++)state.day++;travelToEvent('heathcote_legal');finishTravel();confirmArrival('race');
+    chooseRoundOpponent(state.lastEvent.raceSlots[0]);const ev=state.lastEvent;ev.queueIndex=ev.lineup.findIndex(x=>x.type==='player');goToMyRace();startLiveRace(currentLineupEntry().opponentIndex);show('garage');playSfx('click')})()`), `${label}: travel, arrival, a race and sounds all work`);
+  assert.equal(box.evaluate('state.screen'), 'garage', `${label}: still playable`);
+  if (missing.includes('js/systems/audio.js')) assert.equal(box.element('soundMute').textContent, 'Muted', `${label}: the Sound panel shows audio as unavailable (muted)`);
+}
+
 // ---------- Soundscape data is plain data ----------
 const scapeSource = src.scripts.find(s => s.name === 'js/data/soundscapes.js').source;
 assert.deepEqual([...scapeSource.matchAll(/^(?:const|let|var|function|class) (\w+)/gm)].map(m => m[1]), ['SOUNDSCAPES', 'SOUNDSCAPE_CROWD'], 'soundscapes.js declares exactly its two constants');
