@@ -48,7 +48,7 @@ assert.ok(box.evaluate('CARS.length') > 40 && box.evaluate('EVENT_CALENDAR.lengt
 // js/data/vehicles.js must precede the inline script, and the CARS enrichment (TECH_DATA and stallRpm merged into
 // each car) must already have happened when it finishes, before any game code can read a car.
 const order = src.scripts.map(s => s.name);
-assert.deepEqual(order, ['js/data/vehicles.js', 'js/data/events.js', 'js/data/names.js', 'js/systems/opponent-generation.js', 'inline'], 'script order: vehicles.js, events.js, names.js, opponent-generation.js, then the inline game script');
+assert.deepEqual(order, ['js/data/vehicles.js', 'js/data/events.js', 'js/data/names.js', 'js/systems/opponent-generation.js', 'js/systems/audio.js', 'inline'], 'script order: vehicles.js, events.js, names.js, opponent-generation.js, audio.js, then the inline game script');
 const dataOnly = createSandbox({ seed: 3 });
 vm.runInContext(src.scripts.find(s => s.name === 'js/data/vehicles.js').source, dataOnly.context, { filename: 'js/data/vehicles.js' });
 assert.equal(dataOnly.evaluate("CARS.every(c=>typeof c.stallRpm==='number'&&c.stallRpm===(STALL_RPM[c.id]||2200))"), true, 'every car enriched with stallRpm when vehicles.js finishes');
@@ -92,6 +92,16 @@ assert.equal(opponentsOnly.evaluate('Math.calls'), 0, 'opponent-generation.js dr
 for (const name of OPPONENT_FUNCTIONS) assert.equal(opponentsOnly.evaluate(`typeof Object.getOwnPropertyDescriptor(globalThis,'${name}').value`), 'function', `${name} is a global function`);
 assert.equal(opponentsOnly.evaluate("typeof CARS+typeof EVENT_CALENDAR+typeof NPC_GIVEN_NAMES+typeof rand+typeof choice+typeof makeOwned"), 'undefined'.repeat(6), 'opponent-generation.js defines no data or shared helpers of its own');
 for (const name of OPPONENT_FUNCTIONS) assert.ok(!src.scripts.find(s => s.name === 'inline').source.includes(`function ${name}(`), `${name} is no longer defined inline`);
+
+// ---------- Audio manager: three globals, safe to load without Web Audio ----------
+// js/systems/audio.js declares only QMB_AUDIO_PREFS_KEY, QMB_AUDIO_DEFAULTS and QmbAudio. Loaded on its own with no
+// AudioContext it must not throw, must draw no random numbers and must expose the manager.
+const audioSource = src.scripts.find(s => s.name === 'js/systems/audio.js').source;
+assert.deepEqual([...audioSource.matchAll(/^(?:const|let|var|function|class) (\w+)/gm)].map(m => m[1]), ['QMB_AUDIO_PREFS_KEY', 'QMB_AUDIO_DEFAULTS', 'QmbAudio'], 'audio.js declares exactly its three globals');
+const audioOnly = createSandbox({ seed: 3 });
+vm.runInContext(audioSource, audioOnly.context, { filename: 'js/systems/audio.js' });
+assert.equal(audioOnly.evaluate('typeof QmbAudio.prefs'), 'function', 'QmbAudio is available');
+assert.equal(audioOnly.evaluate('Math.calls'), 0, 'audio.js draws no game random numbers when it loads');
 
 // ---------- Inline handlers resolve to global functions ----------
 const handlers = new Set();

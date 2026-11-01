@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Street to Strip - Public Beta</title>
   <!-- Stylesheets, in cascade order. When any extracted file changes, bump ?v= on every extracted asset (docs/MODULARISATION.md). -->
-  <link rel="stylesheet" href="css/base.css?v=2026.11.01-5">
-  <link rel="stylesheet" href="css/you-yangs.css?v=2026.11.01-5">
-  <link rel="stylesheet" href="css/race-night.css?v=2026.11.01-5">
-  <link rel="stylesheet" href="css/event-presentation.css?v=2026.11.01-5">
+  <link rel="stylesheet" href="css/base.css?v=2026.11.01-6">
+  <link rel="stylesheet" href="css/you-yangs.css?v=2026.11.01-6">
+  <link rel="stylesheet" href="css/race-night.css?v=2026.11.01-6">
+  <link rel="stylesheet" href="css/event-presentation.css?v=2026.11.01-6">
 </head>
 <body>
 <header>
@@ -60,10 +60,11 @@
   <div class="splashShade"></div>
   <div class="splashContent"><h2>Street to Strip</h2><p>Buy cheap · Build smart · Race the quarter</p><button class="splashSkip" type="button" onclick="dismissSplash()">Enter the pits</button></div>
 </div>
-<script src="js/data/vehicles.js?v=2026.11.01-5"></script>
-<script src="js/data/events.js?v=2026.11.01-5"></script>
-<script src="js/data/names.js?v=2026.11.01-5"></script>
-<script src="js/systems/opponent-generation.js?v=2026.11.01-5"></script>
+<script src="js/data/vehicles.js?v=2026.11.01-6"></script>
+<script src="js/data/events.js?v=2026.11.01-6"></script>
+<script src="js/data/names.js?v=2026.11.01-6"></script>
+<script src="js/systems/opponent-generation.js?v=2026.11.01-6"></script>
+<script src="js/systems/audio.js?v=2026.11.01-6"></script>
 <script>
 const QMB_API_URL='https://elebvltrvcqqyyjwwydi.supabase.co/functions/v1/qmb-api-v2';
 const QMB_PUBLISHABLE_KEY='sb_publishable_wgUH3E8Nepy-6QC_dXpVtA_Uyszqkrm';
@@ -1239,8 +1240,8 @@ function showTimingBoard(carA,carB,r1,r2,winner,msg,betData){
   if(watchAllMode){if(watchAllTimer)clearTimeout(watchAllTimer);watchAllTimer=setTimeout(continueWatchAllBeforeMine,SV_AUTO_MS)}
 }
 function watch(){return `<section class="card"><h2>Watch List</h2><p class="muted">Capacity ${state.watch.length}/${state.watchCap}. Starts at 5.</p><div class="grid">${state.watch.length?state.watch.map(w=>`<div class="listing"><h3>${w.name}</h3><p>${w.type}</p><p class="muted">${w.last}</p></div>`).join(''):'<p>No watched opponents yet.</p>'}</div></section>`}
-const SOUND_STORAGE='qmb_sound_enabled',MUSIC_STORAGE='qmb_music_enabled';
-let soundEnabled=localStorage.getItem(SOUND_STORAGE)!=='false',musicEnabled=localStorage.getItem(MUSIC_STORAGE)!=='false',audioContext=null,musicTimer=null,musicTheme='',musicStep=0,engineAudio=null,spectatorAudio=null,engineAudioRequest=0,spectatorAudioRequest=0;
+// Runtime gates derived from the audio preferences (js/systems/audio.js), which are the only stored source of truth.
+let soundEnabled=QmbAudio.soundOn(),musicEnabled=QmbAudio.musicOn(),audioContext=null,musicTimer=null,musicTheme='',musicStep=0,engineAudio=null,spectatorAudio=null,engineAudioRequest=0,spectatorAudioRequest=0;
 async function getAudioContext(){if(!soundEnabled&&!musicEnabled)return null;let AudioCtor=window.AudioContext||window.webkitAudioContext;if(!AudioCtor)return null;if(!audioContext)audioContext=new AudioCtor();try{if(audioContext.state==='suspended')await audioContext.resume()}catch{}return audioContext.state==='running'?audioContext:null}
 async function soundTone(freq,duration=.06,type='sine',volume=.07,delay=0,endFreq=freq){let ctx=await getAudioContext();if(!ctx)return;let start=ctx.currentTime+delay,osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=type;osc.frequency.setValueAtTime(freq,start);osc.frequency.exponentialRampToValueAtTime(Math.max(30,endFreq),start+duration);gain.gain.setValueAtTime(.0001,start);gain.gain.exponentialRampToValueAtTime(volume,start+.008);gain.gain.exponentialRampToValueAtTime(.0001,start+duration);osc.connect(gain);gain.connect(ctx.destination);osc.start(start);osc.stop(start+duration+.02)}
 function playSfx(name){if(!soundEnabled)return;if(name==='click')soundTone(420,.055,'square',.045,0,340);else if(name==='count')soundTone(520,.1,'sine',.1);else if(name==='go'){soundTone(780,.17,'square',.12);soundTone(1040,.19,'sine',.09,.04)}else if(name==='shift'){soundTone(190,.09,'sawtooth',.09,0,100);soundTone(310,.06,'square',.055,.04)}else if(name==='perfectShift'){soundTone(260,.08,'sawtooth',.09,0,150);soundTone(660,.12,'sine',.085,.05)}else if(name==='cashIn'){soundTone(620,.09,'sine',.08);soundTone(880,.13,'sine',.09,.08)}else if(name==='cashOut')soundTone(330,.13,'triangle',.08,0,190);else if(name==='win'){soundTone(523,.12,'sine',.09);soundTone(659,.12,'sine',.09,.12);soundTone(784,.2,'sine',.11,.24)}else if(name==='lose'){soundTone(260,.14,'triangle',.08,0,200);soundTone(180,.2,'triangle',.085,.12,110)}else if(name==='error')soundTone(120,.16,'square',.075,0,70);else if(name==='mute')soundTone(440,.11,'triangle',.075,0,180);else if(name==='toggle'){soundTone(660,.1,'sine',.09);soundTone(920,.14,'sine',.1,.08)}else if(name==='marketOffer'){soundTone(659,.22,'sine',.1);soundTone(880,.24,'sine',.11,.12)}}
@@ -1294,8 +1295,9 @@ function stopSpectatorAudio(coast=false){spectatorAudioRequest++;spectatorTailCu
   s.master.gain.cancelScheduledValues(now);s.master.gain.setValueAtTime(Math.max(.0002,s.master.gain.value),now);s.master.gain.exponentialRampToValueAtTime(.0001,now+len);try{s.a.stop(now+len+.02);s.b.stop(now+len+.02)}catch{}
   setTimeout(()=>{if(spectatorTail===s)spectatorTail=null;updateAreaMusic()},Math.round(len*1000)+50)}
 function updateSoundToggle(){let effects=document.getElementById('soundToggle'),music=document.getElementById('musicToggle');if(effects){effects.textContent=soundEnabled?'Effects On':'Effects Off';effects.setAttribute('aria-pressed',String(soundEnabled));effects.title=soundEnabled?'Sound effects are enabled.':'Sound effects are muted.'}if(music){music.textContent=musicEnabled?'Music On':'Music Off';music.setAttribute('aria-pressed',String(musicEnabled));music.title=musicEnabled?'Area music is enabled.':'Area music is muted.'}}
-function toggleSound(){if(soundEnabled)playSfx('mute');soundEnabled=!soundEnabled;localStorage.setItem(SOUND_STORAGE,String(soundEnabled));updateSoundToggle();if(soundEnabled)playSfx('toggle')}
-function toggleMusic(){musicEnabled=!musicEnabled;localStorage.setItem(MUSIC_STORAGE,String(musicEnabled));updateSoundToggle();if(musicEnabled){getAudioContext();updateAreaMusic()}else stopAreaMusic()}
+QmbAudio.onChange(()=>{soundEnabled=QmbAudio.soundOn();musicEnabled=QmbAudio.musicOn()});
+function toggleSound(){if(soundEnabled)playSfx('mute');let d=QMB_AUDIO_DEFAULTS;QmbAudio.set(soundEnabled?{ambience:0,engine:0,effects:0}:{muted:false,ambience:d.ambience,engine:d.engine,effects:d.effects});updateSoundToggle();if(soundEnabled)playSfx('toggle')}
+function toggleMusic(){QmbAudio.set(musicEnabled?{music:0}:{muted:false,music:QMB_AUDIO_DEFAULTS.music});updateSoundToggle();if(musicEnabled){getAudioContext();updateAreaMusic()}else stopAreaMusic()}
 let socialData=null,socialError='',socialBusy=false,recoveryCodeRevealed=false,onlineCount=null,lastStatsSignature='',lastStatsSyncAt=0,statsSyncDelay=null,tradingPostTab='buy';
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function socialStat(v,fallback='-'){return v===null||v===undefined||v===''?fallback:esc(v)}
