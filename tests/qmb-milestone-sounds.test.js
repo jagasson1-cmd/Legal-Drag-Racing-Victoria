@@ -144,6 +144,80 @@ const newSquares = (box, from) => box.audio.made.sources.slice(from).filter(s =>
     assert.deepEqual(cues(box), [], 'nothing from startup plays on the first tap');
   }
 
+  // ---------- Restoring a save is not a new event: no milestone cue, even with audio already unlocked ----------
+  // A save whose workshop job is due completes it inside normaliseState() while loading. That must stay silent for a
+  // manual local load and a cloud load, while the same completion through normal calendar progression plays one cue.
+  // Book a workshop job, then return a save in which the job is due and has not been collected.
+  async function dueJobSave(noAudio = false) {
+    const box = await game({ noAudio });
+    const id = box.evaluate("currentUpgradeOptions(state.car).find(u=>u.day>0&&!u.tuneService).id");
+    box.evaluate(`buyUpgrade('${id}')`);
+    return box.evaluate('JSON.stringify({...state,day:state.workshopJob.completeDay})');
+  }
+  const countOf = (list, name) => list.filter(n => n === name).length;
+  const loadedResult = box => JSON.parse(box.evaluate("JSON.stringify({job:state.workshopJob,day:state.day,money:state.money,respect:state.respect,car:state.car,owned:state.owned,badges:state.badges,saved:JSON.parse(localStorage.getItem('qmb_mvp_save'))})"));
+  const dueSave = await dueJobSave();
+  {
+    // Manual local load (the Load button) after audio is unlocked.
+    const box = await game(); later(box, 2);
+    box.context.localStorage.setItem('qmb_mvp_save', dueSave);
+    const before = cues(box);
+    box.evaluate('loadGame(true)');
+    assert.equal(box.evaluate('state.workshopJob'), null, 'local load: the due job completes as before');
+    assert.deepEqual(cues(box), before, 'local load: no cue while restoring');
+    assert.equal(box.evaluate('restoringState'), false, 'local load: the restore guard is released');
+    // Ordinary play afterwards still sounds.
+    later(box, 2);
+    box.evaluate("state.workshopDayUsed=null;buyUpgrade(currentUpgradeOptions(state.car).find(u=>u.day===0&&!u.tuneService).id)");
+    assert.ok(['upgradeInstalled', 'achievement'].includes(cues(box).at(-1)), 'after loading, fitting an upgrade still plays its cue');
+  }
+  {
+    // Cloud load after audio is unlocked (fetch is stubbed; the cloud save is supplied directly, nothing is sent).
+    const box = await game(); later(box, 2);
+    box.evaluate(`socialData={profile:{displayName:'Test',friendCode:'TEST0000'},save:{state:${dueSave}}}`);
+    const before = cues(box);
+    box.evaluate('cloudLoad()');
+    assert.equal(box.evaluate('state.workshopJob'), null, 'cloud load: the due job completes as before');
+    assert.deepEqual(cues(box), before, 'cloud load: no cue while restoring');
+    assert.equal(box.evaluate('restoringState'), false, 'cloud load: the restore guard is released');
+    assert.equal(box.requests.length, 0, 'cloud load test sends no network request');
+  }
+  {
+    // A guard left set by a failing load would silence the game; it is released even when loading throws.
+    const box = await game(); later(box, 2);
+    box.context.localStorage.setItem('qmb_mvp_save', '{not json');
+    assert.throws(() => box.evaluate('loadGame(true)'));
+    assert.equal(box.evaluate('restoringState'), false, 'the restore guard is released after a failed load');
+  }
+  {
+    // Normal calendar progression completing the job: exactly one installation cue.
+    const box = await game();
+    const id = box.evaluate("currentUpgradeOptions(state.car).find(u=>u.day>0&&!u.tuneService).id");
+    box.evaluate(`buyUpgrade('${id}')`); later(box, 2);
+    const before = countOf(cues(box), 'upgradeInstalled');
+    // Skip Day on the calendar until the job is due, exactly as a player would.
+    box.evaluate("state.screen='event';for(let i=0;i<20&&state.workshopJob;i++)skipCalendarDay();render();render()");
+    assert.equal(box.evaluate('state.workshopJob'), null, 'progression: the job completes');
+    assert.equal(countOf(cues(box), 'upgradeInstalled') - before, 1, 'progression: exactly one installation cue');
+  }
+  {
+    // Same resulting state and saves with and without audio, for both restore paths, and no extra random draws.
+    const restore = async (noAudio, how) => {
+      const box = await game({ noAudio });
+      const save = await dueJobSave(noAudio);
+      const calls = box.evaluate('Math.calls');
+      if (how === 'local') { box.context.localStorage.setItem('qmb_mvp_save', save); box.evaluate('loadGame(true)'); }
+      else { box.evaluate(`socialData={profile:{displayName:'Test',friendCode:'TEST0000'},save:{state:${save}}}`); box.evaluate('cloudLoad()'); }
+      const r = loadedResult(box); r.draws = box.evaluate('Math.calls') - calls;
+      for (const x of [r, r.saved]) if (x && x.log) x.log = x.log.map(l => l.msg);
+      return r;
+    };
+    for (const how of ['local', 'cloud']) {
+      const a = await restore(false, how), b = await restore(true, how);
+      assert.deepEqual(a, b, `${how} load: identical state, save and random draws with and without audio`);
+    }
+  }
+
   // ---------- Sound never changes the game ----------
   {
     const run = async noAudio => {
