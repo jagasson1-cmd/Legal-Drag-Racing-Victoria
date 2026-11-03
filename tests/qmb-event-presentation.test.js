@@ -171,7 +171,9 @@ for (const eventId of Object.keys(EXPECTED_MS)) {
   const phone = css.slice(css.indexOf('@media(max-width:640px){\n      .tvTrip'));
   assert.match(phone.slice(0, 1500), /\.tvActions \.btn\{flex:1 1 0;min-width:0\}/);
   assert.match(phone.slice(0, 1500), /\.tvScene\{height:62px/);
-  const reduced = css.slice(css.lastIndexOf('@media(prefers-reduced-motion:reduce)'));
+  // The travel scene's own reduced-motion block (later stylesheets, such as garage-scene.css, have their own).
+  const tvCss = css.slice(css.indexOf('.tvTrip'));
+  const reduced = tvCss.slice(tvCss.indexOf('@media(prefers-reduced-motion:reduce)'));
   assert.match(reduced, /\.tvScene::after\{animation:none\}/);
   assert.match(reduced, /\.tvFill,\.tvMark\{animation-timing-function:steps\(4,end\)\}/);
   assert.match(css, /\.tvSceneHeld::after\{animation:none\}/, 'paused trips do not animate');

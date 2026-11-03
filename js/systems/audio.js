@@ -163,6 +163,31 @@ const QmbAudio=(()=>{
   function radio(t,g,out){const p=panner(out,between(-.5,.5)),len=between(.3,.8),n=noiseSrc(t,len+.2),bp=filt('bandpass',1800,1.5),rg=ctx.createGain();chain(n,bp,rg,p);
     rg.gain.setValueAtTime(.0001,t);rg.gain.linearRampToValueAtTime(g,t+.005);rg.gain.setValueAtTime(g*.35,t+.03);rg.gain.setValueAtTime(g*.35,t+len);rg.gain.linearRampToValueAtTime(g,t+len+.01);rg.gain.linearRampToValueAtTime(.0001,t+len+.04);return t+len+.1}
 
+  // ---------- Effects bus: one-shot game cues ----------
+  // A cue plays only when the context is already running and effects are audible. Otherwise it is dropped, never queued,
+  // so nothing builds up while audio is locked or the tab is hidden and bursts out on the first tap.
+  // Returns a handle whose stop() fades the cue out (for a skipped scene), or null when nothing played.
+  let lastCue=null;
+  function cue(name,opts={}){if(!ctx||ctx.state!=='running'||!graph||!canSynth()||quiet()||prefs.effects<=0)return null;
+    const out=ctx.createGain(),t=ctx.currentTime+.04+Math.max(0,Number(opts.delay)||0);out.connect(graph.buses.effects);let end=0;
+    try{if(name==='garageExpanded')end=garageDoor(t,out)}catch(e){end=0}
+    const drop=()=>{try{out.disconnect()}catch(e){}};
+    if(!end){drop();return null}
+    lastCue={name,at:t,end};setTimeout(drop,Math.round((end-ctx.currentTime)*1000)+500);
+    return {name,stop(fade=.25){const now=ctx.currentTime;try{out.gain.cancelScheduledValues(now);out.gain.setTargetAtTime(.0001,now,Math.max(.02,fade/3))}catch(e){}setTimeout(drop,Math.round(fade*1000)+200)}}}
+  // A roller door going up (slats rattling over the drum, a low motor rumble, a clunk at the top), then fluorescent tubes
+  // tinking on and settling to a quiet 100 Hz mains hum. About 4.5 s.
+  function garageDoor(t,out){const up=1.5;
+    const n=noiseSrc(t,up+.3),bp=filt('bandpass',between(650,800),1.4),lp=filt('lowpass',2600),am=ctx.createGain(),rg=ctx.createGain(),lfo=ctx.createOscillator(),depth=ctx.createGain();
+    lfo.type='square';lfo.frequency.setValueAtTime(between(15,18),t);lfo.frequency.linearRampToValueAtTime(between(10,12),t+up);depth.gain.value=.45;am.gain.value=.55;lfo.connect(depth);depth.connect(am.gain);
+    bp.frequency.setValueAtTime(between(650,800),t);bp.frequency.linearRampToValueAtTime(between(900,1100),t+up);
+    chain(n,bp,lp,am,rg,out);env(rg.gain,t,.11,.12,up-.4,.3);lfo.start(t);lfo.stop(t+up+.3);
+    const rn=noiseSrc(t,up+.3),rl=filt('lowpass',140),rgn=ctx.createGain();chain(rn,rl,rgn,out);env(rgn.gain,t,.09,.2,up-.5,.4);
+    const top=t+up,k=ctx.createOscillator(),kg=ctx.createGain();k.type='triangle';k.frequency.setValueAtTime(110,top);k.frequency.exponentialRampToValueAtTime(55,top+.15);k.connect(kg);kg.connect(out);env(kg.gain,top,.12,.004,0,.22);k.start(top);k.stop(top+.3);
+    let at=top+.15;for(let i=0;i<3;i++){const o=ctx.createOscillator(),og=ctx.createGain();o.frequency.value=between(2800,3600);o.connect(og);og.connect(out);env(og.gain,at,.025,.002,0,.08);o.start(at);o.stop(at+.12);at+=between(.12,.28)}
+    const h=ctx.createOscillator(),h2=ctx.createOscillator(),hg=ctx.createGain(),h2g=ctx.createGain();h.frequency.value=100;h2.frequency.value=200;h2g.gain.value=.4;h.connect(hg);h2.connect(h2g);h2g.connect(hg);hg.connect(out);
+    const end=env(hg.gain,at,.018,.3,1.2,1.2);h.start(at);h2.start(at);h.stop(end+.05);h2.stop(end+.05);return end}
+
   // ---------- Music bus: short original stingers only (no continuous music in this phase) ----------
   function stinger(name){if(!ctx||ctx.state!=='running'||!graph||quiet()||prefs.music<=0)return false;const t=ctx.currentTime+.05;
     if(name==='arrival'){const lp=filt('lowpass',900),sg=ctx.createGain();chain(lp,sg,graph.buses.music);const end=env(sg.gain,t,.06,.9,.6,2.4);
@@ -190,7 +215,8 @@ const QmbAudio=(()=>{
     soundscape:()=>wanted?wanted.id:null,
     setDuckProbe:fn=>{duckProbe=typeof fn==='function'?fn:null},
     stinger,
+    cue,
     // Read-only snapshot for tests and diagnostics.
-    debug:()=>({context:ctx?ctx.state:null,graph:!!graph,master:graph?graph.master.gain.value:null,hidden,wanted:wanted?wanted.id:null,playing:scape?scape.id:null,events:scape?scape.events.map(e=>e.def.voice):[],scheduler:!!ticker,ducked,voices:voices.length})
+    debug:()=>({context:ctx?ctx.state:null,graph:!!graph,master:graph?graph.master.gain.value:null,hidden,wanted:wanted?wanted.id:null,playing:scape?scape.id:null,events:scape?scape.events.map(e=>e.def.voice):[],scheduler:!!ticker,ducked,voices:voices.length,lastCue:lastCue?lastCue.name:null})
   };
 })();
