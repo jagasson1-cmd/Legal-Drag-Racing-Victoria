@@ -1,5 +1,5 @@
 {
- "version": "2026.11.01-7",
+ "version": "2026.11.01-8",
  "files": {
   "css/base.css": "a5ffe8a21ed52353489bcf94be6672f7123a95c52f56ad5fbb8f753228417b87",
   "css/you-yangs.css": "d4f79097c8d27a7997844f8a888c6a54b44b52ac45778c2cf01b3e37716792f2",
@@ -12,7 +12,7 @@
   "js/data/names.js": "4fbd45b99d89c789d9712448f4b25c8dab288ce4068ccaefa722eb4428944ef7",
   "js/data/soundscapes.js": "ec3d9ea3b798fa76fd133a0f1c489a97059d92153ffd7598c72bfb6806c6afe7",
   "js/systems/opponent-generation.js": "14820269877761cd78fab30b86d145cb4738b51dcc960538a05993eefe4f5be4",
-  "js/systems/audio.js": "a2f11a69ef02a7afe772d5d8a0cc3519b503ddb7e64f15c6dbc847d9d5cf4c0f",
+  "js/systems/audio.js": "626c4b43222a121f338e37d2f9c37f1dee868618a39e969e10bce0cb92c66411",
   "js/systems/garage-scene.js": "8cc71778cdffd6a79208cca55d0a2f335f2d98e071ae8bfe8e20de5cb631c11a"
  }
 }
