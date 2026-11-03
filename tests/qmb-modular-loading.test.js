@@ -48,7 +48,7 @@ assert.ok(box.evaluate('CARS.length') > 40 && box.evaluate('EVENT_CALENDAR.lengt
 // js/data/vehicles.js must precede the inline script, and the CARS enrichment (TECH_DATA and stallRpm merged into
 // each car) must already have happened when it finishes, before any game code can read a car.
 const order = src.scripts.map(s => s.name);
-assert.deepEqual(order, ['js/data/vehicles.js', 'js/data/events.js', 'js/data/names.js', 'js/data/soundscapes.js', 'js/systems/opponent-generation.js', 'js/systems/audio.js', 'inline'], 'script order: vehicles, events, names and soundscapes data, then opponent-generation and audio, then the inline game script');
+assert.deepEqual(order, ['js/data/vehicles.js', 'js/data/events.js', 'js/data/names.js', 'js/data/soundscapes.js', 'js/systems/opponent-generation.js', 'js/systems/audio.js', 'js/systems/garage-scene.js', 'inline'], 'script order: vehicles, events, names and soundscapes data, then opponent-generation, audio and the garage scene, then the inline game script');
 const dataOnly = createSandbox({ seed: 3 });
 vm.runInContext(src.scripts.find(s => s.name === 'js/data/vehicles.js').source, dataOnly.context, { filename: 'js/data/vehicles.js' });
 assert.equal(dataOnly.evaluate("CARS.every(c=>typeof c.stallRpm==='number'&&c.stallRpm===(STALL_RPM[c.id]||2200))"), true, 'every car enriched with stallRpm when vehicles.js finishes');
@@ -105,7 +105,7 @@ assert.equal(audioOnly.evaluate('Math.calls'), 0, 'audio.js draws no game random
 
 // ---------- Audio is optional: the game starts and plays if either audio file fails to load ----------
 // Missing or unavailable audio must never prevent the game from starting or being played (approved requirement).
-for (const missing of [['js/systems/audio.js'], ['js/data/soundscapes.js'], ['js/systems/audio.js', 'js/data/soundscapes.js']]) {
+for (const missing of [['js/systems/audio.js'], ['js/data/soundscapes.js'], ['js/systems/audio.js', 'js/data/soundscapes.js'], ['js/systems/garage-scene.js']]) {
   const box = createSandbox({ seed: 3, storage: { qmb_mvp_save: fs.readFileSync(path.join(src.root, 'tests/fixtures/saves/v2-garage.json'), 'utf8') } });
   const label = 'without ' + missing.join(' and ');
   assert.doesNotThrow(() => { for (const s of src.scripts) if (!missing.includes(s.name)) vm.runInContext(s.source, box.context, { filename: s.name }); }, `${label}: the game starts`);
@@ -113,6 +113,24 @@ for (const missing of [['js/systems/audio.js'], ['js/data/soundscapes.js'], ['js
     chooseRoundOpponent(state.lastEvent.raceSlots[0]);const ev=state.lastEvent;ev.queueIndex=ev.lineup.findIndex(x=>x.type==='player');goToMyRace();startLiveRace(currentLineupEntry().opponentIndex);show('garage');playSfx('click')})()`), `${label}: travel, arrival, a race and sounds all work`);
   assert.equal(box.evaluate('state.screen'), 'garage', `${label}: still playable`);
   if (missing.includes('js/systems/audio.js')) assert.equal(box.element('soundMute').textContent, 'Muted', `${label}: the Sound panel shows audio as unavailable (muted)`);
+}
+
+// ---------- Garage scene: one global, presentation only, optional ----------
+// js/systems/garage-scene.js declares only QmbGarageScene. Loaded on its own it reads no game state, draws no random
+// numbers and renders nothing without a document body. If it fails to load, the bay is still unlocked (tested above).
+const sceneSource = src.scripts.find(s => s.name === 'js/systems/garage-scene.js').source;
+assert.deepEqual([...sceneSource.matchAll(/^(?:const|let|var|function|class) (\w+)/gm)].map(m => m[1]), ['QmbGarageScene'], 'garage-scene.js declares exactly one global');
+const sceneOnly = createSandbox({ seed: 3 });
+vm.runInContext(sceneSource, sceneOnly.context, { filename: 'js/systems/garage-scene.js' });
+assert.equal(sceneOnly.evaluate("QmbGarageScene.show({bays:[2],previous:1,capacity:2})"), false, 'no scene without a document body');
+assert.equal(sceneOnly.evaluate('Math.calls'), 0, 'garage-scene.js draws no random numbers');
+assert.equal(sceneOnly.evaluate("typeof state+typeof garageCapacityForRespect"), 'undefined'.repeat(2), 'garage-scene.js defines no game state or rules');
+{
+  const box = createSandbox({ seed: 3, storage: { qmb_mvp_save: fs.readFileSync(path.join(src.root, 'tests/fixtures/saves/v2-garage.json'), 'utf8') } });
+  for (const s of src.scripts) if (s.name !== 'js/systems/garage-scene.js') vm.runInContext(s.source, box.context, { filename: s.name });
+  box.evaluate("state.respect=80;render()");
+  assert.equal(box.evaluate('state.garageCapacity'), 3, 'without the scene file: the bay still unlocks');
+  assert.equal(box.evaluate("state.notifications.filter(n=>n.type==='garage'&&!n.dismissed).length"), 1, 'without the scene file: the bay waits for the scene, harmlessly');
 }
 
 // ---------- Soundscape data is plain data ----------

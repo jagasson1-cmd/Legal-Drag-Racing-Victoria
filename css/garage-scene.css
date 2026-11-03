@@ -1,0 +1,59 @@
+@charset "UTF-8";
+/* Garage expansion scene (js/systems/garage-scene.js): a full-screen moment when the Shed gains a bay. Uses the base tokens.
+   Timeline: door lifts 0.5-2.0 s, tubes flicker on at 2.1 s, words at 2.6 s. .gsDone (a tap, or the end of the timeline)
+   and .gsReduced (prefers-reduced-motion) both jump straight to the finished frame. Loads after sound-panel.css. */
+.gsOverlay{position:fixed;inset:0;z-index:90;display:grid;place-items:center;overflow:auto;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  background:radial-gradient(ellipse at 50% 38%,#282216,#06080b 70%);color:var(--text);animation:gsIn .35s ease both}
+.gsOverlay.gsLeaving{animation:gsOut .25s ease forwards;pointer-events:none}
+.gsBox{width:min(640px,100%);display:grid;gap:18px;justify-items:center;text-align:center}
+.gsShed{width:100%;max-height:42vh;display:block}
+.gsWall{fill:#1a1d22;stroke:var(--line);stroke-width:1.5}
+.gsSlab{fill:#3a3f47}
+.gsOpening{fill:#0b0d10}
+.gsNew .gsOpening{fill:#1b1a16}
+.gsCar{fill:#59616c}
+.gsLabel{fill:var(--muted);font:600 13px ui-monospace,Consolas,monospace;letter-spacing:.1em}
+.gsNew .gsLabel{fill:var(--accent)}
+.gsDoorFace{fill:#7d858f}
+.gsSlat{stroke:#5d646d;stroke-width:1.2}
+.gsTube{fill:#fff6dc;opacity:.12}
+.gsLight{opacity:0}
+.gsDoor{animation:gsDoorUp 1.5s .5s cubic-bezier(.45,.05,.35,1) forwards}
+.gsTube{animation:gsFlicker .6s 2.1s steps(1,end) forwards}
+.gsLight{animation:gsGlow .7s 2.25s ease-out forwards}
+.gsWords{display:grid;gap:6px;justify-items:center;opacity:0;animation:gsWordsIn .45s 2.6s ease forwards}
+.gsEyebrow{font:600 11px ui-monospace,Consolas,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+.gsTitle{margin:0;font-size:clamp(24px,6vw,34px);letter-spacing:.3px}
+.gsCap{margin:4px 0 0;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;justify-content:center;color:var(--muted)}
+.gsCapValue{color:var(--text);font-size:18px;font-variant-numeric:tabular-nums}
+.gsNext{margin:0;color:var(--muted);font-size:14px}
+.gsOverlay .gsContinue{width:auto;min-width:160px;min-height:44px;margin-top:10px}
+.gsSkip{position:absolute;top:max(14px,env(safe-area-inset-top,0px));right:max(14px,env(safe-area-inset-right,0px));min-height:44px;padding:8px 18px;border-radius:999px;
+  background:rgba(13,18,24,.75);color:var(--text);border:1px solid rgba(255,255,255,.35);font:inherit;font-size:14px;cursor:pointer}
+.gsSkip:hover{border-color:var(--accent)}
+.gsSkip:focus-visible,.gsOverlay .gsContinue:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+/* Finished frame: after the timeline, a tap, or reduced motion. */
+.gsDone .gsDoor,.gsReduced .gsDoor{animation:none;transform:translateY(-100px)}
+.gsDone .gsTube,.gsReduced .gsTube{animation:none;opacity:1}
+.gsDone .gsLight,.gsReduced .gsLight{animation:none;opacity:1}
+.gsDone .gsWords,.gsReduced .gsWords{animation:none;opacity:1}
+.gsDone .gsSkip,.gsReduced .gsSkip{visibility:hidden}
+.gsReduced{animation:gsIn .2s ease both}
+@media(prefers-reduced-motion:reduce){
+  .gsOverlay,.gsOverlay.gsLeaving{animation-duration:.01s}
+  .gsDoor{animation:none;transform:translateY(-100px)}
+  .gsTube,.gsLight,.gsWords{animation:none;opacity:1}
+}
+/* Phones in landscape: shed and words side by side so everything fits without scrolling. */
+@media(max-height:500px) and (orientation:landscape){
+  .gsBox{width:min(860px,100%);grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);align-items:center;gap:20px}
+  .gsShed{max-height:70vh}
+  .gsTitle{font-size:24px}
+}
+@keyframes gsIn{from{opacity:0}to{opacity:1}}
+@keyframes gsOut{to{opacity:0}}
+@keyframes gsDoorUp{from{transform:translateY(0)}to{transform:translateY(-100px)}}
+@keyframes gsFlicker{0%{opacity:.12}15%{opacity:1}25%{opacity:.2}40%{opacity:1}50%{opacity:.35}65%,100%{opacity:1}}
+@keyframes gsGlow{from{opacity:0}to{opacity:1}}
+@keyframes gsWordsIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}

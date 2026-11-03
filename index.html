@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Street to Strip - Public Beta</title>
   <!-- Stylesheets, in cascade order. When any extracted file changes, bump ?v= on every extracted asset (docs/MODULARISATION.md). -->
-  <link rel="stylesheet" href="css/base.css?v=2026.11.01-6">
-  <link rel="stylesheet" href="css/you-yangs.css?v=2026.11.01-6">
-  <link rel="stylesheet" href="css/race-night.css?v=2026.11.01-6">
-  <link rel="stylesheet" href="css/event-presentation.css?v=2026.11.01-6">
-  <link rel="stylesheet" href="css/sound-panel.css?v=2026.11.01-6">
+  <link rel="stylesheet" href="css/base.css?v=2026.11.01-7">
+  <link rel="stylesheet" href="css/you-yangs.css?v=2026.11.01-7">
+  <link rel="stylesheet" href="css/race-night.css?v=2026.11.01-7">
+  <link rel="stylesheet" href="css/event-presentation.css?v=2026.11.01-7">
+  <link rel="stylesheet" href="css/sound-panel.css?v=2026.11.01-7">
+  <link rel="stylesheet" href="css/garage-scene.css?v=2026.11.01-7">
 </head>
 <body>
 <header>
@@ -64,12 +65,13 @@
   <div class="splashShade"></div>
   <div class="splashContent"><h2>Street to Strip</h2><p>Buy cheap · Build smart · Race the quarter</p><button class="splashSkip" type="button" onclick="dismissSplash()">Enter the pits</button></div>
 </div>
-<script src="js/data/vehicles.js?v=2026.11.01-6"></script>
-<script src="js/data/events.js?v=2026.11.01-6"></script>
-<script src="js/data/names.js?v=2026.11.01-6"></script>
-<script src="js/data/soundscapes.js?v=2026.11.01-6"></script>
-<script src="js/systems/opponent-generation.js?v=2026.11.01-6"></script>
-<script src="js/systems/audio.js?v=2026.11.01-6"></script>
+<script src="js/data/vehicles.js?v=2026.11.01-7"></script>
+<script src="js/data/events.js?v=2026.11.01-7"></script>
+<script src="js/data/names.js?v=2026.11.01-7"></script>
+<script src="js/data/soundscapes.js?v=2026.11.01-7"></script>
+<script src="js/systems/opponent-generation.js?v=2026.11.01-7"></script>
+<script src="js/systems/audio.js?v=2026.11.01-7"></script>
+<script src="js/systems/garage-scene.js?v=2026.11.01-7"></script>
 <script>
 const QMB_API_URL='https://elebvltrvcqqyyjwwydi.supabase.co/functions/v1/qmb-api-v2';
 const QMB_PUBLISHABLE_KEY='sb_publishable_wgUH3E8Nepy-6QC_dXpVtA_Uyszqkrm';
@@ -265,7 +267,7 @@ function unreadMarketOfferCount(){return (state.marketOffers||[]).filter(o=>!o.c
 function hasEventSession(){return !!(state.lastEvent && !state.lastEvent.dayAdvanced);}
 function nav(){let items=['home','classifieds','garage','badges','event'],yy=youYangsState();if(yy.invited)items.push('youYangs');if(hasEventSession())items.push('currentEvent');items.push('upgrades','work','social','season','log');let labels={home:'Start Line',classifieds:'Trading Post',garage:'Shed',badges:'Trophies',event:'Calendar',youYangs:yy.visits>0?'You Yangs':'Private Invitation',currentEvent:'Race Night',upgrades:'Speed Shop',work:'Earn Cash',social:'Car Club',season:'The Books',log:'Race Journal'};let unread=unreadMarketOfferCount();document.getElementById('nav').innerHTML=items.map(s=>`<button data-screen="${s}" class="${state.screen===s?'active':''}" onclick="show('${s}')">${labels[s]}${s==='classifieds'&&unread?`<span class="marketBadge" aria-label="${unread} unread offer${unread===1?'':'s'}">✉ ${unread}</span>`:''}</button>`).join('')}
 function currentPanel(){let el=document.getElementById('currentCarPanel'); if(!state.car){el.innerHTML='No car yet.<br><span class="small">Buy one or attend as a spectator.</span>';return} let c=state.car;calculateBuildEffects(c);let tune=tuneSensitiveCount(c)>0?(c.tuneFresh&&c.tuneSignature===buildSignature(c)?'Dyno tuned':'Needs dyno tune'):'Stock tune ok';el.innerHTML=`<b>${c.name}</b><br><span class="muted">${c.type} / ${c.drive}</span><br>Power: ${Math.round(c.power)} hp<br>Weight: ${Math.round(c.weight)} kg<br>Tyres/grip: ${Math.round(c.grip*100)}%<br>Trans: ${c.trans.toUpperCase()} ${c.trans==='auto'?'/ '+c.shiftMode:''}<br>Reliability: ${Math.round(c.reliability)}%<br><span class="small muted">${tune}</span><br>Gear max: ${(gearMaxes(c)||[]).map(x=>Math.round(x)).join('/')} km/h`;}
-function render(){normaliseState();if(state.screen==='watch')state.screen='home';if(state.screen==='market'){state.screen='classifieds';tradingPostTab='sell'}if(state.screen==='classifieds'&&tradingPostTab==='sell')(state.marketOffers||[]).forEach(o=>o.unread=false);topStats();nav();currentPanel();let screensMap={home,classifieds,garage,badges,event,youYangs,yyTravel,currentEvent,travel,arrival,upgrades,work,watch,social,season,log:logScreen};let fn=screensMap[state.screen]||home;document.getElementById('screen').innerHTML=fn();renderSocialPanel();updateSoundPanel();updateSoundscape();enhanceSocialGarage();updateGuidanceNotification();}
+function render(){normaliseState();if(state.screen==='watch')state.screen='home';if(state.screen==='market'){state.screen='classifieds';tradingPostTab='sell'}if(state.screen==='classifieds'&&tradingPostTab==='sell')(state.marketOffers||[]).forEach(o=>o.unread=false);topStats();nav();currentPanel();let screensMap={home,classifieds,garage,badges,event,youYangs,yyTravel,currentEvent,travel,arrival,upgrades,work,watch,social,season,log:logScreen};let fn=screensMap[state.screen]||home;document.getElementById('screen').innerHTML=fn();renderSocialPanel();updateSoundPanel();updateSoundscape();enhanceSocialGarage();updateGuidanceNotification();updateGarageExpansion();}
 function show(s){if(yyRun){if(yyRun.raf)cancelAnimationFrame(yyRun.raf);yyRun=null;stopEngineAudio()}if(liveRun){if(liveRun.raf)cancelAnimationFrame(liveRun.raf);liveRun=null;stopEngineAudio()}if(dynoSession){if(dynoSession.raf)cancelAnimationFrame(dynoSession.raf);dynoSession=null;stopEngineAudio()}cancelWatchRun();if(travelTimer){clearTimeout(travelTimer);travelTimer=null;}stopTravelFx();travelClock=null;if(s==='market'){s='classifieds';tradingPostTab='sell'}else if(s==='classifieds')tradingPostTab='buy';if(s==='classifieds'&&tradingPostTab==='sell')(state.marketOffers||[]).forEach(o=>o.unread=false);state.screen=s;render();if(s==='social')refreshCompetitiveData()}
 const showScreenBase=show;
 show=function(s){if(s==='home')markDailyBriefingRead();if(s==='youYangs'&&yyNeedsIntroJourney()){showScreenBase('home');return yyStartJourney()}return showScreenBase(s)}
@@ -286,7 +288,7 @@ const buyCarBase=buyCar;
 buyCar=function(id){let before=(state.owned||[]).length;buyCarBase(id);if((state.owned||[]).length>before)dailyProgress('buy')}
 function garage(){
   normaliseGarageState();
-  let guide=onboardingStage()===2?onboardingHtml():'',capacity=`<div class="row"><div><h2>Shed</h2><p class="muted">Choose the active car used for racing and the Speed Shop. Vehicle sales are handled through the Trading Post.</p></div><span class="pill">Capacity <b>${state.owned.length}/${state.garageCapacity}</b></span></div>`;
+  let guide=onboardingStage()===2?onboardingHtml():'',capacity=`<div class="row"><div><h2>Shed</h2><p class="muted">Choose the active car used for racing and the Speed Shop. Vehicle sales are handled through the Trading Post.</p></div><span class="pill">Capacity <b>${state.owned.length}/${state.garageCapacity}</b>${garageBayNextRespect()!==null?` · Next bay at <b>${garageBayNextRespect()}</b> Respect`:''}</span></div>`;
   if(!state.owned.length)return `<section class="card">${capacity}<p class="muted">No car yet.</p></section>`;
   let c=state.car;normaliseState();let saleStatus=c.listedForSale?`<p class="warning"><b>Listed for sale</b> - ${c.saleMode||'Fair Price'} listing. You can keep driving it while offers develop.</p>`:'<p class="muted">Not listed for sale.</p>';let value=estimateCarValue(c);
   return guide+`<section class="card">${capacity}<div class="grid">${state.owned.map(garageVehicleCard).join('')}</div><div class="hr"></div><h3>Active vehicle details</h3><div class="grid"><div class="listing"><h3>${c.name}</h3><p class="muted">${c.type} / ${c.cat}</p><p><b>${Math.round(c.power)} hp</b> / ${Math.round(c.torque)} Nm / ${Math.round(c.weight)} kg</p><p>Drive: ${c.drive} | Aspiration: ${c.asp} | Redline: ${c.red} rpm</p><p>Issues: ${c.issueNames.length?c.issueNames.map(x=>`<span class="issue">${x}</span>`).join(''):'<span class="goodText">None declared</span>'}</p><p>Build: ${installedUpgradeSummary(c).join('<br>')}</p><p>Tags: ${c.buildTags&&c.buildTags.length?c.buildTags.map(t=>`<span class="issue">${t}</span>`).join(''):'<span class="muted">Stock / unproven</span>'}</p></div><div class="listing"><h3>Transmission</h3><p>Current: ${c.trans.toUpperCase()} ${c.trans==='auto'?c.shiftMode:''}</p>${c.trans==='auto'?`<button class="btn secondary" onclick="toggleAutoMode()">Toggle D / Manual shift mode</button>`:'<p class="muted">Manual: spacebar or tap-to-shift during race.</p>'}</div><div class="listing"><h3>Sell this car</h3>${saleStatus}<p>Estimated private value: <b>${fmt(value.privateValue)}</b></p><p>Instant wholesaler: <b>${fmt(value.wholesaleValue)}</b></p><button class="btn secondary" onclick="openTradingPost('sell')">Open Trading Post</button></div></div></section>`}
@@ -329,6 +331,27 @@ function pendingGuidanceNotification(){let notes=(state.notifications||[]).filte
 function updateGuidanceNotification(){let toast=document.getElementById('guidanceToast'),note=pendingGuidanceNotification();if(!toast)return;if(!note){toast.classList.remove('show');return;}let title=document.getElementById('guidanceToastTitle'),message=document.getElementById('guidanceToastMessage'),icon=document.getElementById('guidanceToastIcon');if(title)title.textContent=note.title;if(message)message.textContent=note.message;if(icon)icon.textContent=note.icon||(note.type==='badge'?'🏆':note.type==='special'?'✉':note.type==='briefing'?'📋':'i');toast.style.cursor=(note.type==='badge'||note.type==='special'||note.type==='daily'||note.type==='briefing')?'pointer':'default';toast.classList.add('show')}
 function openPendingNotification(){let note=pendingGuidanceNotification();if(!note)return;if(note.type==='badge'){note.dismissed=true;show('badges');cloudSave(false)}else if(note.type==='special'){note.dismissed=true;let y=youYangsState();y.invitationShown=true;state.screen='youYangs';localStorage.setItem('qmb_mvp_save',JSON.stringify(state));if(yyNeedsIntroJourney())yyStartJourney();else render();cloudSave(false)}else if(note.type==='daily'){note.dismissed=true;state.screen='home';localStorage.setItem('qmb_mvp_save',JSON.stringify(state));render()}else if(note.type==='briefing'){note.dismissed=true;markDailyBriefingRead();state.screen='home';render()}}
 function dismissGuidanceNotification(event){if(event)event.stopPropagation();let note=pendingGuidanceNotification();if(note)note.dismissed=true;updateGuidanceNotification();cloudSave(false)}
+// Garage expansion scene (js/systems/garage-scene.js). garageCapacity is already saved, so a bay counts as new only when
+// capacity rises during this session: every load path replaces the state object, which resets the baseline. Each new bay
+// gets one garage_bay_N entry in the existing notifications list (the toast ignores this type), saved straight away, and
+// the scene plays the undismissed ones at the next quiet moment. Thresholds stay in garageCapacityForRespect.
+const garageScene=typeof QmbGarageScene!=='undefined'?QmbGarageScene:{show:()=>false,active:()=>false,close:()=>{}};
+let garageBaseline={ref:null,cap:0};
+function garageBayNextRespect(capacity=state.garageCapacity){let cap=Number(capacity)||1;for(let r=0;r<=10000;r++)if(garageCapacityForRespect(r)>cap)return r;return null}
+function trackGarageExpansion(){let cap=Number(state.garageCapacity)||1;if(garageBaseline.ref!==state){garageBaseline={ref:state,cap};return false}if(cap<=garageBaseline.cap)return false;
+  if(!Array.isArray(state.notifications))state.notifications=[];
+  for(let n=garageBaseline.cap+1;n<=cap;n++){let id='garage_bay_'+n;if(!state.notifications.some(x=>x&&x.id===id))state.notifications.push({id,type:'garage',title:`Bay ${n} is open`,message:`Shed capacity ${n} cars`,icon:'🔧',createdDay:state.day,dismissed:false,bay:n})}
+  garageBaseline.cap=cap;localStorage.setItem('qmb_mvp_save',JSON.stringify(state));return true}
+const GARAGE_SCENE_QUIET_SCREENS=['home','garage','classifieds','badges','event','upgrades','work','social','season','log'];
+function garageSceneQuiet(){if(liveRun||yyRun||dynoSession||watchRun||watchRaceActive||travelTimer||state.pendingArrival||hasEventSession())return false;
+  if(!GARAGE_SCENE_QUIET_SCREENS.includes(state.screen))return false;let splash=document.getElementById('splashScreen');if(splash&&splash.classList&&!splash.classList.contains('hidden'))return false;return !document.getElementById('driverProfileOverlay')}
+function pendingGarageBays(){return (state.notifications||[]).filter(n=>n&&n.type==='garage'&&!n.dismissed&&Number(n.bay)>1)}
+function maybeShowGarageScene(){if(garageScene.active()||!garageSceneQuiet())return false;let notes=pendingGarageBays();if(!notes.length)return false;
+  let bays=notes.map(n=>Number(n.bay)).sort((a,b)=>a-b),capacity=Math.max(Number(state.garageCapacity)||1,bays[bays.length-1]),previous=bays[0]-1,owner=state;
+  return garageScene.show({bays,previous,capacity,parked:(state.owned||[]).length,nextRespect:garageBayNextRespect(capacity),
+    sound:delay=>gameAudio.cue('garageExpanded',{delay}),
+    onDone:()=>{if(state!==owner)return;for(let n of notes)n.dismissed=true;localStorage.setItem('qmb_mvp_save',JSON.stringify(state));cloudSave(false)}})}
+function updateGarageExpansion(){trackGarageExpansion();maybeShowGarageScene()}
 function onboardingStage(){if(state.guidance&&state.guidance.onboardingDismissed)return 0;if(state.lastRace)return 0;if(!(state.owned||[]).length)return 1;if(!hasEventSession()&&!state.pendingArrival)return 2;return 3}
 function onboardingHtml(){let stage=onboardingStage();if(!stage)return '';let content=stage===1?{eyebrow:'STEP 1 OF 3 · FIND A PROJECT',title:'Start with your first car',text:'Open the Trading Post and choose a car you can afford. An inspection costs $150 and helps explain likely repair costs before you buy.',action:'Browse affordable cars',onclick:"openTradingPost('buy')"}:stage===2?{eyebrow:'STEP 2 OF 3 · FIND A RACE NIGHT',title:'Take your car to the strip',text:'Open the Calendar and look for the Recommended first event badge. If it is not running today, use Skip Day until it appears; higher-level events may be spectator-only until you earn more Respect.',action:'Open the event calendar',onclick:"show('event')"}:{eyebrow:'STEP 3 OF 3 · MAKE YOUR FIRST PASS',title:'Join the lanes',text:'Choose a suitable opponent, follow the staging prompts, and use SPACE or the shift button if your car needs manual shifts.',action:hasEventSession()?'Return to Race Night':'Continue to the event',onclick:hasEventSession()?"show('currentEvent')":"show('event')"};let steps=[1,2,3].map(n=>`<span class="onboardingStep ${n<stage?'done':n===stage?'active':''}"></span>`).join('');return `<section class="card onboardingCard"><div class="row"><div><p class="small clue"><b>${content.eyebrow}</b></p><h2>${content.title}</h2></div><button class="onboardingDismiss small" onclick="dismissOnboarding()">Hide guide</button></div><div class="onboardingSteps" aria-label="Onboarding step ${stage} of 3">${steps}</div><p class="onboardingHint">${content.text}</p><button class="btn" onclick="${content.onclick}">${content.action}</button></section>`}
 function dismissOnboarding(){if(!state.guidance)state.guidance=freshGuidance();state.guidance.onboardingDismissed=true;localStorage.setItem('qmb_mvp_save',JSON.stringify(state));render()}
@@ -1248,7 +1271,7 @@ function watch(){return `<section class="card"><h2>Watch List</h2><p class="mute
 // Audio is optional: if js/systems/audio.js fails to load, a silent stand-in keeps the game fully playable (no sound,
 // Sound panel shown muted). Inline code only talks to audio through gameAudio.
 const gameAudio=typeof QmbAudio!=='undefined'?QmbAudio:(()=>{const off={version:1,master:0,music:0,ambience:0,engine:0,effects:0,muted:true},no=()=>{};
-  return {prefs:()=>({...off}),set:()=>({...off}),setLevel:()=>({...off}),setMuted:()=>({...off}),toggleMute:()=>({...off}),onChange:no,soundOn:()=>false,musicOn:()=>false,available:()=>false,unlock:no,context:async()=>null,bus:()=>null,setSoundscape:no,soundscape:()=>null,setDuckProbe:no,stinger:()=>false}})();
+  return {prefs:()=>({...off}),set:()=>({...off}),setLevel:()=>({...off}),setMuted:()=>({...off}),toggleMute:()=>({...off}),onChange:no,soundOn:()=>false,musicOn:()=>false,available:()=>false,unlock:no,context:async()=>null,bus:()=>null,setSoundscape:no,soundscape:()=>null,setDuckProbe:no,stinger:()=>false,cue:()=>null}})();
 // Runtime gates derived from the audio preferences (js/systems/audio.js), which are the only stored source of truth.
 let soundEnabled=gameAudio.soundOn(),musicEnabled=gameAudio.musicOn(),engineAudio=null,spectatorAudio=null,engineAudioRequest=0,spectatorAudioRequest=0;
 async function getAudioContext(){return gameAudio.context()}
