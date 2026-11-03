@@ -73,8 +73,39 @@ const toast = box => json(box, "(state.notifications||[]).filter(n=>n.type==='ma
   assert.ok(sold && !sold.dismissed && sold.title === 'Car sold', 'the sale is recorded');
   assert.equal(box.evaluate('state.screen'), 'garage', 'still lands in the Shed');
   assert.equal(toast(box).outcome, 'sold', 'and the Shed shows it until acknowledged');
+  // Opening the toast only navigates: the sale is still unacknowledged, and its card is on the Sell tab even though the
+  // car is gone and no car is left to select.
   box.evaluate('openPendingNotification()');
-  assert.equal(notes(box).find(x => x.outcome === 'sold').dismissed, true, 'opening the toast acknowledges it');
+  assert.equal(notes(box).find(x => x.outcome === 'sold').dismissed, false, 'opening the toast does not acknowledge it');
+  assert.equal(box.evaluate("state.screen==='classifieds'&&tradingPostTab==='sell'"), true, 'it opens the Sell tab');
+  const html = box.element('screen').innerHTML;
+  assert.match(html, /<h2>Sell a car<\/h2><div class="grid marketOutcomes">.*Car sold\./s, 'the sale card is at the top of the Sell tab');
+  assert.match(html, /Buy a car first\./, 'alongside the no-car message');
+  const soldId = notes(box).find(x => x.outcome === 'sold').id;
+  box.evaluate("show('garage')");
+  assert.equal(toast(box).outcome, 'sold', 'navigating away leaves it on the toast');
+  box.evaluate(`show('market');dismissMarketOutcome(${JSON.stringify(soldId)})`);
+  assert.equal(notes(box).find(x => x.outcome === 'sold').dismissed, true, 'Got it acknowledges it');
+  assert.doesNotMatch(box.element('screen').innerHTML, /Car sold\./, 'and the card is gone');
+  box.evaluate("show('garage')");
+  assert.equal(toast(box), null, 'and so is the toast');
+}
+{
+  // With another car still in the Shed (and selected), a sale card shows at the top of the Sell tab regardless; a
+  // walk-away for the car that was later sold moves there too, instead of vanishing with the car.
+  const box = withOffer();
+  box.evaluate(`(()=>{let other=makeOwned(CARS[0],'auto','D');state.owned.push(other);globalThis.__other=other.uid})()`);
+  counterWith(box, 0.999);
+  box.evaluate(`(()=>{let o=null;for(let i=0;i<50&&!o;i++)o=makeMarketOffer('classified',100);globalThis.__offer=o})()`);
+  box.evaluate('acceptCarOffer(__offer.id)');
+  assert.equal(box.evaluate('state.owned.length'), 1, 'one car sold, one left');
+  box.evaluate("selectSaleVehicle(__other);show('market')");
+  const html = box.element('screen').innerHTML;
+  const top = html.slice(0, html.indexOf('saleVehicleSelect'));
+  assert.match(top, /Car sold\./, 'the sale card is above the vehicle selector');
+  assert.match(top, /Buyer walked away/, 'the earlier walk-away for the sold car is there too');
+  box.evaluate('openPendingNotification()');
+  assert.ok(notes(box).filter(x => x.outcome === 'sold' || x.outcome === 'walked').every(x => !x.dismissed), 'opening the toast acknowledged nothing');
 }
 
 // ---------- Decline: a light inline line, not a toast ----------

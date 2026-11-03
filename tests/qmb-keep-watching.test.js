@@ -12,7 +12,12 @@ function box(seed) {
   b.context.requestAnimationFrame = fn => { frame = fn; return 1; };
   b.context.cancelAnimationFrame = () => { frame = null; };
   b.drain = () => { let n = 0; while (frame && n < 5000) { const f = frame; frame = null; b.clock.t += 16; f(b.clock.t); n++; } return n; };
-  b.autoTimer = () => b.timers.filter(t => t.ms === b.evaluate('SV_AUTO_MS')).at(-1) || null;
+  b.autoTimer = () => b.timers.filter(t => t.ms === b.evaluate('KEEP_WATCH_MS')).at(-1) || null;
+  // Record every focus() the game makes, on elements found by id or by selector.
+  b.focusCalls = [];
+  const byId = b.context.document.getElementById;
+  b.context.document.getElementById = id => { const el = byId(id); if (el && !el.__spied) { el.__spied = true; el.focus = () => b.focusCalls.push('#' + id); } return el; };
+  b.context.document.querySelector = sel => ({ focus: () => b.focusCalls.push(sel), disabled: false, textContent: '' });
   return b;
 }
 // Spectating at Heathcote (or entered as a racer when race is true), with enough Respect and money to bet.
@@ -51,11 +56,18 @@ const SEED = crossingSeed();
   const b = arrive(SEED);
   const total = watches(b), firstRound = ev(b, 'state.lastEvent.roundNo||0');
   assert.match(b.element('screen').innerHTML, /onclick="startKeepWatching\(\)">Keep Watching</, 'offered to a spectator');
+  b.focusCalls.length = 0;
   b.evaluate('startKeepWatching()');
+  assert.deepEqual(b.focusCalls, ['#svTitle'], "starting it is the player's own action: the first race takes focus as before");
+  b.focusCalls.length = 0;
   assert.match(b.element('screen').innerHTML, /onclick="stopWatchAllBeforeMine\(\)">Stop watching</, 'Stop watching is on screen during the race');
   assert.match(b.element('screen').innerHTML, /Keep Watching · \d+ watch chances? left/, 'status line');
+  assert.match(b.element('screen').innerHTML, /aria-live="polite">Keep Watching ·/, 'announced politely');
   const races = runKeepWatching(b);
   assert.equal(races, total, 'every watch chance was used on a watched race');
+  assert.equal(b.evaluate('KEEP_WATCH_MS'), 4000, 'Keep Watching boards stay up for 4 s');
+  assert.equal(b.timers.filter(t => t.ms === b.evaluate('SV_AUTO_MS')).length, 0, 'no 1.4 s auto-start in Keep Watching');
+  assert.deepEqual(b.focusCalls, [], 'focus never moves during automatic progression');
   assert.equal(watches(b), 0, 'out of watch chances');
   assert.ok(ev(b, 'state.lastEvent.roundNo') >= firstRound + 1, 'crossed into a later race card');
   assert.equal(b.evaluate('keepWatchOn()'), false, 'the mode ends by itself');
@@ -112,6 +124,7 @@ const SEED = crossingSeed();
     const b = arrive(seed);
     if (watches(b) < 3) continue;
     b.evaluate('startKeepWatching()'); b.drain();
+    assert.match(b.element('screen').innerHTML, /--sv-ms:4000ms/, 'the board countdown shows the 4 s pause');
     const next = ev(b, '(()=>{let e=state.lastEvent,x=currentLineupEntry();return [e.opponents[x.aIdx].name,e.opponents[x.bIdx].name]})()');
     const board = b.element('screen').innerHTML;
     assert.ok(board.includes(`<b>Up next:</b> ${next[0]} vs ${next[1]}`), 'the board names the next pairing');
