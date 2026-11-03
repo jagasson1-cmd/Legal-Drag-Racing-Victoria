@@ -167,14 +167,62 @@ const QmbAudio=(()=>{
   // A cue plays only when the context is already running and effects are audible. Otherwise it is dropped, never queued,
   // so nothing builds up while audio is locked or the tab is hidden and bursts out on the first tap.
   // Returns a handle whose stop() fades the cue out (for a skipped scene), or null when nothing played.
-  let lastCue=null;
-  function cue(name,opts={}){if(!ctx||ctx.state!=='running'||!graph||!canSynth()||quiet()||prefs.effects<=0)return null;
-    const out=ctx.createGain(),t=ctx.currentTime+.04+Math.max(0,Number(opts.delay)||0);out.connect(graph.buses.effects);let end=0;
-    try{if(name==='garageExpanded')end=garageDoor(t,out)}catch(e){end=0}
+  // No piling up: one moment in the game (a race payout with a badge and a new bay, say) produces one cue, not a stack.
+  // - Cues that arrive within WINDOW seconds of each other collapse to the most important: a weaker cue arriving after a
+  //   stronger or equal one is dropped; a stronger one fades out the weaker one already playing.
+  // - Each cue has its own cooldown, so a run of payouts doesn't chatter.
+  // - reserve(level,seconds) holds the bus for another sound (the race result chord): cues at or below that level are
+  //   dropped meanwhile; stronger cues wait until it ends.
+  const CUES={
+    cashIn:{priority:1,cooldown:.4,voice:(t,out,o)=>cashIn(t,out,o)},
+    cashOut:{priority:1,cooldown:.4,voice:(t,out)=>cashOut(t,out)},
+    upgradeInstalled:{priority:2,cooldown:.6,voice:(t,out)=>ratchet(t,out)},
+    achievement:{priority:3,cooldown:1,voice:(t,out)=>achievement(t,out)},
+    garageExpanded:{priority:4,cooldown:3,voice:(t,out)=>garageDoor(t,out)}};
+  const WINDOW=.6;
+  let lastCue=null,recent=[],reserved={level:0,until:0};const played=[];
+  function cue(name,opts={}){const def=CUES[name];if(!def||!ctx||ctx.state!=='running'||!graph||!canSynth()||quiet()||prefs.effects<=0)return null;
+    const now=ctx.currentTime;recent=recent.filter(r=>now-r.at<3);
+    if(recent.some(r=>r.name===name&&now-r.at<def.cooldown))return null;
+    if(recent.some(r=>now-r.at<WINDOW&&r.priority>=def.priority))return null;
+    let delay=Math.max(0,Number(opts.delay)||0);
+    if(now<reserved.until){if(def.priority<=reserved.level)return null;delay=Math.max(delay,reserved.until-now)}
+    const out=ctx.createGain(),t=now+.04+delay;out.connect(graph.buses.effects);let end=0;
+    try{end=def.voice(t,out,opts)}catch(e){end=0}
     const drop=()=>{try{out.disconnect()}catch(e){}};
     if(!end){drop();return null}
-    lastCue={name,at:t,end};setTimeout(drop,Math.round((end-ctx.currentTime)*1000)+500);
-    return {name,stop(fade=.25){const now=ctx.currentTime;try{out.gain.cancelScheduledValues(now);out.gain.setTargetAtTime(.0001,now,Math.max(.02,fade/3))}catch(e){}setTimeout(drop,Math.round(fade*1000)+200)}}}
+    const handle={name,stop(fade=.25){const n=ctx.currentTime;try{out.gain.cancelScheduledValues(n);out.gain.setTargetAtTime(.0001,n,Math.max(.02,fade/3))}catch(e){}setTimeout(drop,Math.round(fade*1000)+200)}};
+    for(const r of recent)if(now-r.at<WINDOW&&r.priority<def.priority){try{r.handle.stop(.08)}catch(e){}}
+    recent.push({name,priority:def.priority,at:now,handle});
+    lastCue={name,at:t,end};played.push(name);if(played.length>20)played.shift();
+    setTimeout(drop,Math.round((end-ctx.currentTime)*1000)+500);
+    return handle}
+  function reserve(level,seconds){if(ctx&&ctx.state==='running')reserved={level:Number(level)||0,until:ctx.currentTime+Math.max(0,Number(seconds)||0)}}
+  // Money in: two soft rounded notes a fourth apart with a paper tick; $5,000 or more adds a third note and a little body.
+  // Deliberately small: no coin showers or jackpot sounds.
+  function cashIn(t,out,o){const large=Number(o&&o.amount)>=5000,notes=large?[659.25,880,1174.66]:[659.25,880];let end=t;
+    const lp=filt('lowpass',3200);lp.connect(out);
+    notes.forEach((f,i)=>{const at=t+i*.075,o1=ctx.createOscillator(),o2=ctx.createOscillator(),g=ctx.createGain();o1.type='sine';o2.type='triangle';o1.frequency.value=f;o2.frequency.value=f*2.001;
+      const g2=ctx.createGain();g2.gain.value=.18;o1.connect(g);o2.connect(g2);g2.connect(g);g.connect(lp);end=Math.max(end,env(g.gain,at,large?.06:.05,.006,.02,large&&i===notes.length-1?.55:.3));o1.start(at);o2.start(at);o1.stop(end+.05);o2.stop(end+.05)});
+    const n=noiseSrc(t,.08),hp=filt('highpass',3500),ng=ctx.createGain();chain(n,hp,ng,out);env(ng.gain,t,.018,.002,0,.05);
+    if(large){const b=ctx.createOscillator(),bg=ctx.createGain();b.frequency.value=220;b.connect(bg);bg.connect(lp);env(bg.gain,t,.03,.02,.05,.4);b.start(t);b.stop(t+.55)}
+    return end}
+  // Money out: one low, muted thunk, like a till drawer closing.
+  function cashOut(t,out){const o=ctx.createOscillator(),g=ctx.createGain(),lp=filt('lowpass',600);o.type='sine';o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(85,t+.14);chain(o,lp,g,out);
+    const end=env(g.gain,t,.07,.004,0,.2);o.start(t);o.stop(end+.05);
+    const n=noiseSrc(t,.06),bp=filt('bandpass',between(1400,1800),1.2),ng=ctx.createGain();chain(n,bp,ng,out);env(ng.gain,t,.022,.002,0,.035);return end}
+  // Upgrade fitted: a ratchet run (bandpassed noise ticks), then the click of a torque wrench reaching its setting.
+  function ratchet(t,out){const n=noiseSrc(t,.6),bp=filt('bandpass',between(2600,3200),3),rg=ctx.createGain(),p=panner(out,between(-.25,.25));chain(n,bp,rg,p);rg.gain.setValueAtTime(.0001,t);
+    const clicks=5,gap=between(.042,.052);for(let i=0;i<clicks;i++){const at=t+i*gap;rg.gain.setValueAtTime(.0001,at);rg.gain.linearRampToValueAtTime(.05,at+.003);rg.gain.exponentialRampToValueAtTime(.0001,at+.03)}
+    const at=t+clicks*gap+.12,f0=between(1700,2100);let end=at;
+    [[1,1],[2.76,.45],[5.4,.2]].forEach(([r,a])=>{const o=ctx.createOscillator(),og=ctx.createGain();o.frequency.value=f0*r;o.connect(og);og.connect(p);end=Math.max(end,env(og.gain,at,.07*a,.002,0,.18/r**.3));o.start(at);o.stop(end+.05)});
+    const k=noiseSrc(at,.04),kh=filt('highpass',2500),kg=ctx.createGain();chain(k,kh,kg,p);env(kg.gain,at,.04,.001,0,.025);return end}
+  // Badge earned: a timing-slip printer's short chatter, then one clear bell with inharmonic partials.
+  function achievement(t,out){const len=.32,n=noiseSrc(t,len+.05),bp=filt('bandpass',2200,1.6),am=ctx.createGain(),pg=ctx.createGain(),lfo=ctx.createOscillator(),depth=ctx.createGain();
+    lfo.type='square';lfo.frequency.value=between(34,40);depth.gain.value=.5;am.gain.value=.5;lfo.connect(depth);depth.connect(am.gain);chain(n,bp,am,pg,out);env(pg.gain,t,.03,.01,len-.06,.05);lfo.start(t);lfo.stop(t+len+.05);
+    const at=t+len+.08,f0=1318.5;let end=at;
+    [[1,1],[2.01,.32],[2.76,.18],[4.07,.08]].forEach(([r,a])=>{const o=ctx.createOscillator(),og=ctx.createGain();o.frequency.value=f0*r;o.connect(og);og.connect(out);end=Math.max(end,env(og.gain,at,.065*a,.003,0,1.3/r**.4));o.start(at);o.stop(end+.05)});
+    return end}
   // A roller door going up (slats rattling over the drum, a low motor rumble, a clunk at the top), then fluorescent tubes
   // tinking on and settling to a quiet 100 Hz mains hum. About 4.5 s.
   function garageDoor(t,out){const up=1.5;
@@ -216,7 +264,8 @@ const QmbAudio=(()=>{
     setDuckProbe:fn=>{duckProbe=typeof fn==='function'?fn:null},
     stinger,
     cue,
+    reserve,
     // Read-only snapshot for tests and diagnostics.
-    debug:()=>({context:ctx?ctx.state:null,graph:!!graph,master:graph?graph.master.gain.value:null,hidden,wanted:wanted?wanted.id:null,playing:scape?scape.id:null,events:scape?scape.events.map(e=>e.def.voice):[],scheduler:!!ticker,ducked,voices:voices.length,lastCue:lastCue?lastCue.name:null})
+    debug:()=>({context:ctx?ctx.state:null,graph:!!graph,master:graph?graph.master.gain.value:null,hidden,wanted:wanted?wanted.id:null,playing:scape?scape.id:null,events:scape?scape.events.map(e=>e.def.voice):[],scheduler:!!ticker,ducked,voices:voices.length,lastCue:lastCue?lastCue.name:null,cues:played.slice()})
   };
 })();
